@@ -617,6 +617,12 @@ hand-edit Worker code in the Cloudflare dashboard again — the two copies drift
 and the next `wrangler deploy` overwrites the dashboard edit with no warning. Variables
 and secrets stay in the dashboard; only code moves to the repo.
 
+`worker/wrangler.toml` exists (committed 2026-08-01, Worker name verified against the
+account). It carries `keep_vars = true` — **never remove that line**; without it the
+first deploy deletes the dashboard's plaintext variables and the tool goes down. The
+first actual `wrangler deploy` waits for Session 3; the file's header comment lists the
+pre-deploy checks.
+
 ### 11.2 Three dist builds — know which one is live
 
 | Build | Size | Worker URL | Notes |
@@ -733,12 +739,20 @@ raising it first. His reasoning, recorded so it is not re-litigated:
 - Cloudflare Access is already in use on another WNPT project (swag) and he does not want
   to repeat that experience here.
 
-**What he did approve: something that filters bots.** Implement at the Cloudflare edge,
-not in application code — no change to the front end, nothing for a producer to enter:
+**What he did approve: something that filters bots.** The original plan was Bot Fight
+Mode plus a rate-limiting rule at the Cloudflare edge — but **that plan is not
+implementable as written (verified 2026-08-01):** those controls only attach to a zone
+you own, the Worker runs on a bare `workers.dev` address (Cloudflare's zone, not ours),
+and neither `wnpt.org` nor `nashvillepbs.org` is on Cloudflare DNS (both are on
+Microsoft nameservers). There is no dashboard toggle to flip — do not go looking for it.
 
-- Enable **Bot Fight Mode** on the Worker route.
-- Add a **rate limiting rule** on `POST /save` — a low per-IP ceiling per minute is ample;
-  real use is a handful of saves per session.
+Disposition (Shane, 2026-08-01): **live with the accepted risk below for now.** If junk
+records ever appear, the upgrade path is a small dedicated domain via Cloudflare
+Registrar (~$10/yr, auto-connected, no change to station DNS) attached to the Worker as
+a custom domain — zone controls then apply — plus a small Code session to point
+`DEFAULT_WORKER` at it and disable the `workers.dev` route. Do not propose onboarding
+`wnpt.org` itself to Cloudflare; station DNS is Microsoft-managed and out of scope.
+
 - Optionally scope the existing `ALLOW_ORIGIN` CORS header no wider than it already is.
   It stops nothing determined, but it costs nothing to keep correct.
 

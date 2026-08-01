@@ -1,0 +1,24 @@
+# Deploy config for the Lower Thirds Airtable proxy (build.md §11.1:
+# the repo is the Worker's source of truth; deploy with wrangler, never
+# hand-edit in the dashboard).
+#
+# First deploy (Session 3): run `wrangler login` as the wnpt.digital
+# Cloudflare account, then `wrangler deploy` from this directory. Before
+# that first deploy, compare compatibility_date below against the value
+# shown in the dashboard (Worker → Settings) and match it if different.
+#
+# After any deploy, verify /series and /content still respond (build.md
+# §11.9) before trusting it.
+
+name = "autumn-rain-853e"
+main = "lower-thirds-worker.js"
+compatibility_date = "2026-07-16"
+
+# The tool is served from this URL today — do not disable.
+workers_dev = true
+
+# CRITICAL: dashboard-managed variables (AIRTABLE_BASE_ID, ALLOW_ORIGIN)
+# and the AIRTABLE_TOKEN secret stay in the dashboard (build.md §11.1).
+# Without keep_vars, `wrangler deploy` DELETES the plaintext variables
+# and the tool goes down. Never remove this line.
+keep_vars = true
