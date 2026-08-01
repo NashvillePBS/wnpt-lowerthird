@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans Cond";src:url("fonts/PBSSans-Cond-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+body{margin:0;background:#3a3f4a;font-family:"PBS Sans",Arial,sans-serif}
+a{color:#486CD8;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="min-height:100vh;padding:64px 72px 120px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;color:#fff">
+
+  <header style="display:flex;flex-direction:column;gap:8px;max-width:1100px">
+    <div style="font-family:'PBS Sans';font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#9297b3">Nashville PBS · Station ID</div>
+    <h1 style="margin:0;font-family:'PBS Sans';font-weight:800;font-size:34px;letter-spacing:-.02em;color:#fff">Lower thirds — three directions</h1>
+    <p style="margin:0;font-size:16px;line-height:1.55;color:#c3c7d9;max-width:760px">Each bar sits on a transparent backdrop (the checkerboard = transparent). Pick a direction by its id below and I'll produce all seven as tight-cropped transparent PNGs, ready to drop into Premiere.</p>
+  </header>
+
+  <!-- ══ TURN 2 — final set, all seven ══ -->
+  <section style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+    <div id="2a" style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-family:'PBS Sans';font-weight:800;font-size:15px;background:#2638C4;color:#fff;padding:4px 12px;border-radius:999px">2a</span>
+      <span style="font-family:'PBS Sans';font-weight:700;font-size:20px;color:#fff">Final set — all seven locations</span>
+      <span style="font-size:14px;color:#9297b3">Navy logo block · PBS Blue name panel · yellow stripe</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:20px 34px 34px;border-radius:14px;background-color:#20242c;background-image:linear-gradient(45deg,#2a2f38 25%,transparent 25%),linear-gradient(-45deg,#2a2f38 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2a2f38 75%),linear-gradient(-45deg,transparent 75%,#2a2f38 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0;align-items:flex-start">
+
+      <div id="cap-1" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Cumberland Mountain State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-2" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Reelfoot Lake State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-3" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Roan Mountain State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-4" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Old Stone Fort State Archaeological Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-5" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Savage Gulf State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-6" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Meeman-Shelby Forest State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+      <div id="cap-7" style="display:inline-block;padding:40px 44px"><div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)"><div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div><div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 40px 20px 32px;border-left:5px solid #FFCF00"><div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Fall Creek Falls State Park</div><div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div></div></div></div>
+
+    </div>
+  </section>
+
+  <!-- ══ TURN 1 ══ -->
+  <section style="display:flex;flex-direction:column;gap:36px;margin-top:24px">
+
+    <!-- 1a — Solid bar -->
+    <div id="1a" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <span style="font-family:'PBS Sans';font-weight:800;font-size:15px;background:#2638C4;color:#fff;padding:4px 12px;border-radius:999px">1a</span>
+        <span style="font-family:'PBS Sans';font-weight:700;font-size:20px;color:#fff">Solid bar</span>
+        <span style="font-size:14px;color:#9297b3">PBS Blue block, clean broadcast standard</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;padding:34px;border-radius:14px;background-color:#20242c;background-image:linear-gradient(45deg,#2a2f38 25%,transparent 25%),linear-gradient(-45deg,#2a2f38 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2a2f38 75%),linear-gradient(-45deg,transparent 75%,#2a2f38 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0;align-items:flex-start">
+
+        <div style="display:inline-flex;align-items:center;gap:26px;background:#2638C4;padding:22px 34px 22px 30px;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:44px;width:auto;display:block">
+          <div style="width:2px;align-self:stretch;background:rgba(255,255,255,.32)"></div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font-family:'PBS Sans';font-weight:800;font-size:38px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Cumberland Mountain State Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:17px;letter-spacing:.01em;color:rgba(255,255,255,.82)">Photos by John Guider</div>
+          </div>
+        </div>
+
+        <div style="display:inline-flex;align-items:center;gap:26px;background:#2638C4;padding:22px 34px 22px 30px;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:44px;width:auto;display:block">
+          <div style="width:2px;align-self:stretch;background:rgba(255,255,255,.32)"></div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="font-family:'PBS Sans';font-weight:800;font-size:38px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Old Stone Fort State Archaeological Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:17px;letter-spacing:.01em;color:rgba(255,255,255,.82)">Photos by John Guider</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b — Two-tone with accent stripe -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <span style="font-family:'PBS Sans';font-weight:800;font-size:15px;background:#2638C4;color:#fff;padding:4px 12px;border-radius:999px">1b</span>
+        <span style="font-family:'PBS Sans';font-weight:700;font-size:20px;color:#fff">Navy logo block + blue name panel</span>
+        <span style="font-size:14px;color:#9297b3">Two-tone, yellow accent stripe</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;padding:34px;border-radius:14px;background-color:#20242c;background-image:linear-gradient(45deg,#2a2f38 25%,transparent 25%),linear-gradient(-45deg,#2a2f38 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2a2f38 75%),linear-gradient(-45deg,transparent 75%,#2a2f38 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0;align-items:flex-start">
+
+        <div style="display:inline-flex;align-items:stretch;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div>
+          <div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 36px 20px 30px;border-left:5px solid #FFCF00">
+            <div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Reelfoot Lake State Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div>
+          </div>
+        </div>
+
+        <div style="display:inline-flex;align-items:stretch;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <div style="display:flex;align-items:center;background:#0A145A;padding:22px 30px"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:42px;width:auto;display:block"></div>
+          <div style="display:flex;flex-direction:column;justify-content:center;gap:5px;background:#2638C4;padding:20px 36px 20px 30px;border-left:5px solid #FFCF00">
+            <div style="font-family:'PBS Sans';font-weight:800;font-size:36px;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap">Old Stone Fort State Archaeological Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:16px;letter-spacing:.01em;color:rgba(255,255,255,.78)">Photos by John Guider</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1c — Stacked, logo above rule -->
+    <div id="1c" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <span style="font-family:'PBS Sans';font-weight:800;font-size:15px;background:#2638C4;color:#fff;padding:4px 12px;border-radius:999px">1c</span>
+        <span style="font-family:'PBS Sans';font-weight:700;font-size:20px;color:#fff">Condensed, tighter footprint</span>
+        <span style="font-size:14px;color:#9297b3">PBS Sans Condensed name, compact bar</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;padding:34px;border-radius:14px;background-color:#20242c;background-image:linear-gradient(45deg,#2a2f38 25%,transparent 25%),linear-gradient(-45deg,#2a2f38 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2a2f38 75%),linear-gradient(-45deg,transparent 75%,#2a2f38 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0;align-items:flex-start">
+
+        <div style="display:inline-flex;align-items:center;gap:22px;background:#2638C4;padding:18px 30px 18px 26px;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:38px;width:auto;display:block">
+          <div style="width:2px;align-self:stretch;background:rgba(255,255,255,.32)"></div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="font-family:'PBS Sans Cond';font-weight:700;font-size:40px;line-height:1;letter-spacing:.005em;color:#fff;text-transform:uppercase;white-space:nowrap">Roan Mountain State Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:15px;letter-spacing:.02em;color:rgba(255,255,255,.8)">Photos by John Guider</div>
+          </div>
+        </div>
+
+        <div style="display:inline-flex;align-items:center;gap:22px;background:#2638C4;padding:18px 30px 18px 26px;box-shadow:0 10px 30px rgba(0,0,0,.28)">
+          <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:38px;width:auto;display:block">
+          <div style="width:2px;align-self:stretch;background:rgba(255,255,255,.32)"></div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="font-family:'PBS Sans Cond';font-weight:700;font-size:40px;line-height:1;letter-spacing:.005em;color:#fff;text-transform:uppercase;white-space:nowrap">Old Stone Fort State Archaeological Park</div>
+            <div style="font-family:'PBS Sans';font-weight:500;font-size:15px;letter-spacing:.02em;color:rgba(255,255,255,.8)">Photos by John Guider</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+</x-dc>
+</body>
+</html>

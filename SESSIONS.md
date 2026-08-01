@@ -1,0 +1,167 @@
+# SESSIONS.md — Claude Code work order
+
+Sequenced deliberately. **Do not skip ahead.** Session 1 is scoped so it cannot damage
+production data; later sessions can. Each session must end with the tool verified
+working before the next begins.
+
+---
+
+## Session 0 — repo setup (do this first, before any code)
+
+The repo currently contains only `index.html` (the 2.1 MB generated bundle) plus two
+manual `.htmlbck` backups. **There is no source in git.** Nothing can be safely changed
+until the Design export is committed.
+
+### 1. Tag the working state — before touching anything
+
+```bash
+git tag working-2026-07-31
+git push --tags
+```
+
+That tag is the way back. `index.html` at the repo root is byte-identical to
+`dist/index.html` (md5 `d0da62955a9d73becbee5d002b662c4b`) — verify that hash still
+matches before starting, so the baseline is known-clean.
+
+### 2. Unpack the Design export into the repo
+
+**Do not overwrite the existing root `index.html`.** That is the file GitHub Pages serves.
+
+Include:
+
+| Item | Why |
+|---|---|
+| `_ds/` | Design system tokens + self-hosted PBS Sans |
+| `assets/` | Logos, show artwork |
+| `build.md` | **Use the version supplied with this file, not the export's copy** |
+| `dist/` | The deployed build (§11.2 — keep emitting this one) |
+| `dist-airtable/`, `dist-cdn/` | Alternate builds, kept for reference |
+| `fonts/` | PBS Sans woff2 |
+| `Nashville PBS - Lower Thirds Studio.dc.html` | **THE SOURCE — 164 KB.** Everything else is generated from it |
+| `Lower Thirds.dc.html`, `Nashville PBS - Generate Lower Thirds.dc.html`, `Nashville PBS - Lower Thirds (Airtable).dc.html`, `Slice of Community Concept.dc.html` | Earlier iterations, kept for history |
+| `support.js` | Generated dc-runtime. Do not edit |
+| `worker/lower-thirds-worker.js` | **Currently nowhere in git.** Highest-value missing file |
+| `SESSIONS.md`, `.gitignore` | Supplied alongside build.md |
+
+Skip — roughly 37 MB of Design scratch, already covered by `.gitignore`:
+
+- `uploads/` (~34 MB) · `screenshots/` · `exports/` · `.thumbnail`
+
+Result is about 7 MB.
+
+**Easy mistake:** `Nashville PBS - Lower Thirds (Airtable).dc.html` (40 KB) and
+`Nashville PBS - Lower Thirds Studio.dc.html` (164 KB) truncate to nearly the same name in
+Finder. Sort by size. The 164 KB one is the source.
+
+### 3. Commit
+
+```bash
+git add -A
+git commit -m "Add Design export: source, worker, design system, handoff docs"
+git push
+```
+
+Verify afterwards that the live page still loads and that root `index.html` is unchanged.
+
+---
+
+## Context budget — read this first, every session
+
+The repo contains files that will consume an entire context window in one call.
+
+**Never open these:**
+
+| File / folder | Why |
+|---|---|
+| `dist/index.html` | ~2.1 MB — a single read exhausts the context window |
+| `dist-airtable/index.html`, `dist-cdn/index.html` | Generated bundles, same hazard |
+| `support.js` | ~66 KB of generated runtime, marked do-not-edit |
+| `uploads/`, `screenshots/`, `exports/` | ~40 MB of images, no source value |
+
+**The only source file you need is `Nashville PBS - Lower Thirds Studio.dc.html`**
+(~167 KB). It is the source of truth. The `dist/` files are generated from it and will
+be overwritten on the next Design sync — editing them does nothing durable.
+
+When you need to locate something in the source, `grep -n` for it first and read the
+surrounding lines. Do not read the whole file into context unless you have to.
+
+---
+
+## Session 1 — the three display bugs (SAFE: no data risk)
+
+**Scope: §12.1, §12.2, §12.6. Nothing else.**
+
+These are all client-side rendering and state. They do **not** touch
+`worker/lower-thirds-worker.js`, do not require a Worker redeploy, do not change
+Airtable schema, and do not go near `POST /save`. Session 1 cannot corrupt the base.
+
+If a fix appears to require a Worker or schema change, **stop and ask Shane** — it means
+the bug was misdiagnosed.
+
+### The unifying theme — state this in the fix, not just the code
+
+All three bugs are the same failure: **the on-screen preview disagrees with the
+exported PNG.**
+
+build.md §2.2 records that DOM capture was chosen over canvas rendering specifically so
+the preview and the export would share one code path — "precisely the bug class we care
+most about avoiding on a broadcast tool." These three bugs are erosion of that
+guarantee.
+
+Fix them as one invariant, not three tickets: **whatever the producer sees must be what
+the PNG contains.** A fix that patches a symptom while leaving the preview and export on
+different logic is not complete.
+
+### Verification for session 1
+
+For each fix, compare the on-screen preview against the downloaded PNG directly. Test on
+the **deployed URL**, and for §12.6 on a **real phone**, not a resized desktop window.
+
+Do not report success from local testing alone. Every bug in the last two WNPT projects
+passed locally and failed on the real target.
+
+### Ending session 1
+
+Rebuild `dist/` from the `.dc.html`, deploy, confirm the live tool still works end to
+end — including a real Save collection against a scratch collection — and commit. Only
+then move on.
+
+---
+
+## Session 2 — tutorial (§12.3)
+
+UI only, still no data risk. Consider building this in Design rather than Code (§13.5).
+
+Gate: session 1 must be verified working and deployed first.
+
+---
+
+## Session 3 — usage logging (§12.4)
+
+**First session that touches the Worker and Airtable schema.** Do not start until
+sessions 1–2 are confirmed working in production for a few days of real use.
+
+Requires one decision from Shane before any code is written:
+
+- Whether logging identifies individuals or stays session-anonymous
+
+`/save` auth is already settled — see build.md §11.6. **No gateway, no shared secret.**
+Bot Fight Mode plus a rate-limit rule at the Cloudflare edge, configured in the dashboard,
+no application change. Do not re-open this.
+
+Requires a Worker redeploy. Verify the existing endpoints still respond correctly
+afterward — a broken `/series` or `/content` takes the whole tool down.
+
+---
+
+## Session 4+ — expansion (§13)
+
+Graphics table, credits saving and editor delivery (§13.6), new generators. **On hold by Shane's decision** until
+the bug fixes prove the workflow. Do not begin without his explicit go-ahead.
+
+---
+
+## Bug details
+
+All bug specifications live in `build.md` §12. Session 1 covers **§12.1, §12.2, and
+§12.6** — read §12.7 first, it explains why those three are one problem rather than three.

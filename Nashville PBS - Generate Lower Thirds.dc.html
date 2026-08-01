@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif}
+a{color:#0A145A;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0A145A"/><rect x="30" y="52" width="52" height="18" fill="#12205f"/><rect x="30" y="52" width="4" height="18" fill="#FFCF00"/><text x="40" y="63" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#fff">Name</text><text x="40" y="46" font-family="Arial,sans-serif" font-size="7" font-weight="bold" fill="#fff">PBS</text></svg>
+</template>
+</helmet>
+
+<div ref="{{ rootRef }}" style="min-height:100vh;display:flex;flex-direction:column;font-family:'PBS Sans',Arial,sans-serif;color:#0A145A">
+
+  <header style="display:flex;align-items:center;gap:14px;padding:18px 32px;background:#0A145A;color:#fff">
+    <div style="display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:28px;width:auto;display:block"><span>- Generate Lower Thirds</span></div>
+    <div style="width:1px;height:26px;background:rgba(255,255,255,.28)"></div>
+    <div style="font-weight:500;font-size:13px;color:rgba(255,255,255,.72)">Add each lower third, then download all as a ZIP of transparent PNGs</div>
+  </header>
+
+  <div style="flex:1;display:grid;grid-template-columns:400px 1fr;min-height:0">
+
+    <!-- ── SIDEBAR ── -->
+    <aside style="background:#fff;border-right:1px solid #d7dbe8;display:flex;flex-direction:column;min-height:0">
+
+      <!-- editor -->
+      <div style="padding:20px 22px 16px;display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Name</label>
+            <input value="{{ selName }}" onInput="{{ onName }}" onFocus="{{ onNameFocus }}" onBlur="{{ onNameBlur }}" placeholder="e.g. Name" style="font-family:'PBS Sans',Arial,sans-serif;font-size:16px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Secondary information</label>
+            <input value="{{ selCredit }}" onInput="{{ onCredit }}" onFocus="{{ onCreditFocus }}" onBlur="{{ onCreditBlur }}" placeholder="e.g. Secondary" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:500;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+        </sc-if>
+
+        <button onClick="{{ add }}" title="Add lower third" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0A145A;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#0F1E8C">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          Add lower third
+        </button>
+      </div>
+
+      <div style="height:1px;background:#e4e7f1;margin:0 22px"></div>
+
+      <!-- list -->
+      <div style="padding:16px 22px 8px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180">Lower thirds · {{ count }}</div>
+      <div style="flex:1;overflow:auto;padding:0 14px 8px;min-height:80px">
+        <sc-for list="{{ rows }}" as="row" hint-placeholder-count="3">
+          <div onClick="{{ row.onSelect }}" style="{{ row.style }}">
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:14px">{{ row.label }}</span>
+            <button onClick="{{ row.onDelete }}" title="Remove" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;border:none;background:transparent;color:#9aa2bd;border-radius:6px;cursor:pointer" style-hover="background:#eef0f6;color:#FE704E">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- downloads -->
+      <div style="border-top:1px solid #e4e7f1;padding:18px 22px;display:flex;flex-direction:column;gap:10px">
+        <button onClick="{{ downloadZip }}" style="display:flex;align-items:center;justify-content:center;gap:10px;background:#0A145A;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 20px;cursor:pointer" style-hover="background:#0F1E8C">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+          {{ zipLabel }}
+        </button>
+        <button onClick="{{ downloadOne }}" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:11px 20px;cursor:pointer" style-hover="background:#f4f6fc">
+          Download this one only
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── PREVIEW ── -->
+    <main style="position:relative;display:flex;align-items:center;justify-content:center;padding:40px;background-color:#c9cee0;background-image:linear-gradient(45deg,#bcc2d8 25%,transparent 25%),linear-gradient(-45deg,#bcc2d8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#bcc2d8 75%),linear-gradient(-45deg,transparent 75%,#bcc2d8 75%);background-size:32px 32px;background-position:0 0,0 16px,16px -16px,-16px 0;overflow:hidden">
+
+      <div style="position:absolute;top:18px;left:22px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6a7196">Preview · checkerboard = transparent</div>
+
+      <div ref="{{ scalerRef }}" style="transform-origin:center center">
+        <div ref="{{ capRef }}" style="display:inline-block;padding:60px">
+          <div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)">
+            <div style="display:flex;flex-direction:column;justify-content:center;gap:7px;background:#0A145A;padding:22px 46px 22px 34px;border-left:6px solid #FFCF00">
+              <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Name</span></sc-if></div>
+              <div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em"><sc-if value="{{ hasCredit }}" hint-placeholder-val="{{ true }}"><span style="color:rgba(255,255,255,.82)">{{ selCredit }}</span></sc-if><sc-if value="{{ noCredit }}"><span style="color:rgba(255,255,255,.4)">Secondary</span></sc-if></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- hidden render area for batch export -->
+  <div ref="{{ exportRef }}" style="position:absolute;left:-99999px;top:0;width:8000px;pointer-events:none"></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    entries: [{ name: "", credit: "" }],
+    selected: 0,
+  };
+
+  BASE = 40; MIN = 20; MAX_W = 760; SCALE = 4;
+  _refs = {};
+
+  // ---- auto-fit: shrink each name to one line ----
+  fitEl = (el) => {
+    if (!el) return;
+    el.style.fontSize = this.BASE + "px";
+    const w = el.scrollWidth;
+    if (w > this.MAX_W) el.style.fontSize = Math.max(this.MIN, Math.floor(this.BASE * (this.MAX_W / w))) + "px";
+  };
+  fit = () => {
+    const root = this._refs.rootRef;
+    if (root) root.querySelectorAll("[data-fit]").forEach(this.fitEl);
+    this.scaleToFit();
+  };
+  scaleToFit = () => {
+    const cap = this._refs.capRef, scaler = this._refs.scalerRef;
+    if (!cap || !scaler || !scaler.parentElement) return;
+    const avail = scaler.parentElement.clientWidth - 40;
+    scaler.style.transform = "none";
+    const w = cap.offsetWidth;
+    scaler.style.transform = "scale(" + (w > avail ? avail / w : 1) + ")";
+  };
+
+  componentDidMount() {
+    this.fit();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(this.fit);
+    this._onResize = () => this.scaleToFit();
+    window.addEventListener("resize", this._onResize);
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => this.scaleToFit());
+      if (this._refs.capRef) this._ro.observe(this._refs.capRef);
+      if (this._refs.scalerRef && this._refs.scalerRef.parentElement) this._ro.observe(this._refs.scalerRef.parentElement);
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._onResize);
+    if (this._ro) this._ro.disconnect();
+  }
+  componentDidUpdate() { this.fit(); }
+
+  // ---- list ops ----
+  add = () => this.setState(s => ({
+    entries: [...s.entries, { name: "", credit: "" }],
+    selected: s.entries.length,
+  }));
+  remove = (i) => this.setState(s => {
+    const entries = s.entries.filter((_, idx) => idx !== i);
+    let selected = s.selected;
+    if (selected >= entries.length) selected = entries.length - 1;
+    return { entries, selected: Math.max(0, selected) };
+  });
+  update = (field, v) => this.setState(s => {
+    const entries = s.entries.slice();
+    if (entries[s.selected]) entries[s.selected] = { ...entries[s.selected], [field]: v };
+    return { entries };
+  });
+
+  // ---- filenames ----
+  fileNames() {
+    const seen = {};
+    return this.state.entries.map((e, i) => {
+      let base = (e.name || ("lower-third-" + (i + 1))).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || ("lower-third-" + (i + 1));
+      if (seen[base] != null) { seen[base]++; base = base + "-" + seen[base]; } else seen[base] = 1;
+      return base + ".png";
+    });
+  }
+
+  // build a detached bar node for one entry (used for batch export)
+  buildBar(entry) {
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:inline-block;width:max-content;padding:60px;background:transparent";
+    wrap.innerHTML =
+      '<div style="display:inline-flex;align-items:stretch;width:max-content;box-shadow:0 12px 34px rgba(0,0,0,.32)">' +
+        '<div style="display:flex;flex-direction:column;justify-content:center;gap:7px;width:max-content;background:#0A145A;padding:22px 46px 22px 34px;border-left:6px solid #FFCF00;font-family:\'PBS Sans\',Arial,sans-serif">' +
+          '<div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;color:#fff;white-space:nowrap"></div>' +
+          '<div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(255,255,255,.82)"></div>' +
+        '</div>' +
+      '</div>';
+    wrap.querySelector("[data-fit]").textContent = entry.name || "";
+    wrap.querySelectorAll("div div div")[1].textContent = entry.credit || "";
+    return wrap;
+  }
+
+  toBlob = (dataUrl) => fetch(dataUrl).then(r => r.blob());
+
+  captureNode = async (node) => {
+    return window.htmlToImage.toPng(node, { pixelRatio: this.SCALE });
+  };
+
+  downloadOne = async () => {
+    const cap = this._refs.capRef;
+    const e = this.state.entries[this.state.selected];
+    if (!cap || !e || !window.htmlToImage) return;
+    this.fit();
+    const url = await this.captureNode(cap);
+    const a = document.createElement("a");
+    a.href = url; a.download = this.fileNames()[this.state.selected];
+    a.click();
+  };
+
+  downloadZip = async () => {
+    const host = this._refs.exportRef;
+    if (!host || !window.htmlToImage || !window.JSZip) return;
+    if (!this.state.entries.length) return;
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const names = this.fileNames();
+    const zip = new window.JSZip();
+    for (let i = 0; i < this.state.entries.length; i++) {
+      const node = this.buildBar(this.state.entries[i]);
+      host.appendChild(node);
+      this.fitEl(node.querySelector("[data-fit]"));
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const url = await this.captureNode(node);
+      const blob = await this.toBlob(url);
+      zip.file(names[i], blob);
+      host.removeChild(node);
+    }
+    const content = await zip.generateAsync({ type: "blob" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(content);
+    a.download = "nashville-pbs-lower-thirds.zip";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const sel = s.entries[s.selected];
+    const rows = s.entries.map((e, i) => {
+      const active = i === s.selected;
+      return {
+        label: e.name || "Untitled lower third",
+        style: "display:flex;align-items:center;gap:8px;padding:10px 10px 10px 13px;margin-bottom:4px;border-radius:9px;cursor:pointer;border:1.5px solid " +
+          (active ? "#0A145A;background:#eef1fb;color:#0A145A" : "transparent;background:#f6f7fb;color:#5a6180"),
+        onSelect: () => this.setState({ selected: i }),
+        onDelete: (ev) => { ev.stopPropagation(); this.remove(i); },
+      };
+    });
+    return {
+      rows,
+      count: s.entries.length,
+      hasSelection: !!sel,
+      selName: sel ? sel.name : "",
+      selCredit: sel ? sel.credit : "",
+      hasName: !!(sel && sel.name),
+      noName: !(sel && sel.name) && !s.nameFocused,
+      hasCredit: !!(sel && sel.credit),
+      noCredit: !(sel && sel.credit) && !s.creditFocused,
+      onName: (e) => this.update("name", e.target.value),
+      onCredit: (e) => this.update("credit", e.target.value),
+      onNameFocus: () => this.setState({ nameFocused: true }),
+      onNameBlur: () => this.setState({ nameFocused: false }),
+      onCreditFocus: () => this.setState({ creditFocused: true }),
+      onCreditBlur: () => this.setState({ creditFocused: false }),
+      add: this.add,
+      downloadOne: this.downloadOne,
+      downloadZip: this.downloadZip,
+      zipLabel: "Download all " + s.entries.length + " as ZIP",
+      rootRef: (el) => { this._refs.rootRef = el; },
+      capRef: (el) => { this._refs.capRef = el; },
+      scalerRef: (el) => { this._refs.scalerRef = el; },
+      exportRef: (el) => { this._refs.exportRef = el; },
+    };
+  }
+}
+</script>
+</body>
+</html>

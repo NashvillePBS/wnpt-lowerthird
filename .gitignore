@@ -1,0 +1,13 @@
+# Design export scratch — not needed to build or maintain the tool.
+# ~37 MB of iteration screenshots and source images that live in the
+# Design session. Excluded to keep the repo workable.
+uploads/
+screenshots/
+exports/
+.thumbnail
+
+# If a Design sync ever complains about missing files, re-add the folder
+# it names and re-sync. Nothing here is referenced by the build.
+
+.DS_Store
+node_modules/

@@ -1,0 +1,15 @@
+/* RADIUS ─────────────────────────────────────────────
+   PBS CTAs are pill-shaped ("Start Watching" / "My List").
+   Cards + media use a small, quiet radius. */
+:root{
+  --radius-none:0;
+  --radius-xs:4px;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --radius-xl:24px;
+  --radius-pill:999px;
+  --radius-button:999px;  /* pill by default */
+  --radius-card:12px;
+  --radius-media:8px;
+}

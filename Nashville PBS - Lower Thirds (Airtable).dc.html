@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif}
+a{color:#0A145A;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+@media (max-width:820px){
+  #lt-grid{grid-template-columns:1fr !important;grid-template-rows:auto auto !important}
+  #lt-aside{border-right:none !important;border-bottom:1px solid #d7dbe8 !important}
+  #lt-main{min-height:62vh !important;padding:24px !important}
+  #lt-header{flex-wrap:wrap !important;padding:14px 18px !important;gap:10px !important}
+  #lt-header .lt-divider,#lt-header .lt-sub{display:none !important}
+  #lt-header .lt-conn{margin-left:auto !important}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</helmet>
+
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0A145A"></rect><rect x="24" y="50" width="60" height="20" fill="#12205f"></rect><rect x="24" y="50" width="4" height="20" fill="#FFCF00"></rect><text x="34" y="62" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#fff">Name</text><text x="34" y="43" font-family="Arial,sans-serif" font-size="7" font-weight="bold" fill="#48D3CD">PBS</text></svg>
+</template>
+
+<div ref="{{ rootRef }}" style="min-height:100vh;display:flex;flex-direction:column;font-family:'PBS Sans',Arial,sans-serif;color:#0A145A">
+
+  <header id="lt-header" style="display:flex;align-items:center;gap:14px;padding:18px 32px;background:#0A145A;color:#fff">
+    <div style="display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:28px;width:auto;display:block"><span>- Generate Lower Thirds</span></div>
+    <div class="lt-divider" style="width:1px;height:26px;background:rgba(255,255,255,.28)"></div>
+    <div class="lt-sub" style="font-weight:500;font-size:13px;color:rgba(255,255,255,.72)">Add each lower third, save the session as a collection in Airtable</div>
+    <button onClick="{{ configure }}" title="Airtable connection" class="lt-conn" style="margin-left:auto;display:flex;align-items:center;gap:8px;background:{{ connChipBg }};color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;cursor:pointer">
+      <span style="width:8px;height:8px;border-radius:50%;background:{{ connDot }}"></span>{{ connLabel }}
+    </button>
+  </header>
+
+  <div id="lt-grid" style="flex:1;display:grid;grid-template-columns:420px 1fr;min-height:0">
+
+    <!-- ── SIDEBAR ── -->
+    <aside id="lt-aside" style="background:#fff;border-right:1px solid #d7dbe8;display:flex;flex-direction:column;min-height:0">
+
+      <!-- editor -->
+      <div style="padding:20px 22px 16px;display:flex;flex-direction:column;gap:14px">
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Name</label>
+            <input value="{{ selName }}" onInput="{{ onName }}" onFocus="{{ onNameFocus }}" onBlur="{{ onNameBlur }}" spellcheck="true" placeholder="e.g. Name" style="font-family:'PBS Sans',Arial,sans-serif;font-size:16px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Secondary information</label>
+            <input value="{{ selCredit }}" onInput="{{ onCredit }}" onFocus="{{ onCreditFocus }}" onBlur="{{ onCreditBlur }}" spellcheck="true" placeholder="e.g. Secondary" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:500;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:2px 0">
+            <input type="checkbox" checked="{{ selLight }}" onChange="{{ onLight }}" style="width:18px;height:18px;accent-color:#2638C4;cursor:pointer">
+            <span style="font-weight:600;font-size:14px;color:#0A145A">Enable Light Mode <span style="font-weight:500;color:#8890ad">(for dark video backgrounds)</span></span>
+          </label>
+        </sc-if>
+
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ add }}" title="Add lower third" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#0A145A;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:12px 16px;cursor:pointer" style-hover="background:#0F1E8C">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            Add
+          </button>
+          <button onClick="{{ openImport }}" title="Import existing lower third" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:12px 16px;cursor:pointer" style-hover="background:#f4f6fc">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path><path d="M5 21h14"></path></svg>
+            Import
+          </button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:#e4e7f1;margin:0 22px"></div>
+
+      <!-- list -->
+      <div style="padding:16px 22px 8px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180">
+        <span>{{ collTitle }} · {{ count }}</span>
+        <sc-if value="{{ isEditingCollection }}"><span style="font-weight:700;font-size:11px;letter-spacing:.02em;text-transform:none;color:#2638C4;background:#eef1fb;padding:3px 9px;border-radius:999px">editing</span></sc-if>
+      </div>
+      <div style="flex:1;overflow:auto;padding:0 14px 8px;min-height:70px">
+        <sc-for list="{{ rows }}" as="row" hint-placeholder-count="3">
+          <div onClick="{{ row.onSelect }}" style="{{ row.style }}">
+            <span style="{{ row.dot }}"></span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:14px">{{ row.label }}</span>
+            <button onClick="{{ row.onDelete }}" title="Remove from this collection" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;border:none;background:transparent;color:#9aa2bd;border-radius:6px;cursor:pointer" style-hover="background:#eef0f6;color:#FE704E">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- save collection -->
+      <div style="border-top:1px solid #e4e7f1;padding:16px 22px;display:flex;flex-direction:column;gap:10px">
+        <input value="{{ collName }}" onInput="{{ onCollName }}" placeholder="Collection name — e.g. June Pledge 2026" style="font-family:'PBS Sans',Arial,sans-serif;font-size:14px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+        <button onClick="{{ saveCollection }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#2638C4;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 20px;cursor:pointer" style-hover="background:#0F1E8C">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+          {{ saveLabel }}
+        </button>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ downloadZip }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;border-radius:999px;padding:10px 14px;cursor:pointer" style-hover="background:#f4f6fc">Download ZIP</button>
+          <button onClick="{{ downloadOne }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;border-radius:999px;padding:10px 14px;cursor:pointer" style-hover="background:#f4f6fc">This one</button>
+        </div>
+        <sc-if value="{{ hasStatus }}"><div style="{{ statusStyle }}">{{ status }}</div></sc-if>
+      </div>
+
+      <!-- collections accordion -->
+      <div style="border-top:1px solid #e4e7f1">
+        <button onClick="{{ toggleColl }}" style="width:100%;display:flex;align-items:center;gap:10px;background:#f6f7fb;border:none;padding:14px 22px;cursor:pointer;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ chevronStyle }}"><path d="m9 18 6-6-6-6"></path></svg>
+          Collections
+        </button>
+        <sc-if value="{{ collOpen }}">
+          <div style="padding:14px 22px 20px;display:flex;flex-direction:column;gap:12px;max-height:340px;overflow:auto">
+            <input value="{{ collSearch }}" onInput="{{ onCollSearch }}" placeholder="Search all collections…" style="font-family:'PBS Sans',Arial,sans-serif;font-size:14px;color:#0A145A;padding:10px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+            <sc-if value="{{ collListLoading }}"><div style="font-size:13px;color:#8890ad;padding:6px 2px">Loading…</div></sc-if>
+            <sc-if value="{{ collEmpty }}"><div style="font-size:13px;color:#8890ad;padding:6px 2px">No collections found.</div></sc-if>
+            <sc-for list="{{ collections }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onOpen }}" style="display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:1.5px solid #e4e7f1;border-radius:10px;padding:12px 14px;cursor:pointer;font-family:'PBS Sans',Arial,sans-serif" style-hover="border-color:#2638C4;background:#f4f6fc">
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:700;font-size:14px;color:#0A145A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</div>
+                  <div style="font-weight:500;font-size:12px;color:#8890ad;margin-top:2px">{{ c.meta }}</div>
+                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa2bd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+              </button>
+            </sc-for>
+            <sc-if value="{{ hasMore }}">
+              <button onClick="{{ loadMore }}" style="align-self:flex-start;background:transparent;border:none;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;cursor:pointer;padding:4px 2px">Load more</button>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </aside>
+
+    <!-- ── PREVIEW ── -->
+    <main id="lt-main" style="position:relative;display:flex;align-items:center;justify-content:center;padding:40px;background-color:#c9cee0;background-image:linear-gradient(45deg,#bcc2d8 25%,transparent 25%),linear-gradient(-45deg,#bcc2d8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#bcc2d8 75%),linear-gradient(-45deg,transparent 75%,#bcc2d8 75%);background-size:32px 32px;background-position:0 0,0 16px,16px -16px,-16px 0;overflow:hidden">
+
+      <div style="position:absolute;top:18px;left:22px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6a7196">Preview · checkerboard = transparent</div>
+
+      <div ref="{{ scalerRef }}" style="transform-origin:center center">
+        <div ref="{{ capRef }}" style="display:inline-block;padding:60px">
+          <sc-if value="{{ selDark }}" hint-placeholder-val="{{ true }}">
+            <div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.32)">
+              <div style="display:flex;flex-direction:column;justify-content:center;gap:7px;background:#0A145A;padding:22px 46px 22px 34px;border-left:6px solid #FFCF00">
+                <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Name</span></sc-if></div>
+                <div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em"><sc-if value="{{ hasCredit }}" hint-placeholder-val="{{ true }}"><span style="color:rgba(255,255,255,.82)">{{ selCredit }}</span></sc-if><sc-if value="{{ noCredit }}"><span style="color:rgba(255,255,255,.4)">Secondary</span></sc-if></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ selLightPrev }}">
+            <div style="display:inline-flex;align-items:stretch;box-shadow:0 12px 34px rgba(0,0,0,.22)">
+              <div style="display:flex;flex-direction:column;justify-content:center;gap:7px;background:#fff;padding:22px 46px 22px 34px;border-left:6px solid #2638C4">
+                <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}"><span style="color:#0A145A">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(10,20,90,.35)">Name</span></sc-if></div>
+                <div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em"><sc-if value="{{ hasCredit }}"><span style="color:rgba(10,20,90,.72)">{{ selCredit }}</span></sc-if><sc-if value="{{ noCredit }}"><span style="color:rgba(10,20,90,.35)">Secondary</span></sc-if></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- import modal -->
+  <sc-if value="{{ importOpen }}">
+    <div style="position:fixed;inset:0;background:rgba(10,20,90,.42);display:flex;align-items:center;justify-content:center;z-index:50;padding:40px">
+      <div style="background:#fff;border-radius:16px;width:560px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)">
+        <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid #e4e7f1">
+          <div style="font-weight:800;font-size:17px;color:#0A145A">Import existing lower third</div>
+          <button onClick="{{ closeImport }}" style="margin-left:auto;display:flex;width:30px;height:30px;align-items:center;justify-content:center;border:none;background:#f4f6fc;border-radius:8px;cursor:pointer;color:#5a6180"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>
+        <div style="padding:16px 24px 0">
+          <input value="{{ importSearch }}" onInput="{{ onImportSearch }}" placeholder="Search by name…" style="font-family:'PBS Sans',Arial,sans-serif;font-size:14px;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+        </div>
+        <div style="flex:1;overflow:auto;padding:14px 24px;display:flex;flex-direction:column;gap:8px">
+          <sc-if value="{{ importLoading }}"><div style="font-size:13px;color:#8890ad;padding:6px 2px">Loading…</div></sc-if>
+          <sc-if value="{{ importEmpty }}"><div style="font-size:13px;color:#8890ad;padding:6px 2px">No lower thirds found.</div></sc-if>
+          <sc-for list="{{ importResults }}" as="r" hint-placeholder-count="4">
+            <label style="{{ r.style }}">
+              <input type="checkbox" checked="{{ r.checked }}" onChange="{{ r.onToggle }}" style="width:17px;height:17px;accent-color:#2638C4;cursor:pointer">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:14px;color:#0A145A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+                <div style="font-weight:500;font-size:12px;color:#8890ad;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.secondary }}</div>
+              </div>
+              <sc-if value="{{ r.light }}"><span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#2638C4;background:#eef1fb;padding:3px 8px;border-radius:999px">Light</span></sc-if>
+            </label>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 24px;border-top:1px solid #e4e7f1">
+          <div style="font-size:13px;color:#8890ad">{{ importSelectedLabel }}</div>
+          <button onClick="{{ closeImport }}" style="margin-left:auto;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:10px 18px;cursor:pointer">Cancel</button>
+          <button onClick="{{ confirmImport }}" style="background:#2638C4;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:14px;border:none;border-radius:999px;padding:10px 20px;cursor:pointer" style-hover="background:#0F1E8C">Add selected</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- hidden render area for batch export -->
+  <div ref="{{ exportRef }}" style="position:absolute;left:-99999px;top:0;width:8000px;pointer-events:none"></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    entries: [{ name: "", credit: "", lightMode: false, dirty: true }],
+    selected: 0,
+    collectionId: null,
+    collName: "",
+    // collections accordion
+    collOpen: false,
+    collSearch: "",
+    collections: [],
+    collNextOffset: null,
+    collListLoading: false,
+    // import modal
+    importOpen: false,
+    importSearch: "",
+    importResults: [],
+    importSelected: {},
+    importLoading: false,
+    // status
+    status: "",
+    statusKind: "",
+    saving: false,
+    workerUrl: "https://autumn-rain-853e.wnpt-digital.workers.dev",
+  };
+  static DEFAULT_WORKER = "https://autumn-rain-853e.wnpt-digital.workers.dev";
+
+  BASE = 40; MIN = 20; MAX_W = 760; SCALE = 4;
+  _refs = {};
+
+  // ---------- auto-fit ----------
+  fitEl = (el) => {
+    if (!el) return;
+    el.style.fontSize = this.BASE + "px";
+    const w = el.scrollWidth;
+    if (w > this.MAX_W) el.style.fontSize = Math.max(this.MIN, Math.floor(this.BASE * (this.MAX_W / w))) + "px";
+  };
+  fit = () => {
+    const root = this._refs.rootRef;
+    if (root) root.querySelectorAll("[data-fit]").forEach(this.fitEl);
+    this.scaleToFit();
+  };
+  scaleToFit = () => {
+    const cap = this._refs.capRef, scaler = this._refs.scalerRef;
+    if (!cap || !scaler || !scaler.parentElement) return;
+    const avail = scaler.parentElement.clientWidth - 40;
+    scaler.style.transform = "none";
+    const w = cap.offsetWidth;
+    scaler.style.transform = "scale(" + (w > avail ? avail / w : 1) + ")";
+  };
+
+  componentDidMount() {
+    this.setState({ workerUrl: localStorage.getItem("lt_worker_url") || Component.DEFAULT_WORKER });
+    this.fit();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(this.fit);
+    this._onResize = () => this.scaleToFit();
+    window.addEventListener("resize", this._onResize);
+    this._beforeUnload = (e) => {
+      if (this.state.entries.some(x => x.dirty) && this.state.entries.some(x => x.name)) {
+        e.preventDefault(); e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", this._beforeUnload);
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => this.scaleToFit());
+      if (this._refs.capRef) this._ro.observe(this._refs.capRef);
+      if (this._refs.scalerRef && this._refs.scalerRef.parentElement) this._ro.observe(this._refs.scalerRef.parentElement);
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("beforeunload", this._beforeUnload);
+    if (this._ro) this._ro.disconnect();
+  }
+  componentDidUpdate() { this.fit(); }
+
+  // ---------- connection ----------
+  configure = () => {
+    const cur = this.state.workerUrl || "";
+    const v = window.prompt("Airtable connection (Cloudflare Worker URL):", cur);
+    if (v === null) return;
+    const url = v.trim().replace(/\/+$/, "");
+    localStorage.setItem("lt_worker_url", url);
+    this.setState({ workerUrl: url });
+  };
+  api(path) { return this.state.workerUrl.replace(/\/+$/, "") + path; }
+  flash(msg, kind = "ok") { this.setState({ status: msg, statusKind: kind }); }
+
+  // ---------- list ops ----------
+  add = () => this.setState(s => ({
+    entries: [...s.entries, { name: "", credit: "", lightMode: false, dirty: true }],
+    selected: s.entries.length,
+  }));
+  remove = (i) => this.setState(s => {
+    const entries = s.entries.filter((_, idx) => idx !== i);
+    let selected = s.selected;
+    if (selected >= entries.length) selected = entries.length - 1;
+    return { entries, selected: Math.max(0, selected) };
+  });
+  update = (field, v) => this.setState(s => {
+    const entries = s.entries.slice();
+    if (entries[s.selected]) entries[s.selected] = { ...entries[s.selected], [field]: v, dirty: true };
+    return { entries };
+  });
+
+  // ---------- filenames ----------
+  fileNames(entries) {
+    const seen = {};
+    return entries.map((e, i) => {
+      let base = (e.name || ("lower-third-" + (i + 1))).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || ("lower-third-" + (i + 1));
+      if (seen[base] != null) { seen[base]++; base = base + "-" + seen[base]; } else seen[base] = 1;
+      return base + ".png";
+    });
+  }
+
+  // ---------- bar builder (honours light mode) ----------
+  buildBar(entry) {
+    const light = !!entry.lightMode;
+    const barBg = light ? "#fff" : "#0A145A";
+    const line = light ? "#2638C4" : "#FFCF00";
+    const nameC = light ? "#0A145A" : "#fff";
+    const secC = light ? "rgba(10,20,90,.72)" : "rgba(255,255,255,.82)";
+    const shadow = light ? "0 12px 34px rgba(0,0,0,.22)" : "0 12px 34px rgba(0,0,0,.32)";
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:inline-block;width:max-content;padding:60px;background:transparent";
+    wrap.innerHTML =
+      '<div style="display:inline-flex;align-items:stretch;width:max-content;box-shadow:' + shadow + '">' +
+        '<div style="display:flex;flex-direction:column;justify-content:center;gap:7px;width:max-content;background:' + barBg + ';padding:22px 46px 22px 34px;border-left:6px solid ' + line + ';font-family:\'PBS Sans\',Arial,sans-serif">' +
+          '<div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;color:' + nameC + ';white-space:nowrap"></div>' +
+          '<div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:' + secC + '"></div>' +
+        '</div>' +
+      '</div>';
+    wrap.querySelector("[data-fit]").textContent = entry.name || "";
+    wrap.querySelectorAll("div div div")[1].textContent = entry.credit || "";
+    return wrap;
+  }
+
+  toBlob = (dataUrl) => fetch(dataUrl).then(r => r.blob());
+  captureNode = async (node) => window.htmlToImage.toPng(node, { pixelRatio: this.SCALE });
+
+  // render one entry off-screen → dataURL
+  renderEntry = async (entry) => {
+    const host = this._refs.exportRef;
+    const node = this.buildBar(entry);
+    host.appendChild(node);
+    this.fitEl(node.querySelector("[data-fit]"));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const url = await this.captureNode(node);
+    host.removeChild(node);
+    return url;
+  };
+
+  downloadOne = async () => {
+    const e = this.state.entries[this.state.selected];
+    if (!e || !window.htmlToImage) return;
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const url = await this.renderEntry(e);
+    const a = document.createElement("a");
+    a.href = url; a.download = this.fileNames(this.state.entries)[this.state.selected];
+    a.click();
+  };
+
+  buildZipBlob = async (type = "blob") => {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const names = this.fileNames(this.state.entries);
+    const zip = new window.JSZip();
+    for (let i = 0; i < this.state.entries.length; i++) {
+      const url = await this.renderEntry(this.state.entries[i]);
+      const blob = await this.toBlob(url);
+      zip.file(names[i], blob);
+    }
+    return zip.generateAsync({ type });
+  };
+
+  downloadZip = async () => {
+    if (!this.state.entries.length || !window.JSZip) return;
+    const content = await this.buildZipBlob("blob");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(content);
+    a.download = (this.state.collName ? this.fileNames([{ name: this.state.collName }])[0].replace(/\.png$/, "") : "nashville-pbs-lower-thirds") + ".zip";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+
+  // ---------- save to Airtable ----------
+  saveCollection = async () => {
+    if (this.state.saving) return;
+    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
+    const name = this.state.collName.trim();
+    if (!name) { this.flash("Name the collection before saving.", "err"); return; }
+    const valid = this.state.entries.filter(e => e.name.trim());
+    if (!valid.length) { this.flash("Add at least one lower third with a name.", "err"); return; }
+    this.setState({ saving: true });
+    this.flash("Rendering & saving…", "busy");
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const entries = [];
+      for (const e of valid) {
+        const payload = { id: e.id || undefined, name: e.name, secondary: e.credit, lightMode: !!e.lightMode };
+        if (e.dirty || !e.id) payload.pngBase64 = await this.renderEntry(e);
+        entries.push(payload);
+      }
+      const zipBase64 = await this.buildZipBlob("base64");
+      const res = await fetch(this.api("/save"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ collectionId: this.state.collectionId, collectionName: name, entries, zipBase64 }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
+      // stamp ids back, clear dirty
+      this.setState(s => {
+        const next = s.entries.slice();
+        let k = 0;
+        for (let i = 0; i < next.length; i++) {
+          if (!next[i].name.trim()) continue;
+          next[i] = { ...next[i], id: data.lowerThirdIds[k++], dirty: false };
+        }
+        return { entries: next, collectionId: data.collectionId };
+      });
+      this.flash("Saved “" + name + "” to Airtable.", "ok");
+      if (this.state.collOpen) this.loadCollections(true);
+    } catch (err) {
+      this.flash("Save failed: " + (err.message || err), "err");
+    } finally {
+      this.setState({ saving: false });
+    }
+  };
+
+  // ---------- collections accordion ----------
+  toggleColl = () => {
+    const open = !this.state.collOpen;
+    this.setState({ collOpen: open });
+    if (open && !this.state.collections.length) this.loadCollections(true);
+  };
+  onCollSearch = (e) => {
+    const v = e.target.value;
+    this.setState({ collSearch: v });
+    clearTimeout(this._collDebounce);
+    this._collDebounce = setTimeout(() => this.loadCollections(true), 300);
+  };
+  loadCollections = async (reset) => {
+    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
+    this.setState({ collListLoading: true });
+    try {
+      const offset = reset ? "" : (this.state.collNextOffset || "");
+      const u = new URL(this.api("/collections"));
+      u.searchParams.set("limit", "5");
+      if (this.state.collSearch.trim()) u.searchParams.set("search", this.state.collSearch.trim());
+      if (offset) u.searchParams.set("offset", offset);
+      const res = await fetch(u.toString());
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      this.setState(s => ({
+        collections: reset ? data.collections : s.collections.concat(data.collections),
+        collNextOffset: data.nextOffset || null,
+      }));
+    } catch (err) {
+      this.flash("Couldn't load collections: " + (err.message || err), "err");
+    } finally {
+      this.setState({ collListLoading: false });
+    }
+  };
+  loadMore = () => this.loadCollections(false);
+
+  openCollection = async (id) => {
+    if (!this.state.workerUrl) return;
+    this.flash("Loading collection…", "busy");
+    try {
+      const res = await fetch(this.api("/collection?id=" + encodeURIComponent(id)));
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const entries = data.entries.map(e => ({ id: e.id, name: e.name, credit: e.secondary, lightMode: !!e.lightMode, dirty: false }));
+      entries.push({ name: "", credit: "", lightMode: false, dirty: true }); // fresh empty to add
+      this.setState({ entries, selected: entries.length - 1, collectionId: data.id, collName: data.name, collOpen: false });
+      this.flash("Opened “" + data.name + "”. Click a lower third to edit it.", "ok");
+    } catch (err) {
+      this.flash("Couldn't open collection: " + (err.message || err), "err");
+    }
+  };
+
+  // ---------- import existing ----------
+  openImport = () => { this.setState({ importOpen: true, importSearch: "", importSelected: {} }); this.loadImport(); };
+  closeImport = () => this.setState({ importOpen: false });
+  onImportSearch = (e) => {
+    const v = e.target.value;
+    this.setState({ importSearch: v });
+    clearTimeout(this._impDebounce);
+    this._impDebounce = setTimeout(() => this.loadImport(), 300);
+  };
+  loadImport = async () => {
+    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); this.setState({ importOpen: false }); return; }
+    this.setState({ importLoading: true });
+    try {
+      const u = new URL(this.api("/lower-thirds"));
+      if (this.state.importSearch.trim()) u.searchParams.set("search", this.state.importSearch.trim());
+      const res = await fetch(u.toString());
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      this.setState({ importResults: data.lowerThirds });
+    } catch (err) {
+      this.flash("Import search failed: " + (err.message || err), "err");
+    } finally {
+      this.setState({ importLoading: false });
+    }
+  };
+  toggleImport = (rec) => this.setState(s => {
+    const sel = { ...s.importSelected };
+    if (sel[rec.id]) delete sel[rec.id]; else sel[rec.id] = rec;
+    return { importSelected: sel };
+  });
+  confirmImport = () => {
+    const picked = Object.values(this.state.importSelected);
+    if (!picked.length) { this.setState({ importOpen: false }); return; }
+    this.setState(s => {
+      const have = new Set(s.entries.map(e => e.id).filter(Boolean));
+      const add = picked.filter(p => !have.has(p.id)).map(p => ({ id: p.id, name: p.name, credit: p.secondary, lightMode: !!p.lightMode, dirty: false }));
+      // drop a trailing empty entry so imports sit cleanly
+      let base = s.entries.slice();
+      if (base.length && !base[base.length - 1].name && !base[base.length - 1].id) base = base.slice(0, -1);
+      const entries = base.concat(add);
+      return { entries, selected: entries.length - 1, importOpen: false };
+    });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const sel = s.entries[s.selected];
+    const connected = !!s.workerUrl;
+    const rows = s.entries.map((e, i) => {
+      const active = i === s.selected;
+      return {
+        label: e.name || "Untitled lower third",
+        dot: "width:8px;height:8px;flex:none;border-radius:50%;background:" + (e.id ? "#48D3CD" : "#c7cde0"),
+        style: "display:flex;align-items:center;gap:9px;padding:10px 10px 10px 13px;margin-bottom:4px;border-radius:9px;cursor:pointer;border:1.5px solid " +
+          (active ? "#0A145A;background:#eef1fb;color:#0A145A" : "transparent;background:#f6f7fb;color:#5a6180"),
+        onSelect: () => this.setState({ selected: i }),
+        onDelete: (ev) => { ev.stopPropagation(); this.remove(i); },
+      };
+    });
+    const collections = s.collections.map(c => {
+      const when = c.created ? new Date(c.created).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+      return { name: c.name || "Untitled collection", meta: c.count + (c.count === 1 ? " lower third" : " lower thirds") + (when ? " · " + when : ""), onOpen: () => this.openCollection(c.id) };
+    });
+    const importResults = s.importResults.map(r => ({
+      name: r.name || "Untitled", secondary: r.secondary || "—", light: !!r.lightMode,
+      checked: !!s.importSelected[r.id],
+      onToggle: () => this.toggleImport(r),
+      style: "display:flex;align-items:center;gap:12px;cursor:pointer;padding:11px 13px;border:1.5px solid " + (s.importSelected[r.id] ? "#2638C4;background:#f4f6fc" : "#e4e7f1;background:#fff") + ";border-radius:10px",
+    }));
+    const nPicked = Object.keys(s.importSelected).length;
+    const statusStyle = "font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;" +
+      (s.statusKind === "err" ? "background:#fdece8;color:#c23a1a" : s.statusKind === "busy" ? "background:#eef1fb;color:#2638C4" : "background:#e8f7f5;color:#0f8a82");
+    return {
+      rootRef: (el) => { this._refs.rootRef = el; },
+      capRef: (el) => { this._refs.capRef = el; },
+      scalerRef: (el) => { this._refs.scalerRef = el; },
+      exportRef: (el) => { this._refs.exportRef = el; },
+      // connection chip
+      connLabel: connected ? "Airtable connected" : "Connect Airtable",
+      connDot: connected ? "#48D3CD" : "#FE704E",
+      connChipBg: "rgba(255,255,255,.12)",
+      configure: this.configure,
+      // editor
+      hasSelection: !!sel,
+      selName: sel ? sel.name : "",
+      selCredit: sel ? sel.credit : "",
+      selLight: !!(sel && sel.lightMode),
+      hasName: !!(sel && sel.name),
+      noName: !(sel && sel.name) && !s.nameFocused,
+      hasCredit: !!(sel && sel.credit),
+      noCredit: !(sel && sel.credit) && !s.creditFocused,
+      selDark: !!sel && !sel.lightMode,
+      selLightPrev: !!sel && !!sel.lightMode,
+      onName: (e) => this.update("name", e.target.value),
+      onCredit: (e) => this.update("credit", e.target.value),
+      onLight: (e) => this.update("lightMode", e.target.checked),
+      onNameFocus: () => this.setState({ nameFocused: true }),
+      onNameBlur: () => this.setState({ nameFocused: false }),
+      onCreditFocus: () => this.setState({ creditFocused: true }),
+      onCreditBlur: () => this.setState({ creditFocused: false }),
+      add: this.add,
+      openImport: this.openImport,
+      // list
+      rows,
+      count: s.entries.length,
+      collTitle: s.collectionId ? (s.collName || "Collection") : "Lower thirds",
+      isEditingCollection: !!s.collectionId,
+      // save
+      collName: s.collName,
+      onCollName: (e) => this.setState({ collName: e.target.value }),
+      saveCollection: this.saveCollection,
+      saveLabel: s.saving ? "Saving…" : (s.collectionId ? "Update collection" : "Save collection"),
+      downloadZip: this.downloadZip,
+      downloadOne: this.downloadOne,
+      hasStatus: !!s.status,
+      status: s.status,
+      statusStyle,
+      // collections accordion
+      toggleColl: this.toggleColl,
+      collOpen: s.collOpen,
+      chevronStyle: "transition:transform .15s ease;transform:rotate(" + (s.collOpen ? "90" : "0") + "deg)",
+      collSearch: s.collSearch,
+      onCollSearch: this.onCollSearch,
+      collections,
+      collListLoading: s.collListLoading,
+      collEmpty: !s.collListLoading && s.collOpen && !collections.length,
+      hasMore: !!s.collNextOffset,
+      loadMore: this.loadMore,
+      // import modal
+      importOpen: s.importOpen,
+      closeImport: this.closeImport,
+      importSearch: s.importSearch,
+      onImportSearch: this.onImportSearch,
+      importResults,
+      importLoading: s.importLoading,
+      importEmpty: !s.importLoading && !importResults.length,
+      confirmImport: this.confirmImport,
+      importSelectedLabel: nPicked ? (nPicked + " selected") : "None selected",
+    };
+  }
+}
+</script>
+</body>
+</html>

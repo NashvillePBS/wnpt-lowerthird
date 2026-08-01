@@ -1,0 +1,67 @@
+/* COLORS ─────────────────────────────────────────────
+   Primary palette + accents are the official PBS values
+   (Color Use Guidelines, Aug 2025). Neutrals are a cool,
+   navy-tinted ramp added for UI surfaces/text (not in the
+   brand book — see readme "Intentional additions"). */
+:root{
+  /* ── Primary palette (official) ── */
+  --pbs-blue:#2638C4;      /* signature — primary CTAs, links, brand */
+  --navy-blue:#0A145A;     /* serious tone, dark surfaces */
+  --medium-blue:#0F1E8C;   /* depth alongside PBS Blue */
+  --light-blue:#486CD8;    /* lighter blue, hover/focus, tints */
+  --white:#FFFFFF;
+
+  /* ── Primary accents (official — use MINIMALLY, one at a time) ── */
+  --teal:#48D3CD;
+  --yellow:#FFCF00;
+  --coral:#FE704E;
+
+  /* ── Cool neutral ramp (added for UI) ── */
+  --neutral-950:#070C2E;
+  --neutral-900:#10173A;
+  --neutral-800:#232a52;
+  --neutral-700:#3A4166;
+  --neutral-500:#6B7191;
+  --neutral-400:#9297b3;
+  --neutral-300:#C3C7D9;
+  --neutral-200:#E4E6F0;
+  --neutral-100:#F2F3F8;
+  --neutral-50:#F8F9FC;
+
+  /* ── Semantic aliases ── */
+  --brand-primary:var(--pbs-blue);
+  --brand-primary-hover:var(--medium-blue);
+  --brand-primary-active:var(--navy-blue);
+  --brand-on-primary:var(--white);
+
+  --surface-page:var(--white);
+  --surface-card:var(--white);
+  --surface-subtle:var(--neutral-100);
+  --surface-sunken:var(--neutral-50);
+  --surface-inverse:var(--navy-blue);
+  --surface-brand:var(--pbs-blue);
+
+  --text-heading:var(--navy-blue);
+  --text-body:var(--neutral-900);
+  --text-muted:var(--neutral-500);
+  --text-on-dark:var(--white);
+  --text-on-dark-muted:rgba(255,255,255,.72);
+  --text-link:var(--pbs-blue);
+  --text-link-hover:var(--medium-blue);
+
+  --border:var(--neutral-200);
+  --border-strong:var(--neutral-300);
+  --border-brand:var(--pbs-blue);
+
+  --focus-ring:var(--light-blue);
+
+  --accent-teal:var(--teal);
+  --accent-yellow:var(--yellow);
+  --accent-coral:var(--coral);
+
+  /* Primary gradient (used on darker imagery overlays) */
+  --gradient-brand:linear-gradient(135deg,var(--pbs-blue),var(--medium-blue));
+  --gradient-deep:linear-gradient(160deg,var(--medium-blue),var(--navy-blue));
+}
+a{color:var(--text-link);text-decoration:none}
+a:hover{color:var(--text-link-hover);text-decoration:underline}

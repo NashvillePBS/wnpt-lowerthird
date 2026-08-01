@@ -1,0 +1,13 @@
+/* SHADOWS ────────────────────────────────────────────
+   Cool, navy-tinted, restrained. The brand is largely flat;
+   elevation is used sparingly for cards, menus, dialogs. */
+:root{
+  --shadow-none:none;
+  --shadow-xs:0 1px 2px rgba(10,20,90,.06);
+  --shadow-sm:0 1px 3px rgba(10,20,90,.08),0 1px 2px rgba(10,20,90,.06);
+  --shadow-md:0 4px 12px rgba(10,20,90,.10),0 2px 4px rgba(10,20,90,.06);
+  --shadow-lg:0 12px 28px rgba(10,20,90,.14),0 4px 8px rgba(10,20,90,.08);
+  --shadow-xl:0 24px 48px rgba(10,20,90,.18);
+  --shadow-focus:0 0 0 3px rgba(72,108,216,.45);  /* light-blue focus ring */
+  --ring-focus:0 0 0 3px rgba(72,108,216,.45);
+}
