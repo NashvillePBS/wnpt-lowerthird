@@ -1105,7 +1105,8 @@ dimensions are unchanged from before the fix, on both a station-style bar and a 
 **Exported PNG dimensions confirmed unchanged.** Session 1 (2026-08-01) touched only
 the preview node — the export path renders from separate builders into the off-screen
 host — and Shane measured a post-fix Slice export at exactly **910×320** (confirmed
-2026-08-01). The preview fix did not alter export geometry.
+2026-08-01). The preview fix did not alter export geometry. Shane also confirmed the
+preview on a real phone (2026-08-01): scaled, not reflowed. **This bug is closed.**
 
 ### 12.7 These three bugs are one bug
 

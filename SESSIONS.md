@@ -130,9 +130,34 @@ then move on.
 
 ## Session 2 — tutorial (§12.3)
 
-UI only, still no data risk. Consider building this in Design rather than Code (§13.5).
+UI only, still no data risk. Gate: session 1 verified and deployed — **met, 2026-08-01.**
 
-Gate: session 1 must be verified working and deployed first.
+Scope, exactly: a dismissible first-run walkthrough of the undiscoverable features
+listed in build.md §12.3 (Create multiple, Import from content, the Series picker on
+Nashville PBS Brand, Light Mode, Slice event focal points, credits `---` page breaks) —
+plus the Session-1 "New collection" control, which is new since that list was written.
+Dismissal persists in `localStorage` (same place as `lt_worker_url`; pick a key like
+`lt_tips_seen`), and a visible "Show tips" control reopens it.
+
+Rules of the road (all already documented — follow, don't re-derive):
+
+- Read the **context budget** section above first. Never open `dist/index.html`.
+- The only file to edit is `Nashville PBS - Lower Thirds Studio.dc.html`.
+  Template conditionals are `<sc-if value="{{ flag }}">` with **single flags only** —
+  no expressions; compute combined conditions as props in the render function.
+- Rebuild/deploy loop: `python3 scripts/patch-dist.py` (read `scripts/patch-dist.md`
+  FIRST; run it after editing source, BEFORE committing) →
+  `cp dist/index.html index.html` → verify locally (serve `dist/`; Airtable calls fail
+  locally by design, §11.3) → commit, push → verify on
+  https://nashvillepbs.github.io/wnpt-lowerthird/.
+- Design may be used to *sketch* the tutorial's look, but its output arrives as markup
+  to integrate into the `.dc.html` by hand — never export over the repo (§13.1).
+- Do not touch `worker/`, Airtable schema, or anything near `POST /save`.
+
+Done means: tutorial shows on first visit, dismisses and stays dismissed across
+reloads, reopens from "Show tips", renders sanely at phone width (the 820px breakpoint
+collapses the layout — test at 375px), and the deployed tool's existing flows —
+generator, save, credits — are untouched.
 
 ---
 
@@ -182,7 +207,9 @@ scratch save to Airtable (`recDwCHIe5OFiDgTn`, "SCRATCH - Session 1 verification
 to delete)" — deletable), the post-save reset with the success message naming what was
 saved, load-then-escape of an existing collection, Series retention through the reset,
 and a 375px viewport where the capture node measured full geometry (682×232) under a
-0.49 transform with no reflow. Outstanding: the §12.6 check on a real phone, and Shane's
-measurement that a Slice export reads exactly 910×320 (record in build.md §12.6 when
-reported). Follow-up commit `54a25fb` documented the repo-only workflow (build.md §13.1)
-and committed the dist patcher (`scripts/`).
+0.49 transform with no reflow. Both follow-ups closed 2026-08-01: Shane measured a Slice
+export at exactly 910×320 and confirmed the preview on a real phone. Follow-up commits:
+`54a25fb` documented the repo-only workflow (build.md §13.1) and committed the dist
+patcher (`scripts/`); `dceaead` added `worker/wrangler.toml` and recorded that edge
+bot-filtering cannot attach to workers.dev (build.md §11.6). **Session 1 is fully
+closed.**
