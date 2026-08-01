@@ -265,6 +265,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
             <button onClick="{{ saveCollection }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#2638C4;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 20px;cursor:pointer" style-hover="background:#0F1E8C">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>{{ saveLabel }}
             </button>
+            <button onClick="{{ newCollection }}" style="display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;border-radius:999px;padding:10px 14px;cursor:pointer" style-hover="background:#f4f6fc">{{ newLabel }}</button>
           </sc-if>
           <div style="display:flex;gap:10px">
             <button onClick="{{ downloadZip }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;border-radius:999px;padding:10px 14px;cursor:pointer" style-hover="background:#f4f6fc">Download ZIP</button>
@@ -304,14 +305,14 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         <div style="position:absolute;top:18px;left:22px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6a7196">{{ previewNote }}</div>
 
         <div ref="{{ scalerRef }}" style="transform-origin:center center">
-          <div ref="{{ capRef }}" style="display:inline-block">
+          <div ref="{{ capRef }}" style="display:inline-block;width:max-content">
 
             <!-- A Slice of the Community (top-aligned) -->
             <sc-if value="{{ isSliceShow }}" hint-placeholder-val="{{ true }}">
               <div style="width:910px;height:320px;box-sizing:border-box;background:#050a3a;clip-path:polygon(72px 0,100% 0,calc(100% - 72px) 100%,0 100%);display:flex;flex-direction:column;justify-content:flex-start;padding:40px 64px 0 110px;font-family:'Open Sans',Arial,sans-serif">
                 <div data-fit="1" style="font-weight:700;font-size:56px;line-height:1;white-space:nowrap"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Name</span></sc-if></div>
                 <sc-if value="{{ hasSec }}"><div style="margin-top:14px;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ secLinesArr }}" as="ln" hint-placeholder-count="1"><div style="font-weight:400;font-size:26px;line-height:1.25;letter-spacing:.06em;text-transform:uppercase;color:#5afdff">{{ ln }}</div></sc-for></div></sc-if>
-                <sc-if value="{{ noSec }}"><div style="margin-top:14px;font-weight:400;font-size:26px;line-height:1.25;letter-spacing:.06em;text-transform:uppercase;color:rgba(90,253,255,.45)">Secondary</div></sc-if>
+                <sc-if value="{{ secPlaceholder }}"><div style="margin-top:14px;font-weight:400;font-size:26px;line-height:1.25;letter-spacing:.06em;text-transform:uppercase;color:rgba(90,253,255,.45)">Secondary</div></sc-if>
               </div>
             </sc-if>
 
@@ -320,7 +321,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
               <div style="{{ boxStyle }}">
                 <div data-fit="1" style="{{ boxNameStyle }}"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span>{{ boxNameText }}</span></sc-if><sc-if value="{{ noName }}"><span style="{{ boxNamePlaceholderStyle }}">Name</span></sc-if></div>
                 <sc-if value="{{ hasSec }}"><div style="{{ boxSecWrapStyle }}"><sc-for list="{{ boxSecLines }}" as="ln" hint-placeholder-count="2"><div style="{{ ln.style }}">{{ ln.text }}</div></sc-for></div></sc-if>
-                <sc-if value="{{ noSec }}"><div style="{{ boxSecWrapStyle }}"><div style="{{ boxSecPlaceholderStyle }}">Secondary</div></div></sc-if>
+                <sc-if value="{{ secPlaceholder }}"><div style="{{ boxSecWrapStyle }}"><div style="{{ boxSecPlaceholderStyle }}">Secondary</div></div></sc-if>
               </div>
             </sc-if>
 
@@ -330,7 +331,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                 <div style="display:flex;flex-direction:column;justify-content:center;gap:7px;background:#0A145A;padding:22px 46px 22px 34px;border-left:6px solid #FFCF00">
                   <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}"><span style="color:#fff">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Name</span></sc-if></div>
                   <sc-if value="{{ hasSec }}"><sc-for list="{{ secLinesArr }}" as="ln" hint-placeholder-count="1"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(255,255,255,.82)">{{ ln }}</div></sc-for></sc-if>
-                  <sc-if value="{{ noSec }}"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(255,255,255,.4)">Secondary</div></sc-if>
+                  <sc-if value="{{ secPlaceholder }}"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(255,255,255,.4)">Secondary</div></sc-if>
                 </div>
               </div></div>
             </sc-if>
@@ -341,7 +342,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                 <div style="display:flex;flex-direction:column;justify-content:center;gap:7px;background:#fff;padding:22px 46px 22px 34px;border-left:6px solid #2638C4">
                   <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}"><span style="color:#0A145A">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(10,20,90,.35)">Name</span></sc-if></div>
                   <sc-if value="{{ hasSec }}"><sc-for list="{{ secLinesArr }}" as="ln" hint-placeholder-count="1"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(10,20,90,.72)">{{ ln }}</div></sc-for></sc-if>
-                  <sc-if value="{{ noSec }}"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(10,20,90,.35)">Secondary</div></sc-if>
+                  <sc-if value="{{ secPlaceholder }}"><div style="font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:rgba(10,20,90,.35)">Secondary</div></sc-if>
                 </div>
               </div></div>
             </sc-if>
@@ -353,7 +354,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                 <div style="display:flex;flex-direction:column;justify-content:center;gap:6px;background:#2638C4;padding:22px 46px 22px 34px;border-left:6px solid #FFCF00">
                   <div data-fit="1" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ selName }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Location or title</span></sc-if></div>
                   <sc-if value="{{ hasSec }}"><sc-for list="{{ secLinesArr }}" as="ln" hint-placeholder-count="1"><div style="font-weight:500;font-size:19px;line-height:1.15;letter-spacing:.01em;color:rgba(255,255,255,.8)">{{ ln }}</div></sc-for></sc-if>
-                  <sc-if value="{{ noSec }}"><div style="font-weight:500;font-size:19px;line-height:1.15;letter-spacing:.01em;color:rgba(255,255,255,.4)">Secondary</div></sc-if>
+                  <sc-if value="{{ secPlaceholder }}"><div style="font-weight:500;font-size:19px;line-height:1.15;letter-spacing:.01em;color:rgba(255,255,255,.4)">Secondary</div></sc-if>
                 </div>
               </div></div>
             </sc-if>
@@ -775,18 +776,30 @@ class Component extends DCLogic {
   }
 
   // ---------- navigation ----------
+  // Fresh, unsaved collection. Keeps the show, the Worker connection, and — unlike
+  // enterShow — the picked Series: clearing it here would make the next WNPT Brand
+  // save silently file under cfg.series via seriesTitle()'s fallback.
+  freshCollectionState() {
+    return {
+      entries: [{ name: "", credit: "", lightMode: false, dirty: true }],
+      selected: 0, collectionId: null, collName: "",
+      collOpen: false, collections: [], collNextOffset: null, collSearch: "",
+      contentId: null, contentTitle: "", contentOpen: false, contentSearch: "", contentResults: [], contentLowerThirds: "", contentGroupOpen: { Episode: true },
+      status: "", statusKind: "",
+    };
+  }
   enterShow = (key) => {
     this.state.show = key;
     this.applyShowMetrics();
     this.setState({
       screen: "generator", show: key,
-      entries: [{ name: "", credit: "", lightMode: false, dirty: true }],
-      selected: 0, collectionId: null, collName: "",
-      collOpen: false, collections: [], collNextOffset: null, collSearch: "",
-      contentId: null, contentTitle: "", contentOpen: false, contentSearch: "", contentResults: [], contentLowerThirds: "", contentGroupOpen: { Episode: true },
+      ...this.freshCollectionState(),
       pickedSeriesId: null, pickedSeriesTitle: "", seriesOpen: false, seriesSearch: "", seriesResults: [],
-      status: "", statusKind: "",
     });
+  };
+  newCollection = () => {
+    if (this.state.entries.some(x => x.dirty && x.name) && !window.confirm("Discard unsaved lower thirds and start a new " + (this.cfg().hasContent ? "content" : "collection") + "?")) return;
+    this.setState(this.freshCollectionState());
   };
   enterCredits = () => {
     this.setState({ screen: "credits", creditsFields: [""], creditsColCount: 3, creditsPage: 0, creditsPages: [], copyYearOverride: "", status: "", statusKind: "" });
@@ -1370,17 +1383,8 @@ class Component extends DCLogic {
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
-      this.setState(s => {
-        const next = s.entries.slice();
-        let k = 0;
-        for (let i = 0; i < next.length; i++) {
-          if (!next[i].name.trim()) continue;
-          next[i] = { ...next[i], id: data.lowerThirdIds[k++], dirty: false };
-        }
-        return { entries: next, collectionId: data.collectionId };
-      });
+      this.setState(this.freshCollectionState());
       this.flash("Saved “" + name + "” to Airtable.", "ok");
-      if (this.state.collOpen) this.loadCollections(true);
     } catch (err) {
       this.flash("Save failed: " + (err.message || err), "err");
     } finally {
@@ -1701,6 +1705,7 @@ class Component extends DCLogic {
     const sel = s.entries[s.selected];
     const secArr = this.secLinesOf(sel);
     const hasSec = secArr.length > 0;
+    const hasName = !!(sel && sel.name);
     const bt = isBox ? this.boxTheme() : null;
     let boxStyle = "", boxNameStyle = "", boxNamePlaceholderStyle = "", boxSecWrapStyle = "", boxSecPlaceholderStyle = "";
     let boxSecLines = [];
@@ -1892,7 +1897,7 @@ class Component extends DCLogic {
       boxStyle, boxNameStyle, boxNamePlaceholderStyle, boxSecWrapStyle, boxSecPlaceholderStyle, boxSecLines,
       boxNameText: sel ? sel.name : "",
       secLinesArr: secArr,
-      hasSec, noSec: !hasSec,
+      hasSec, secPlaceholder: !hasSec && !hasName,
       stationDark: isStation && !isLogoStation && !(sel && sel.lightMode),
       stationLight: isStation && !isLogoStation && !!(sel && sel.lightMode),
       stationIdLockup: isLogoStation,
@@ -1910,7 +1915,7 @@ class Component extends DCLogic {
       selName: sel ? sel.name : "",
       selCredit: sel ? sel.credit : "",
       selLight: !!(sel && sel.lightMode),
-      hasName: !!(sel && sel.name),
+      hasName,
       noName: !(sel && sel.name) && !s.nameFocused,
       hasCredit: !!(sel && sel.credit),
       noCredit: !(sel && sel.credit) && !s.creditFocused,
@@ -1934,6 +1939,8 @@ class Component extends DCLogic {
       collPlaceholder: needsContent ? "Name this batch, or pick content above" : "Collection name — e.g. Station IDs",
       onCollName: (e) => this.setState({ collName: e.target.value }),
       saveCollection: this.saveCollection,
+      newCollection: this.newCollection,
+      newLabel: needsContent ? "New content" : "New collection",
       saveLabel: s.saving ? "Saving…" : (s.collectionId ? (needsContent ? "Update content" : "Update collection") : (needsContent ? "Save to content" : "Save collection")),
       downloadZip: this.downloadZip,
       downloadOne: this.downloadOne,
