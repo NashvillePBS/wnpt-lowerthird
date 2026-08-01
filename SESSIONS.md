@@ -166,16 +166,20 @@ generator, save, credits — are untouched.
 **First session that touches the Worker and Airtable schema.** Do not start until
 sessions 1–2 are confirmed working in production for a few days of real use.
 
-Requires one decision from Shane before any code is written:
+The identify-or-anonymous decision is already made — build.md §12.4, DECIDED: identify
+by User Table, gated at load. Read that section before writing any code; it specifies
+the table, field IDs, the `GET /people` endpoint shape, and the localStorage persistence.
 
-- Whether logging identifies individuals or stays session-anonymous
+`/save` auth is already settled — see build.md §11.6. **No gateway, no shared secret,
+and no edge bot-filtering either:** the original Bot Fight Mode plan turned out not to
+be implementable on a workers.dev address (§11.6 records why, and the upgrade path).
+Accepted risk stands. Do not re-open this.
 
-`/save` auth is already settled — see build.md §11.6. **No gateway, no shared secret.**
-Bot Fight Mode plus a rate-limit rule at the Cloudflare edge, configured in the dashboard,
-no application change. Do not re-open this.
-
-Requires a Worker redeploy. Verify the existing endpoints still respond correctly
-afterward — a broken `/series` or `/content` takes the whole tool down.
+This is the first `wrangler deploy` from the repo — `worker/wrangler.toml` exists; read
+its header comment for the pre-deploy checks (login as wnpt.digital, confirm the
+compatibility date, and never remove `keep_vars = true`). Verify the existing endpoints
+still respond correctly afterward — a broken `/series` or `/content` takes the whole
+tool down.
 
 ---
 
