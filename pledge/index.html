@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/fonts.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/colors.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/typography.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/spacing.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/radius.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/tokens/shadows.css">
+  <link rel="stylesheet" href="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/styles.css">
+  <script src="../_ds/nashville-pbs-design-system-8fe663b5-5221-4f86-b4b2-1f7a889b3fd6/_ds_bundle.js"></script>
+  <style>
+    html,body{margin:0;height:100%;}
+    body{font-family:"PBS Sans",Arial,sans-serif;color:#1a2033;background:#eef0f6;}
+    a{color:#2638C4;} a:hover{color:#0F1E8C;}
+    input,textarea,select,button{font-family:inherit;}
+    input[type="checkbox"],input[type="range"]{accent-color:#2638C4;}
+    ::-webkit-scrollbar{width:10px;height:10px;}::-webkit-scrollbar-thumb{background:#c7cde0;border-radius:5px;}
+  </style>
+</helmet>
+<div style="display:flex;flex-direction:column;height:100vh;overflow:hidden;">
+  <header style="background:#0A145A;height:54px;display:flex;align-items:center;gap:16px;padding:0 18px;flex:none;">
+    <img src="assets/logo-horizontal-white.svg" alt="Nashville PBS" style="height:26px;display:block;">
+    <div style="width:1px;height:24px;background:rgba(255,255,255,.25);"></div>
+    <div style="color:#fff;font-size:14px;font-weight:700;letter-spacing:-0.005em;">Pledge graphics generator</div>
+    <div style="flex:1;"></div>
+    <div style="color:#48D3CD;font-size:12px;font-weight:700;">{{status}}</div>
+  </header>
+  <div style="display:flex;flex:1 1 0;min-height:0;">
+    <aside style="width:300px;flex:none;background:#fff;border-right:1px solid #dde1ee;display:flex;flex-direction:column;min-height:0;">
+      <div style="padding:12px 14px 10px;border-bottom:1px solid #dde1ee;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;">Gift sheet</div>
+            <div style="font-size:11px;color:#6b7394;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{sheetLabel}}</div>
+          </div>
+          <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" size="sm" onClick="{{onSheetClick}}" hint-size="70px,32px">Load…</x-import>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div onClick="{{tabGifts}}" style="{{tabGiftsStyle}}">Gifts</div>
+          <div onClick="{{tabShows}}" style="{{tabShowsStyle}}">Show screens</div>
+          <div onClick="{{tabIssuesClick}}" style="{{tabIssuesStyle}}">Review ({{issuesCount}})</div>
+        </div>
+      </div>
+      <input type="file" accept=".csv,.xlsx" ref="{{sheetInputRef}}" onChange="{{onSheetFile}}" style="display:none;">
+      <div style="flex:1 1 0;min-height:0;overflow-y:auto;padding-bottom:8px;">
+        <sc-for list="{{rows}}" as="row" hint-placeholder-count="8">
+          <sc-if value="{{row.isHdr}}" hint-placeholder-val="{{false}}">
+            <div style="padding:12px 14px 3px;display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">{{row.text}}</div>
+              <sc-if value="{{row.showAddGift}}" hint-placeholder-val="{{false}}">
+                <button onClick="{{row.addGift}}" title="Add a gift for this show" style="border:none;background:none;color:#2638C4;font-size:11px;font-weight:800;cursor:pointer;padding:0;line-height:1;white-space:nowrap;">+ Gift</button>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{row.isGift}}" hint-placeholder-val="{{true}}">
+            <div style="{{row.style}}" style-hover="background:#f2f4fb;">
+              <div onClick="{{row.pick}}" style="flex:1;min-width:0;display:flex;gap:10px;align-items:baseline;cursor:pointer;padding:8px 0;">
+                <div style="font-size:11px;font-weight:700;color:#6b7394;width:20px;flex:none;text-align:right;">{{row.num}}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;font-weight:600;line-height:1.3;">{{row.name}}</div>
+                  <div style="font-size:11px;color:#6b7394;margin-top:1px;">{{row.level}}</div>
+                </div>
+              </div>
+              <sc-if value="{{row.isShowRow}}" hint-placeholder-val="{{false}}">
+                <button onClick="{{row.del}}" title="Remove from show screens list" style="border:none;background:none;color:#6b7394;font-size:15px;cursor:pointer;padding:0 6px;line-height:1;flex:none;">×</button>
+              </sc-if>
+              <sc-if value="{{row.isCustomGift}}" hint-placeholder-val="{{false}}">
+                <button onClick="{{row.del}}" title="Remove from queue" style="border:none;background:none;color:#6b7394;font-size:15px;cursor:pointer;padding:0 6px;line-height:1;flex:none;">×</button>
+              </sc-if>
+            </div>
+          </sc-if>
+        </sc-for>
+        <sc-if value="{{tabIsShows}}" hint-placeholder-val="{{false}}">
+          <div onClick="{{newBlankShow}}" style="margin:2px 14px 6px 25px;font-size:12px;font-weight:700;color:#2638C4;cursor:pointer;">+ Show</div>
+        </sc-if>
+        <sc-if value="{{hasHidden}}" hint-placeholder-val="{{false}}">
+          <div onClick="{{restoreHidden}}" style="margin:6px 14px;font-size:11px;color:#2638C4;cursor:pointer;font-weight:700;">Restore {{hiddenCount}} hidden program(s)</div>
+        </sc-if>
+        <sc-if value="{{tabIsIssues}}" hint-placeholder-val="{{false}}">
+          <div style="padding:10px 14px;font-size:11px;color:#6b7394;line-height:1.5;">Rows from the sheet that were missing a name or donation level — fix them here and add to the queue.</div>
+          <sc-for list="{{issueRows}}" as="iss" hint-placeholder-count="0">
+            <div style="margin:0 12px 10px;padding:10px;border:1.5px solid #f3c8b8;border-radius:10px;background:#fff8f4;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="flex:1;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#c0512b;">{{iss.reason}}</div>
+                <button onClick="{{iss.dismiss}}" title="Dismiss" style="border:none;background:none;color:#a05a3a;font-size:15px;cursor:pointer;padding:0 2px;line-height:1;">×</button>
+              </div>
+              <input value="{{iss.program}}" onChange="{{iss.onProgram}}" placeholder="Program" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1.5px solid #ecd3c4;border-radius:6px;font-size:11px;">
+              <input value="{{iss.name}}" onChange="{{iss.onName}}" placeholder="Item name" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1.5px solid #ecd3c4;border-radius:6px;font-size:11px;">
+              <input value="{{iss.level}}" onChange="{{iss.onLevel}}" placeholder="Donation level e.g. $8 / $96" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1.5px solid #ecd3c4;border-radius:6px;font-size:11px;">
+              <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="primary" size="sm" onClick="{{iss.add}}" hint-size="100%,30px">Add to queue</x-import>
+            </div>
+          </sc-for>
+          <sc-if value="{{noIssues}}" hint-placeholder-val="{{false}}">
+            <div style="padding:14px;font-size:12px;color:#6b7394;">Nothing to review — the whole sheet imported cleanly.</div>
+          </sc-if>
+        </sc-if>
+      </div>
+      <div style="border-top:1px solid #dde1ee;flex:none;max-height:230px;display:flex;flex-direction:column;">
+        <div style="padding:10px 14px 6px;display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">Graphics queue ({{queueN}})</div>
+        </div>
+        <div style="overflow-y:auto;min-height:0;padding-bottom:10px;">
+          <sc-for list="{{queueRows}}" as="q" hint-placeholder-count="1">
+            <div onClick="{{q.pick}}" style="{{q.style}}" style-hover="background:#f2f4fb;">
+              <div style="font-size:10px;font-weight:800;background:#2638C4;color:#fff;border-radius:6px;padding:2px 5px;flex:none;">{{q.num}}</div>
+              <div style="flex:1;min-width:0;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{q.label}}</div>
+              <button onClick="{{q.del}}" title="Remove from queue" style="border:none;background:none;color:#6b7394;font-size:15px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </aside>
+    <main style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;padding:14px 16px 8px;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-size:12px;font-weight:700;color:#3c4257;margin-right:4px;">Preview</div>
+        <div onClick="{{setBgBlue}}" style="{{bgBlueStyle}}">Pledge background</div>
+        <div onClick="{{setBgCheck}}" style="{{bgCheckStyle}}">Transparent</div>
+        <div style="flex:1;"></div>
+        <div style="font-size:11px;color:#6b7394;">{{sizeNote}}</div>
+      </div>
+      <div ref="{{stageBoxRef}}" onDragOver="{{onDragOver}}" onDrop="{{onDrop}}" style="flex:1 1 0;min-height:0;position:relative;">
+        <div style="{{stageOuterStyle}}">
+          <div ref="{{stageRef}}" onPointerDown="{{onStageDown}}" style="{{stageScaleStyle}}">
+            <sc-if value="{{showBroadcastBg}}" hint-placeholder-val="{{true}}">
+              <img src="assets/community-pattern.png" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;pointer-events:none;">
+              <img src="assets/donation-bar.png" alt="" style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;">
+            </sc-if>
+            <sc-if value="{{showChecker}}" hint-placeholder-val="{{false}}">
+              <div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:repeating-conic-gradient(#dfe3ee 0% 25%, #f8f9fc 0% 50%);background-size:48px 48px;pointer-events:none;"></div>
+            </sc-if>
+            <sc-if value="{{isShow}}" hint-placeholder-val="{{false}}">
+              <div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:#0A145A;pointer-events:none;"></div>
+            </sc-if>
+            <div style="{{imgWrapStyle}}">
+              <sc-for list="{{stageImgs}}" as="im" hint-placeholder-count="0">
+                <img src="{{im.src}}" onPointerDown="{{im.down}}" draggable="{{false}}" alt="" style="{{im.style}}">
+              </sc-for>
+            </div>
+            <sc-if value="{{isStd}}" hint-placeholder-val="{{true}}">
+              <div style="{{c1Style}}"></div>
+              <div style="{{amountStyle}}">{{amount}}</div>
+              <div style="{{labelStyle}}">{{label}}</div>
+              <div onPointerDown="{{c1Down}}" style="{{c1HitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+              <sc-if value="{{showSecondary}}" hint-placeholder-val="{{true}}">
+                <div style="{{c2CircleStyle}}"></div>
+                <div style="{{orStyle}}">or</div>
+                <div style="{{annualStyle}}">{{annual}}</div>
+                <div style="{{annualLabelStyle}}">Annual</div>
+                <div onPointerDown="{{c2Down}}" style="{{c2HitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+              </sc-if>
+              <div style="{{titleStyle}}">{{titleText}}</div>
+              <div onPointerDown="{{titleDown}}" style="{{titleHitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+              <img src="assets/passport-lockup.svg" alt="Nashville PBS Passport" style="position:absolute;left:1501px;top:114px;width:203px;pointer-events:none;">
+            </sc-if>
+            <sc-if value="{{isTicket}}" hint-placeholder-val="{{false}}">
+              <div style="{{tkCircleStyle}}"></div>
+              <div style="{{amountStyle}}">{{amount}}</div>
+              <div style="{{labelStyle}}">{{label}}</div>
+              <div onPointerDown="{{c1Down}}" style="{{c1HitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+              <div style="{{titleStyle}}">{{titleText}}</div>
+              <div onPointerDown="{{titleDown}}" style="{{titleHitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+              <img src="assets/passport-lockup.svg" alt="Nashville PBS Passport" style="position:absolute;left:1501px;top:114px;width:203px;pointer-events:none;">
+            </sc-if>
+            <sc-if value="{{isShow}}" hint-placeholder-val="{{false}}">
+              <img src="assets/logo-horizontal-white.svg" alt="Nashville PBS" style="position:absolute;left:1220px;top:430px;width:340px;pointer-events:none;">
+              <div style="{{titleStyle}}">{{showTitleText}}</div>
+              <div onPointerDown="{{titleDown}}" style="{{titleHitStyle}}" style-hover="outline:2px dashed rgba(72,211,205,.55);outline-offset:2px;"></div>
+            </sc-if>
+            <sc-if value="{{showGuideLine}}" hint-placeholder-val="{{true}}">
+              <div style="position:absolute;left:0;top:815px;width:1920px;border-top:2px dashed rgba(254,112,78,.7);pointer-events:none;"></div>
+              <div style="position:absolute;right:14px;top:786px;font-size:20px;font-weight:700;color:rgba(254,112,78,.85);pointer-events:none;">donation bar</div>
+            </sc-if>
+            <sc-if value="{{showSafeZone}}" hint-placeholder-val="{{true}}">
+              <div style="position:absolute;left:192px;top:108px;width:1536px;height:864px;border:2px dashed rgba(72,211,205,.85);pointer-events:none;"></div>
+              <div style="position:absolute;left:198px;top:114px;font-size:20px;font-weight:700;color:rgba(72,211,205,.95);pointer-events:none;">title safe</div>
+            </sc-if>
+            <sc-if value="{{emptyHint}}" hint-placeholder-val="{{false}}">
+              <div style="{{emptyHintStyle}}">{{emptyHintText}}</div>
+            </sc-if>
+            <sc-if value="{{selBox}}" hint-placeholder-val="{{false}}">
+              <div style="{{selBoxStyle}}">
+                <div onPointerDown="{{onResizeDown}}" style="position:absolute;right:-16px;bottom:-16px;width:30px;height:30px;border-radius:50%;background:#2638C4;border:3px solid #fff;cursor:nwse-resize;pointer-events:auto;box-shadow:0 1px 6px rgba(10,20,90,.4);"></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{noCurOverlay}}" hint-placeholder-val="{{false}}">
+              <div style="position:absolute;left:0;top:0;width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;background:rgba(10,20,90,.35);">
+                <div style="background:#fff;border-radius:14px;padding:30px 44px;font-size:28px;font-weight:700;color:#0A145A;">Pick a gift or show from the list to start</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6b7394;text-align:center;flex:none;">Drag images, the circles, or the title to move · drag the blue dot to resize · Delete key removes the selected image · drop files anywhere on the preview</div>
+    </main>
+    <aside style="width:320px;flex:none;background:#fff;border-left:1px solid #dde1ee;overflow-y:auto;min-height:0;">
+      <sc-if value="{{hasCur}}" hint-placeholder-val="{{true}}">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:18px;">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">Layout</div>
+            <div style="display:flex;gap:6px;">
+              <div onClick="{{modeStd}}" style="{{modeStdStyle}}">Standard</div>
+              <div onClick="{{modeTicket}}" style="{{modeTicketStyle}}">Ticket</div>
+              <div onClick="{{modeShow}}" style="{{modeShowStyle}}">Show screen</div>
+            </div>
+            <sc-if value="{{hasLayoutOverride}}" hint-placeholder-val="{{false}}">
+              <div onClick="{{resetLayout}}" style="align-self:flex-start;font-size:11px;color:#2638C4;font-weight:700;cursor:pointer;">Reset dragged positions</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{notShow}}" hint-placeholder-val="{{true}}">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">Donation circle</div>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;">
+                  <div style="font-size:11px;color:#6b7394;margin-bottom:3px;">Amount</div>
+                  <input value="{{amount}}" onChange="{{onAmount}}" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:14px;font-weight:700;" style-focus="border-color:#486CD8;outline:none;">
+                </div>
+                <div style="flex:1.4;">
+                  <div style="font-size:11px;color:#6b7394;margin-bottom:3px;">Label under amount</div>
+                  <textarea value="{{label}}" onChange="{{onLabel}}" rows="2" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:13px;line-height:1.3;resize:vertical;" style-focus="border-color:#486CD8;outline:none;"></textarea>
+                </div>
+              </div>
+              <sc-if value="{{isStd}}" hint-placeholder-val="{{true}}">
+                <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;">
+                  <input type="checkbox" checked="{{showSecondary}}" onChange="{{toggleSecondary}}">
+                  Show “or $X Annual” circle
+                </label>
+                <sc-if value="{{showSecondary}}" hint-placeholder-val="{{true}}">
+                  <div>
+                    <div style="font-size:11px;color:#6b7394;margin-bottom:3px;">Annual amount</div>
+                    <input value="{{annual}}" onChange="{{onAnnual}}" style="width:120px;box-sizing:border-box;padding:8px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:14px;font-weight:700;" style-focus="border-color:#486CD8;outline:none;">
+                  </div>
+                </sc-if>
+              </sc-if>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">{{titleHeading}}</div>
+              <sc-if value="{{notShow}}" hint-placeholder-val="{{true}}">
+                <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="ghost" size="sm" onClick="{{suggestClick}}" hint-size="90px,28px">Items only</x-import>
+              </sc-if>
+            </div>
+            <sc-if value="{{hasOriginal}}" hint-placeholder-val="{{false}}">
+              <div style="font-size:11px;color:#6b7394;">Original from sheet:</div>
+              <div style="font-size:12px;color:#3c4257;background:#f2f4fb;border:1px solid #dde1ee;border-radius:8px;padding:7px 10px;line-height:1.4;">{{originalText}}</div>
+            </sc-if>
+            <textarea value="{{title}}" onChange="{{onTitle}}" rows="3" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:13px;line-height:1.4;resize:vertical;" style-focus="border-color:#486CD8;outline:none;"></textarea>
+            <div style="font-size:11px;color:#6b7394;">{{titleHint}}</div>
+            <sc-if value="{{notShow}}" hint-placeholder-val="{{true}}">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:11px;color:#6b7394;width:58px;flex:none;">Title size</div>
+                <input type="range" min="0.6" max="1.3" step="0.02" value="{{titleScale}}" onInput="{{onTitleScale}}" style="flex:1;height:14px;">
+                <div style="font-size:11px;color:#6b7394;width:36px;text-align:right;flex:none;">{{titleScalePct}}</div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="flex:1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">{{imagesHeading}}</div>
+              <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" size="sm" onClick="{{onImgsClick}}" hint-size="60px,30px">Add</x-import>
+              <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="ghost" size="sm" onClick="{{autoArrangeClick}}" hint-size="100px,30px">Auto-arrange</x-import>
+            </div>
+            <input type="file" accept="image/*" multiple ref="{{imgInputRef}}" onChange="{{onImgFiles}}" style="display:none;">
+            <sc-if value="{{isShow}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;gap:6px;">
+                <input ref="{{urlInputRef}}" placeholder="Import image from URL" style="flex:1;min-width:0;box-sizing:border-box;padding:8px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:12px;" style-focus="border-color:#486CD8;outline:none;">
+                <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" size="sm" onClick="{{onUrlAdd}}" hint-size="56px,34px">Add</x-import>
+              </div>
+            </sc-if>
+            <sc-for list="{{imgRows}}" as="ir" hint-placeholder-count="0">
+              <div onClick="{{ir.select}}" style="{{ir.style}}">
+                <img src="{{ir.thumb}}" alt="" style="width:46px;height:46px;object-fit:contain;flex:none;border-radius:6px;background:repeating-conic-gradient(#e4e7f0 0% 25%, #ffffff 0% 50%);background-size:14px 14px;">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                  <div style="font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ir.name}}</div>
+                  <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;">
+                    <input type="checkbox" checked="{{ir.removeBg}}" onChange="{{ir.toggle}}">
+                    Remove background
+                  </label>
+                  <sc-if value="{{ir.removeBg}}" hint-placeholder-val="{{true}}">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="font-size:10px;color:#6b7394;width:52px;flex:none;">Strength</div>
+                      <input type="range" min="2" max="80" step="2" value="{{ir.tol}}" onChange="{{ir.tolChange}}" style="flex:1;height:14px;">
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="font-size:10px;color:#6b7394;width:52px;flex:none;">Size</div>
+                    <input type="range" min="80" max="2400" step="4" value="{{ir.w}}" onInput="{{ir.sizeChange}}" style="flex:1;height:14px;">
+                  </div>
+                </div>
+                <button onClick="{{ir.del}}" title="Remove image" style="border:none;background:none;color:#6b7394;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;flex:none;">×</button>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #dde1ee;padding-top:14px;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6b7394;">Export</div>
+            <div>
+              <div style="font-size:11px;color:#6b7394;margin-bottom:3px;">Filename</div>
+              <input value="{{fileVal}}" onChange="{{onFile}}" placeholder="{{autoFileName}}" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #d4d9e8;border-radius:8px;font-size:12px;" style-focus="border-color:#486CD8;outline:none;">
+            </div>
+            <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="primary" fullWidth="{{true}}" onClick="{{exportCurClick}}" hint-size="100%,40px">Export this PNG</x-import>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;min-width:0;">
+                <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" fullWidth="{{true}}" onClick="{{exportGiftsClick}}" hint-size="100%,38px">Gifts ({{giftsN}})</x-import>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" fullWidth="{{true}}" onClick="{{exportShowsClick}}" hint-size="100%,38px">Shows ({{showsN}})</x-import>
+              </div>
+            </div>
+            <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="ghost" fullWidth="{{true}}" onClick="{{exportAllClick}}" hint-size="100%,38px">Export all ({{queueN}})</x-import>
+            <div style="font-size:11px;color:#6b7394;">Filenames restart per show, e.g. "NovaReturntotheMoon_3.png"; show screens are prefixed SHOW_. Export all bundles everything into a zip: Gifts/&lt;show&gt; folders, a Screens folder, and your uploaded sheet.</div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{noCur}}" hint-placeholder-val="{{false}}">
+        <div style="padding:22px 16px;font-size:13px;color:#6b7394;line-height:1.5;">Pick a gift on the left — it prefills the donation circle and title. Switch to the Show screens tab to build a title slate for each program.</div>
+      </sc-if>
+    </aside>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showGuide&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Preview&quot;},&quot;defaultTol&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:30,&quot;min&quot;:2,&quot;max&quot;:80,&quot;step&quot;:2,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Background removal&quot;}}">
+const SPEC = {
+  W: 1920, H: 1080, BAR: 815,
+  C1: { cx: 1379, cy: 353, r: 200 },
+  AMT: { cy: 316, size: 150, maxW: 330 },
+  LBL: { cy: 437, size: 60, maxW: 350 },
+  C2: { cx: 1555, cy: 545, r: 90 },
+  OR: { cy: 492, size: 30 }, A2: { cy: 546, size: 56, maxW: 140 }, A2L: { cy: 594, size: 24 },
+  T: { x: 1088, cy: 696, size: 78, lh: 88, maxW: 730 },
+  PP: { x: 1501, y: 114, w: 203, h: 75.6 },
+  ZONE: { x0: 170, y0: 90, x1: 1080, y1: 800 },
+  TK: { cx: 1330, cy: 368, r: 217, amtCy: 312, amtSize: 140, amtMaxW: 350, lblCy: 448, lblSize: 56, lblMaxW: 380, tCy: 700, tSize: 76, tLh: 86, tMaxW: 1700 },
+  SH: { cx: 230, cy: 540, r: 899, navy: '#0A145A', logoX: 1220, logoY: 430, logoW: 340, tX: 1220, tCy: 578, tSize: 88, tLh: 100, tMaxW: 560 },
+};
+const LAYOUTS = {
+  1: [{ cx: 625, cy: 445, w: 640, mh: 640 }],
+  2: [{ cx: 440, cy: 330, w: 480, mh: 460 }, { cx: 800, cy: 560, w: 480, mh: 440 }],
+  3: [{ cx: 450, cy: 310, w: 500, mh: 430 }, { cx: 865, cy: 340, w: 390, mh: 380 }, { cx: 645, cy: 590, w: 410, mh: 400 }],
+  4: [{ cx: 420, cy: 265, w: 400, mh: 330 }, { cx: 840, cy: 265, w: 400, mh: 330 }, { cx: 420, cy: 630, w: 400, mh: 330 }, { cx: 840, cy: 630, w: 400, mh: 330 }],
+};
+const ITEM_MAP = [
+  ['2-DVD', '2-DVD Set'], ['2DVD', '2-DVD Set'], ['3-DVD', '3-DVD Set'], ['DVD/CD', 'DVD/CD'],
+  ['DVD', 'DVD'], ['2-CD', '2-CD Set'], ['CD', 'CD'], ['BLU-RAY', 'Blu-ray'], ['VINYL', 'Vinyl'],
+  ['HBK', 'Book'], ['PBK', 'Paperback'], ['BOOK', 'Book'],
+  ['MUG', 'Mug'], ['TOTE', 'Tote Bag'], ['BANDANA', 'Bandana'], ['BUTTONS', 'Buttons'],
+  ['RADIO', 'Radio'], ['TICKETS', 'Tickets'], ['SOCKS', 'Socks'], ['ORNAMENT', 'Ornament'],
+  ['PUZZLE', 'Puzzle'], ['UMBRELLA', 'Umbrella'], ['SCARF', 'Scarf'], ['T-SHIRT', 'T-Shirt'], ['TSHIRT', 'T-Shirt'], ['HAT', 'Hat'],
+];
+function joinItems(items) {
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
+}
+function suggestTitle(name) {
+  const colon = name.indexOf(':');
+  if (colon >= 0 && /[,+]/.test(name.slice(colon + 1))) {
+    const parts = name.slice(colon + 1).split(/[,+]/).map(s => s.trim()).filter(Boolean);
+    const items = parts.map(p => {
+      const key = p.toUpperCase();
+      for (const [k, v] of ITEM_MAP) if (key === k || key.includes(k)) return v;
+      return p;
+    });
+    if (items.length >= 3) return 'Gift Set';
+    return joinItems(items);
+  }
+  let key = ' ' + name.toUpperCase() + ' ';
+  const found = [];
+  const byLen = [...ITEM_MAP].sort((a, b) => b[0].length - a[0].length);
+  for (const [k, v] of byLen) {
+    if (key.includes(k)) {
+      if (!found.includes(v)) found.push(v);
+      key = key.split(k).join(' '.repeat(k.length));
+    }
+  }
+  if (found.length >= 3) return 'Gift Set';
+  return found.length >= 1 ? joinItems(found) : '';
+}
+let uid = 1;
+let CRC_TABLE;
+function crc32(buf) {
+  if (!CRC_TABLE) {
+    CRC_TABLE = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); CRC_TABLE[n] = c >>> 0; }
+  }
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) crc = CRC_TABLE[(crc ^ buf[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+function safeName(s) { return ((s || 'Untitled').replace(/[\\/:*?"<>|]+/g, '').trim()) || 'Untitled'; }
+function makeZip(entries) {
+  const parts = [], central = []; let offset = 0;
+  const enc = new TextEncoder();
+  const d = new Date();
+  const time = ((d.getHours() & 0x1f) << 11) | ((d.getMinutes() & 0x3f) << 5) | ((d.getSeconds() >> 1) & 0x1f);
+  const date = (((d.getFullYear() - 1980) & 0x7f) << 9) | (((d.getMonth() + 1) & 0xf) << 5) | (d.getDate() & 0x1f);
+  for (const e of entries) {
+    const nameBytes = enc.encode(e.name);
+    const crc = crc32(e.bytes); const size = e.bytes.length;
+    const local = new Uint8Array(30 + nameBytes.length);
+    const dv = new DataView(local.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+    dv.setUint16(10, time, true); dv.setUint16(12, date, true); dv.setUint32(14, crc, true);
+    dv.setUint32(18, size, true); dv.setUint32(22, size, true); dv.setUint16(26, nameBytes.length, true); dv.setUint16(28, 0, true);
+    local.set(nameBytes, 30);
+    parts.push(local, e.bytes);
+    const cd = new Uint8Array(46 + nameBytes.length);
+    const cdv = new DataView(cd.buffer);
+    cdv.setUint32(0, 0x02014b50, true); cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true); cdv.setUint16(8, 0, true); cdv.setUint16(10, 0, true);
+    cdv.setUint16(12, time, true); cdv.setUint16(14, date, true); cdv.setUint32(16, crc, true);
+    cdv.setUint32(20, size, true); cdv.setUint32(24, size, true); cdv.setUint16(28, nameBytes.length, true);
+    cdv.setUint16(30, 0, true); cdv.setUint16(32, 0, true); cdv.setUint16(34, 0, true); cdv.setUint16(36, 0, true);
+    cdv.setUint32(38, 0, true); cdv.setUint32(42, offset, true);
+    cd.set(nameBytes, 46);
+    central.push(cd);
+    offset += local.length + e.bytes.length;
+  }
+  const centralSize = central.reduce((a, c) => a + c.length, 0);
+  const eocd = new Uint8Array(22);
+  const edv = new DataView(eocd.buffer);
+  edv.setUint32(0, 0x06054b50, true); edv.setUint16(8, entries.length, true); edv.setUint16(10, entries.length, true);
+  edv.setUint32(12, centralSize, true); edv.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, eocd], { type: 'application/zip' });
+}
+class Component extends DCLogic {
+  state = { gifts: [], queue: [], curId: null, scale: 0.34, bg: 'blue', sel: null, status: '', sheetLabel: 'August 2026 request sheet', tab: 'gifts', hiddenShows: [], issues: [], sheetFile: null };
+  stageBoxRef = React.createRef();
+  stageRef = React.createRef();
+  sheetInputRef = React.createRef();
+  imgInputRef = React.createRef();
+  urlInputRef = React.createRef();
+  store = {};
+
+  componentDidMount() {
+    fetch('data/gifts.json').then(r => r.json()).then(gifts => {
+      this.setState({ gifts });
+      try {
+        const saved = JSON.parse(localStorage.getItem('ppg-v1') || 'null');
+        if (saved && saved.queue && saved.queue.length) this.setState({ queue: saved.queue.map(q => ({ mode: 'standard', ...q, images: [], layout: null })), curId: saved.curId, hiddenShows: saved.hiddenShows || [] });
+      } catch (e) {}
+    }).catch(() => {});
+    this.ro = new ResizeObserver(() => this.updScale());
+    if (this.stageBoxRef.current) this.ro.observe(this.stageBoxRef.current);
+    setTimeout(() => this.updScale(), 50);
+    this.onMove = e => this.pointerMove(e);
+    this.onUp = () => { this.drag = null; };
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+    this.onKey = e => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const t = e.target.tagName;
+        if (t !== 'INPUT' && t !== 'TEXTAREA' && this.state.sel) { e.preventDefault(); this.delImage(this.state.sel); }
+      }
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.ppImg = new Image(); this.ppImg.src = 'assets/passport-lockup.svg';
+    this.logoImg = new Image(); this.logoImg.src = 'assets/logo-horizontal-white.svg';
+    if (document.fonts && document.fonts.load) {
+      ['700 150px "PBS Sans"', '800 150px "PBS Sans"'].forEach(f => document.fonts.load(f).catch(() => {}));
+      document.fonts.ready.then(() => this.forceUpdate());
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    window.removeEventListener('keydown', this.onKey);
+    if (this.ro) this.ro.disconnect();
+  }
+
+  updScale() {
+    const b = this.stageBoxRef.current; if (!b) return;
+    const s = Math.min(b.clientWidth / 1920, b.clientHeight / 1080);
+    if (s > 0 && Math.abs(s - this.state.scale) > 0.002) this.setState({ scale: s });
+  }
+  cur() { return this.state.queue.find(q => q.id === this.state.curId) || null; }
+  mode() { const c = this.cur(); return c ? (c.mode || 'standard') : 'standard'; }
+  updateCur(patch) {
+    const id = this.state.curId;
+    this.setState(s => ({ queue: s.queue.map(q => q.id === id ? { ...q, ...patch } : q) }), () => this.persist());
+  }
+  persist() {
+    clearTimeout(this._pt);
+    this._pt = setTimeout(() => {
+      try {
+        const { queue, curId, hiddenShows } = this.state;
+        localStorage.setItem('ppg-v1', JSON.stringify({ queue: queue.map(q => ({ ...q, images: [] })), curId, hiddenShows }));
+      } catch (e) {}
+    }, 400);
+  }
+  flash(msg) { this.setState({ status: msg }); clearTimeout(this._st); this._st = setTimeout(() => this.setState({ status: '' }), 2800); }
+
+  defLayout() { return { c1: { dx: 0, dy: 0 }, c2: { dx: 0, dy: 0 }, title: { dx: 0, dy: 0 } }; }
+  getLayout(item) {
+    const d = this.defLayout();
+    if (!item || !item.layout) return d;
+    return { c1: { ...d.c1, ...(item.layout.c1 || {}) }, c2: { ...d.c2, ...(item.layout.c2 || {}) }, title: { ...d.title, ...(item.layout.title || {}) } };
+  }
+  groupDown(e, key) {
+    e.stopPropagation(); e.preventDefault();
+    const c = this.cur(); if (!c) return;
+    const p = this.stagePos(e);
+    const off = this.getLayout(c)[key];
+    this.setState({ sel: null });
+    this.drag = { mode: 'group', key, startX: p.x, startY: p.y, baseDx: off.dx, baseDy: off.dy };
+  }
+  resetLayout() { this.updateCur({ layout: null }); }
+  sanitizeLayout(layout) {
+    if (!layout) return layout;
+    const ok = o => !o || (Math.abs(o.dx || 0) <= 700 && Math.abs(o.dy || 0) <= 500);
+    const out = {};
+    for (const k of ['c1', 'c2', 'title']) if (layout[k] && ok(layout[k])) out[k] = layout[k];
+    return Object.keys(out).length ? out : null;
+  }
+
+  parseLevel(lv) {
+    const m = /\$?\s*([\d,]+(?:\.\d+)?)\s*\/\s*\$?\s*([\d,]+(?:\.\d+)?)/.exec(lv || '');
+    if (m) return { main: '$' + m[1], annual: '$' + m[2] };
+    const s = /\$?\s*([\d,]+(?:\.\d+)?)/.exec(lv || '');
+    return { main: s ? '$' + s[1] : '$', annual: '' };
+  }
+  pickGift(i) {
+    const ex = this.state.queue.find(q => q.giftIdx === i && q.mode !== 'show');
+    if (ex) { this.setState({ curId: ex.id, sel: null }); return; }
+    const g = this.state.gifts[i]; const lv = this.parseLevel(g.level);
+    const isTicket = /ticket/i.test(g.name + ' ' + g.program);
+    const sug = suggestTitle(g.name);
+    const item = {
+      id: 'g' + (uid++) + Date.now(), giftIdx: i,
+      mode: isTicket ? 'ticket' : 'standard',
+      title: sug || g.name,
+      amount: lv.main, label: isTicket ? 'Credit Card\nOnly' : 'Sustainer',
+      showSecondary: !isTicket && !!lv.annual, annual: lv.annual, file: '', images: [], titleScale: 1, layout: null,
+    };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null }), () => this.persist());
+  }
+  pickShow(prog) {
+    const ex = this.state.queue.find(q => q.mode === 'show' && q.showOf === prog);
+    if (ex) { this.setState({ curId: ex.id, sel: null }); return; }
+    const item = { id: 'g' + (uid++) + Date.now(), giftIdx: -1, mode: 'show', showOf: prog, title: prog, amount: '', label: '', showSecondary: false, annual: '', file: '', images: [], titleScale: 1, layout: null };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null }), () => this.persist());
+  }
+  newBlank() {
+    const item = { id: 'g' + (uid++) + Date.now(), giftIdx: -1, mode: 'standard', title: 'Gift title', amount: '$', label: 'Sustainer', showSecondary: true, annual: '$', file: '', images: [], titleScale: 1, layout: null };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null }), () => this.persist());
+  }
+  newBlankShow() {
+    const item = { id: 'g' + (uid++) + Date.now(), giftIdx: -1, mode: 'show', showOf: null, title: 'New show', amount: '', label: '', showSecondary: false, annual: '', file: '', images: [], titleScale: 1, layout: null };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null }), () => this.persist());
+  }
+  addGiftForShow(prog) {
+    const item = { id: 'g' + (uid++) + Date.now(), giftIdx: -1, program: prog, mode: 'standard', title: '', amount: '$', label: 'Sustainer', showSecondary: true, annual: '$', file: '', images: [], titleScale: 1, layout: null };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null }), () => this.persist());
+  }
+  progOf(item) {
+    if (item.giftIdx >= 0) { const g = this.state.gifts[item.giftIdx]; return g ? (g.program || 'Other') : null; }
+    return item.program || null;
+  }
+  giftSeq(item) {
+    const prog = this.progOf(item);
+    if (!prog) return item.giftIdx >= 0 ? item.giftIdx + 1 : this.state.queue.indexOf(item) + 1;
+    const sheetIdxs = [];
+    this.state.gifts.forEach((g, i) => { if ((g.program || 'Other') === prog) sheetIdxs.push(i); });
+    if (item.giftIdx >= 0) {
+      const pos = sheetIdxs.indexOf(item.giftIdx);
+      return pos >= 0 ? pos + 1 : sheetIdxs.length + 1;
+    }
+    const customs = this.state.queue.filter(q => (q.mode || 'standard') !== 'show' && q.giftIdx === -1 && (q.program || null) === prog);
+    const idx = customs.findIndex(q => q.id === item.id);
+    return sheetIdxs.length + (idx >= 0 ? idx + 1 : customs.length + 1);
+  }
+  setMode(m) {
+    const c = this.cur(); if (!c) return;
+    const patch = { mode: m };
+    if (m === 'ticket' && (!c.label || c.label === 'Sustainer')) { patch.label = 'Credit Card\nOnly'; }
+    if (m === 'standard' && /credit card/i.test(c.label || '')) { patch.label = 'Sustainer'; }
+    this.updateCur(patch);
+  }
+  delQueue(id) {
+    this.setState(s => {
+      const queue = s.queue.filter(q => q.id !== id);
+      return { queue, curId: s.curId === id ? (queue[0] ? queue[0].id : null) : s.curId };
+    }, () => this.persist());
+  }
+  hideShow(prog) {
+    this.setState(s => {
+      const hiddenShows = s.hiddenShows.includes(prog) ? s.hiddenShows : [...s.hiddenShows, prog];
+      const cur = s.queue.find(q => q.id === s.curId);
+      const curId = (cur && cur.mode === 'show' && cur.showOf === prog) ? null : s.curId;
+      return { hiddenShows, curId };
+    }, () => this.persist());
+  }
+  restoreHidden() { this.setState({ hiddenShows: [] }, () => this.persist()); }
+  async onSheetFile(e) {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const mod = await import('./sheet-parser.js');
+      const res = await mod.parseFile(f);
+      const gifts = res.gifts || [];
+      if (!gifts.length && !(res.issues || []).length) { this.flash('No gifts found in that file'); return; }
+      const data = await f.arrayBuffer();
+      this.setState({ gifts, issues: res.issues || [], sheetLabel: f.name + (res.sheetName ? ' · ' + res.sheetName : ''), sheetFile: { name: f.name, data } });
+      const extra = (res.issues || []).length ? ', ' + res.issues.length + ' need review' : '';
+      this.flash('Loaded ' + gifts.length + ' gifts' + extra);
+    } catch (err) { this.flash('Could not read file: ' + err.message); }
+  }
+  editIssue(i, patch) { this.setState(s => ({ issues: s.issues.map((x, ix) => ix === i ? { ...x, ...patch } : x) })); }
+  dismissIssue(i) { this.setState(s => ({ issues: s.issues.filter((_, ix) => ix !== i) })); }
+  addIssue(i) {
+    const iss = this.state.issues[i]; if (!iss) return;
+    if (!iss.name || !iss.level) { this.flash('Add both a name and a donation level first'); return; }
+    const lv = this.parseLevel(iss.level);
+    const isTicket = /ticket/i.test(iss.name + ' ' + (iss.program || ''));
+    const sug = suggestTitle(iss.name);
+    const item = {
+      id: 'g' + (uid++) + Date.now(), giftIdx: -1, program: iss.program || null,
+      mode: isTicket ? 'ticket' : 'standard', title: sug || iss.name,
+      amount: lv.main, label: isTicket ? 'Credit Card\nOnly' : 'Sustainer',
+      showSecondary: !isTicket && !!lv.annual, annual: lv.annual, file: '', images: [], titleScale: 1, layout: null,
+    };
+    this.setState(s => ({ queue: [...s.queue, item], curId: item.id, sel: null, issues: s.issues.filter((_, ix) => ix !== i) }), () => this.persist());
+  }
+
+  defTol() { const t = this.props.defaultTol; return (t === undefined || t === null) ? 30 : t; }
+  addFiles(files) {
+    const cur = this.cur(); if (!cur) { this.flash('Pick a gift first'); return; }
+    const isShow = (cur.mode || 'standard') === 'show';
+    const imgs = [...files].filter(f => /^image\//.test(f.type));
+    if (!imgs.length) return;
+    let loaded = 0; const entries = [];
+    imgs.forEach(f => {
+      const url = URL.createObjectURL(f); const img = new Image();
+      const done = () => {
+        loaded++;
+        if (loaded === imgs.length && entries.length) {
+          const item = this.cur(); if (!item) return;
+          this.updateCur({ images: this.arrange([...item.images, ...entries], item.mode) });
+        }
+      };
+      img.onload = () => {
+        const id = 'im' + (uid++) + Math.random().toString(36).slice(2, 6);
+        this.store[id] = { img, orig: url };
+        const entry = { id, name: f.name, x: 400, y: 200, w: 400, ar: img.naturalWidth / img.naturalHeight, removeBg: !isShow, tol: this.defTol() };
+        entries.push(entry);
+        if (!isShow) this.processImg(entry);
+        done();
+      };
+      img.onerror = done;
+      img.src = url;
+    });
+  }
+  loadImageFromUrl(url) {
+    if (!url) return;
+    const cur = this.cur(); if (!cur) { this.flash('Pick a show first'); return; }
+    const finish = (srcUrl, isBlob) => {
+      const img = new Image();
+      img.onload = () => {
+        const id = 'im' + (uid++) + Math.random().toString(36).slice(2, 6);
+        this.store[id] = { img, orig: srcUrl };
+        const entry = { id, name: (url.split('/').pop() || 'image').slice(0, 40), x: 400, y: 200, w: 800, ar: img.naturalWidth / img.naturalHeight, removeBg: false, tol: this.defTol() };
+        const item = this.cur(); if (!item) return;
+        this.updateCur({ images: this.arrange([...item.images, entry], item.mode) });
+      };
+      img.onerror = () => this.flash('Could not load that image — the site may block outside use. Try saving it and uploading instead.');
+      if (!isBlob) img.crossOrigin = 'anonymous';
+      img.src = srcUrl;
+    };
+    fetch(url, { mode: 'cors' }).then(r => { if (!r.ok) throw 0; return r.blob(); })
+      .then(b => finish(URL.createObjectURL(b), true))
+      .catch(() => finish(url, false));
+  }
+  processImg(entry) {
+    const st = this.store[entry.id]; if (!st) return;
+    const img = st.img;
+    const cap = 1100, sc = Math.min(1, cap / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * sc)), h = Math.max(1, Math.round(img.naturalHeight * sc));
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, 0, w, h);
+    const idata = cx.getImageData(0, 0, w, h); const d = idata.data;
+    const bpx = [];
+    for (let x = 0; x < w; x++) { bpx.push(x, (h - 1) * w + x); }
+    for (let y = 0; y < h; y++) { bpx.push(y * w, y * w + w - 1); }
+    const buckets = {};
+    let nb = 0;
+    for (const i of bpx) {
+      if (d[i * 4 + 3] > 10) {
+        const key = ((d[i * 4] >> 5) << 6) | ((d[i * 4 + 1] >> 5) << 3) | (d[i * 4 + 2] >> 5);
+        if (!buckets[key]) buckets[key] = [0, 0, 0, 0];
+        const b = buckets[key]; b[0] += d[i * 4]; b[1] += d[i * 4 + 1]; b[2] += d[i * 4 + 2]; b[3]++;
+        nb++;
+      }
+    }
+    if (nb > 0) {
+      const clusters = Object.values(buckets).filter(b => b[3] > nb * 0.01)
+        .map(b => [b[0] / b[3], b[1] / b[3], b[2] / b[3]]);
+      if (!clusters.length) clusters.push([255, 255, 255]);
+      const T = (entry.tol || 30) * 2.4;
+      const clDist = i => {
+        let best = 1e9;
+        for (const c of clusters) {
+          const dr = d[i * 4] - c[0], dg = d[i * 4 + 1] - c[1], db = d[i * 4 + 2] - c[2];
+          const v = dr * dr + dg * dg + db * db;
+          if (v < best) best = v;
+        }
+        return Math.sqrt(best);
+      };
+      const pxDiff = (i, j) => {
+        const dr = d[i * 4] - d[j * 4], dg = d[i * 4 + 1] - d[j * 4 + 1], db = d[i * 4 + 2] - d[j * 4 + 2];
+        return Math.sqrt(dr * dr + dg * dg + db * db);
+      };
+      const near = i => d[i * 4 + 3] < 10 || clDist(i) < T;
+      const chain = (i, from) => d[i * 4 + 3] >= 10 && pxDiff(i, from) < T * 0.45 && clDist(i) < T * 2.6;
+      const vis = new Uint8Array(w * h); const stack = [];
+      for (const i of bpx) { if (!vis[i] && near(i)) { vis[i] = 1; stack.push(i); } }
+      while (stack.length) {
+        const i = stack.pop(); const x0 = i % w, y0 = (i / w) | 0;
+        const test = j => { if (!vis[j] && (near(j) || chain(j, i))) { vis[j] = 1; stack.push(j); } };
+        if (x0 > 0) test(i - 1);
+        if (x0 < w - 1) test(i + 1);
+        if (y0 > 0) test(i - w);
+        if (y0 < h - 1) test(i + w);
+      }
+      for (let i = 0; i < w * h; i++) if (vis[i]) d[i * 4 + 3] = 0;
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x;
+        if (!vis[i] && d[i * 4 + 3] > 0 && (vis[i - 1] || vis[i + 1] || vis[i - w] || vis[i + w])) d[i * 4 + 3] = Math.round(d[i * 4 + 3] * 0.55);
+      }
+      cx.putImageData(idata, 0, 0);
+    }
+    st.proc = cv; st.procUrl = cv.toDataURL();
+    this.forceUpdate();
+  }
+  arrange(images, mode) {
+    const n = images.length; if (!n) return images;
+    let slots;
+    if (mode === 'show') {
+      slots = images.map((im, i) => ({ cx: 380, cy: 540, w: 1400, mh: 1080 }));
+      return images.map((im, i) => {
+        const s = slots[i]; let w = s.w;
+        if (w / im.ar < 1080) w = 1080 * im.ar;
+        return { ...im, x: Math.round(SPEC.SH.cx + SPEC.SH.r * 0.1 - w / 2 + i * 40), y: Math.round(540 - (w / im.ar) / 2 + i * 40), w: Math.round(w) };
+      });
+    }
+    if (LAYOUTS[n]) slots = LAYOUTS[n];
+    else {
+      slots = []; const cols = 3, rows = Math.ceil(n / cols);
+      const zw = (SPEC.ZONE.x1 - SPEC.ZONE.x0) / cols, zh = (SPEC.ZONE.y1 - SPEC.ZONE.y0) / rows;
+      for (let i = 0; i < n; i++) slots.push({ cx: SPEC.ZONE.x0 + zw * (i % cols) + zw / 2, cy: SPEC.ZONE.y0 + zh * Math.floor(i / cols) + zh / 2, w: zw - 30, mh: zh - 30 });
+    }
+    return images.map((im, i) => {
+      const s = slots[i]; let w = s.w;
+      if (w / im.ar > s.mh) w = s.mh * im.ar;
+      let x = s.cx - w / 2, y = s.cy - (w / im.ar) / 2;
+      y = Math.max(30, Math.min(y, SPEC.BAR - w / im.ar - 8));
+      return { ...im, x: Math.round(x), y: Math.round(y), w: Math.round(w) };
+    });
+  }
+  autoArrange() { const c = this.cur(); if (c) this.updateCur({ images: this.arrange(c.images, c.mode) }); }
+  delImage(id) {
+    const c = this.cur(); if (!c) return;
+    delete this.store[id];
+    this.setState({ sel: null });
+    this.updateCur({ images: c.images.filter(im => im.id !== id) });
+  }
+  patchImage(id, patch) {
+    const c = this.cur(); if (!c) return;
+    this.updateCur({ images: c.images.map(im => im.id === id ? { ...im, ...patch } : im) });
+  }
+  stagePos(e) {
+    const rect = this.stageRef.current.getBoundingClientRect();
+    return { x: (e.clientX - rect.left) / this.state.scale, y: (e.clientY - rect.top) / this.state.scale };
+  }
+  imgDown(e, id) {
+    e.stopPropagation(); e.preventDefault();
+    const c = this.cur(); const im = c.images.find(m => m.id === id); if (!im) return;
+    const p = this.stagePos(e);
+    this.setState({ sel: id });
+    this.drag = { mode: 'move', id, dx: im.x - p.x, dy: im.y - p.y };
+  }
+  resizeDown(e) { e.stopPropagation(); e.preventDefault(); this.drag = { mode: 'resize', id: this.state.sel }; }
+  pointerMove(e) {
+    if (!this.drag) return;
+    const c = this.cur(); if (!c) return;
+    const isShow = (c.mode || 'standard') === 'show';
+    if (this.drag.mode === 'group') {
+      const p = this.stagePos(e);
+      let dx = Math.round(this.drag.baseDx + (p.x - this.drag.startX));
+      let dy = Math.round(this.drag.baseDy + (p.y - this.drag.startY));
+      dx = Math.max(-700, Math.min(700, dx));
+      dy = Math.max(-500, Math.min(500, dy));
+      const lay = this.getLayout(c);
+      this.updateCur({ layout: { ...lay, [this.drag.key]: { dx, dy } } });
+      return;
+    }
+    const im = c.images.find(m => m.id === this.drag.id); if (!im) return;
+    const p = this.stagePos(e);
+    if (this.drag.mode === 'move') {
+      const h = im.w / im.ar;
+      let x = p.x + this.drag.dx, y = p.y + this.drag.dy;
+      if (isShow) {
+        x = Math.max(-im.w + 100, Math.min(x, 1400));
+        y = Math.max(-h + 100, Math.min(y, 1000));
+      } else {
+        x = Math.max(-80, Math.min(x, 1990 - im.w));
+        y = Math.max(-40, Math.min(y, SPEC.BAR - h));
+      }
+      this.patchImage(im.id, { x: Math.round(x), y: Math.round(y) });
+    } else {
+      let w = Math.max(60, Math.min(isShow ? 3200 : 1500, p.x - im.x));
+      if (!isShow) {
+        const maxH = SPEC.BAR - im.y;
+        if (w / im.ar > maxH) w = maxH * im.ar;
+      }
+      this.patchImage(im.id, { w: Math.round(w) });
+    }
+  }
+  mctx() { if (!this._m) { this._m = document.createElement('canvas').getContext('2d'); } return this._m; }
+  fit(text, size, maxW, weight) {
+    const m = this.mctx();
+    m.font = (weight || 700) + ' ' + size + 'px "PBS Sans", Arial';
+    const w = m.measureText(text || '').width;
+    return w > maxW ? Math.max(18, Math.floor(size * maxW / w)) : size;
+  }
+  fitLines(text, size, maxW, weight) {
+    const lines = (text || '').split('\n');
+    let s = size;
+    for (const ln of lines) s = Math.min(s, this.fit(ln, size, maxW, weight));
+    return { size: s, lines };
+  }
+  autoFile(item) {
+    const clean = t => (t || 'Gift').split('\n')[0].replace(/[^A-Za-z0-9]+/g, '').slice(0, 60) || 'Gift';
+    if ((item.mode || 'standard') === 'show') return 'SHOW_' + clean(item.title) + '.png';
+    const seq = this.giftSeq(item);
+    const prog = this.progOf(item);
+    return clean(prog || item.title) + '_' + seq + '.png';
+  }
+  rowNum(item) {
+    if ((item.mode || 'standard') === 'show') {
+      const idx = (this._progsCache || []).indexOf(item.showOf);
+      return idx >= 0 ? 'S' + (idx + 1) : 'S';
+    }
+    return this.giftSeq(item);
+  }
+  drawImages(c, item, clip) {
+    if (clip) { c.save(); c.beginPath(); c.arc(SPEC.SH.cx, SPEC.SH.cy, SPEC.SH.r, 0, 7); c.clip(); }
+    for (const im of item.images) {
+      const st = this.store[im.id]; if (!st) continue;
+      const src = (im.removeBg && st.proc) ? st.proc : st.img;
+      c.drawImage(src, im.x, im.y, im.w, im.w / im.ar);
+    }
+    if (clip) c.restore();
+  }
+  async draw(item) {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const cv = document.createElement('canvas'); cv.width = 1920; cv.height = 1080;
+    const c = cv.getContext('2d');
+    const mode = item.mode || 'standard';
+    const lay = this.getLayout(item);
+    const tScale = (item.titleScale === undefined || item.titleScale === null) ? 1 : item.titleScale;
+    c.textBaseline = 'middle';
+    if (mode === 'show') {
+      c.fillStyle = SPEC.SH.navy; c.fillRect(0, 0, 1920, 1080);
+      this.drawImages(c, item, true);
+      if (this.logoImg && this.logoImg.complete && this.logoImg.naturalWidth) {
+        const lh = SPEC.SH.logoW * this.logoImg.naturalHeight / this.logoImg.naturalWidth;
+        c.drawImage(this.logoImg, SPEC.SH.logoX, SPEC.SH.logoY, SPEC.SH.logoW, lh);
+      }
+      const tf = this.fitLines((item.title || '').toUpperCase(), SPEC.SH.tSize, SPEC.SH.tMaxW, 800);
+      const lh2 = Math.round(SPEC.SH.tLh * tf.size / SPEC.SH.tSize);
+      c.fillStyle = '#fff'; c.textAlign = 'left'; c.font = '800 ' + tf.size + 'px "PBS Sans", Arial';
+      tf.lines.forEach((ln, i) => c.fillText(ln, SPEC.SH.tX + lay.title.dx, SPEC.SH.tCy + lay.title.dy + i * lh2));
+      return cv;
+    }
+    this.drawImages(c, item, false);
+    c.textAlign = 'center';
+    if (mode === 'ticket') {
+      const tkcx = SPEC.TK.cx + lay.c1.dx, tkcy = SPEC.TK.cy + lay.c1.dy;
+      c.fillStyle = 'rgba(38,56,196,0.75)';
+      c.beginPath(); c.arc(tkcx, tkcy, SPEC.TK.r, 0, 7); c.fill();
+      c.fillStyle = '#fff';
+      const aFS = this.fit(item.amount, SPEC.TK.amtSize, SPEC.TK.amtMaxW, 800);
+      c.font = '800 ' + aFS + 'px "PBS Sans", Arial';
+      c.fillText(item.amount || '', tkcx, SPEC.TK.amtCy + lay.c1.dy);
+      const lf = this.fitLines(item.label, SPEC.TK.lblSize, SPEC.TK.lblMaxW, 700);
+      const llh = Math.round(lf.size * 1.12);
+      c.font = '700 ' + lf.size + 'px "PBS Sans", Arial';
+      lf.lines.forEach((ln, i) => c.fillText(ln, tkcx, SPEC.TK.lblCy + lay.c1.dy - (lf.lines.length - 1) * llh / 2 + i * llh));
+      const tf = this.fitLines(item.title, SPEC.TK.tSize * tScale, SPEC.TK.tMaxW, 700);
+      const tlh = Math.round(SPEC.TK.tLh * tf.size / SPEC.TK.tSize);
+      c.font = '700 ' + tf.size + 'px "PBS Sans", Arial';
+      tf.lines.forEach((ln, i) => c.fillText(ln, 960 + lay.title.dx, SPEC.TK.tCy + lay.title.dy + i * tlh));
+    } else {
+      const layer = document.createElement('canvas'); layer.width = 1920; layer.height = 1080;
+      const L = layer.getContext('2d');
+      L.textBaseline = 'middle'; L.textAlign = 'center';
+      const c1cx = SPEC.C1.cx + lay.c1.dx, c1cy = SPEC.C1.cy + lay.c1.dy;
+      const c2cx = SPEC.C2.cx + lay.c2.dx, c2cy = SPEC.C2.cy + lay.c2.dy;
+      L.fillStyle = 'rgba(38,56,196,0.75)';
+      L.beginPath(); L.arc(c1cx, c1cy, SPEC.C1.r, 0, 7); L.fill();
+      L.fillStyle = '#fff';
+      const aFS = this.fit(item.amount, SPEC.AMT.size, SPEC.AMT.maxW, 800);
+      L.font = '800 ' + aFS + 'px "PBS Sans", Arial';
+      L.fillText(item.amount || '', c1cx, SPEC.AMT.cy + lay.c1.dy);
+      const lf = this.fitLines(item.label, SPEC.LBL.size, SPEC.LBL.maxW, 700);
+      const llh = Math.round(lf.size * 1.1);
+      L.font = '700 ' + lf.size + 'px "PBS Sans", Arial';
+      lf.lines.forEach((ln, i) => L.fillText(ln, c1cx, SPEC.LBL.cy + lay.c1.dy - (lf.lines.length - 1) * llh / 2 + i * llh));
+      if (item.showSecondary) {
+        L.save(); L.globalCompositeOperation = 'destination-out';
+        L.beginPath(); L.arc(c2cx, c2cy, SPEC.C2.r, 0, 7); L.fill();
+        L.restore();
+        L.fillStyle = 'rgba(240,240,240,0.75)';
+        L.beginPath(); L.arc(c2cx, c2cy, SPEC.C2.r, 0, 7); L.fill();
+        L.fillStyle = '#0A145A'; L.font = '700 ' + SPEC.OR.size + 'px "PBS Sans", Arial';
+        L.fillText('or', c2cx, SPEC.OR.cy + lay.c2.dy);
+        const a2 = this.fit(item.annual, SPEC.A2.size, SPEC.A2.maxW, 800);
+        L.fillStyle = '#2638C4'; L.font = '800 ' + a2 + 'px "PBS Sans", Arial';
+        L.fillText(item.annual || '', c2cx, SPEC.A2.cy + lay.c2.dy);
+        L.font = '700 ' + SPEC.A2L.size + 'px "PBS Sans", Arial';
+        L.fillText('Annual', c2cx, SPEC.A2L.cy + lay.c2.dy);
+      }
+      c.drawImage(layer, 0, 0);
+      const tf = this.fitLines(item.title, SPEC.T.size * tScale, SPEC.T.maxW, 700);
+      const tlh = Math.round(SPEC.T.lh * tf.size / SPEC.T.size);
+      c.fillStyle = '#fff'; c.textAlign = 'left';
+      c.font = '700 ' + tf.size + 'px "PBS Sans", Arial';
+      tf.lines.forEach((ln, i) => c.fillText(ln, SPEC.T.x + lay.title.dx, SPEC.T.cy + lay.title.dy + i * tlh));
+    }
+    if (this.ppImg && this.ppImg.complete && this.ppImg.naturalWidth) c.drawImage(this.ppImg, SPEC.PP.x, SPEC.PP.y, SPEC.PP.w, SPEC.PP.h);
+    return cv;
+  }
+  async exportItem(item) {
+    const cv = await this.draw(item);
+    return new Promise(res => cv.toBlob(bl => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(bl);
+      a.download = item.file || this.autoFile(item);
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      res();
+    }, 'image/png'));
+  }
+  async exportCur() { const c = this.cur(); if (!c) return; await this.exportItem(c); this.flash('Exported ' + (c.file || this.autoFile(c))); }
+  async exportList(list, label) {
+    if (!list.length) { this.flash('Nothing to export'); return; }
+    let k = 0;
+    for (const q of list) { await this.exportItem(q); k++; await new Promise(r => setTimeout(r, 450)); }
+    this.flash('Exported ' + k + ' ' + (label || 'PNGs'));
+  }
+  async exportBundle() {
+    const queue = this.state.queue;
+    if (!queue.length) { this.flash('Nothing to export'); return; }
+    this.flash('Building zip…');
+    const entries = [];
+    for (const q of queue) {
+      const cv = await this.draw(q);
+      const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const fname = q.file || this.autoFile(q);
+      if ((q.mode || 'standard') === 'show') entries.push({ name: 'Screens/' + fname, bytes });
+      else entries.push({ name: 'Gifts/' + safeName(this.progOf(q) || 'Other') + '/' + fname, bytes });
+    }
+    if (this.state.sheetFile) entries.push({ name: this.state.sheetFile.name, bytes: new Uint8Array(this.state.sheetFile.data) });
+    const zipBlob = makeZip(entries);
+    const zipName = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' }) + ' Pledge.zip';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob);
+    a.download = zipName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+    this.flash('Exported ' + queue.length + ' PNGs to ' + zipName);
+  }
+
+  renderVals() {
+    const { gifts, queue, curId, scale, bg, sel, status, sheetLabel, tab, hiddenShows, issues } = this.state;
+    const cur = this.cur();
+    const mode = this.mode();
+    const isStd = !!cur && mode === 'standard';
+    const isTicket = !!cur && mode === 'ticket';
+    const isShow = !!cur && mode === 'show';
+    const allProgs = [];
+    gifts.forEach(g => { if (g.program && !allProgs.includes(g.program)) allProgs.push(g.program); });
+    const progs = allProgs.filter(p => !hiddenShows.includes(p));
+    this._progsCache = progs;
+    const rows = [];
+    const rowStyle = active => ({ display: 'flex', alignItems: 'center', gap: '4px', padding: '0 6px 0 11px', cursor: 'default', borderLeft: active ? '3px solid #2638C4' : '3px solid transparent', background: active ? '#eef0fb' : 'transparent' });
+    if (tab === 'gifts') {
+      const order = []; let lastProg = null;
+      gifts.forEach((g, i) => {
+        const prog = g.program || 'Other';
+        if (prog !== lastProg || !order.length) { order.push({ program: prog, giftIdxs: [] }); lastProg = prog; }
+        order[order.length - 1].giftIdxs.push(i);
+      });
+      order.forEach(block => {
+        rows.push({ key: 'h' + block.giftIdxs[0], isHdr: true, isGift: false, text: block.program, showAddGift: true, addGift: () => this.addGiftForShow(block.program) });
+        block.giftIdxs.forEach(i => {
+          const g = gifts[i];
+          const active = !!(cur && cur.giftIdx === i && mode !== 'show');
+          rows.push({
+            key: 'g' + i, isHdr: false, isGift: true, isShowRow: false, isCustomGift: false,
+            num: this.giftSeq({ giftIdx: i }), name: g.name, level: g.level,
+            pick: () => this.pickGift(i), del: null, style: rowStyle(active),
+          });
+        });
+        queue.filter(q => (q.mode || 'standard') !== 'show' && q.giftIdx === -1 && (q.program || null) === block.program).forEach(q => {
+          const active = !!(cur && cur.id === q.id);
+          rows.push({
+            key: 'c' + q.id, isHdr: false, isGift: true, isShowRow: false, isCustomGift: true,
+            num: this.giftSeq(q), name: q.title || 'New gift', level: '',
+            pick: () => this.setState({ curId: q.id, sel: null }), del: e => { e.stopPropagation(); this.delQueue(q.id); }, style: rowStyle(active),
+          });
+        });
+      });
+    } else if (tab === 'shows') {
+      rows.push({ key: 'hs', isHdr: true, isGift: false, text: 'One screen per program' });
+      progs.forEach((p, i) => {
+        const active = !!(cur && mode === 'show' && cur.showOf === p);
+        rows.push({
+          key: 's' + i, isHdr: false, isGift: true, isShowRow: true, num: i + 1, name: p, level: 'Show title screen',
+          pick: () => this.pickShow(p), del: e => { e.stopPropagation(); this.hideShow(p); }, style: rowStyle(active),
+        });
+      });
+    }
+    const queueRows = queue.map(q => ({
+      key: q.id, num: this.rowNum(q),
+      label: (q.title || '').split('\n')[0] || 'Untitled',
+      pick: () => this.setState({ curId: q.id, sel: null }),
+      del: e => { e.stopPropagation(); this.delQueue(q.id); },
+      style: { display: 'flex', gap: '8px', alignItems: 'center', padding: '6px 10px 6px 11px', cursor: 'pointer', borderLeft: q.id === curId ? '3px solid #2638C4' : '3px solid transparent', background: q.id === curId ? '#eef0fb' : 'transparent' },
+    }));
+    const issueRows = issues.map((iss, i) => ({
+      key: 'iss' + i, reason: iss.reason, program: iss.program, name: iss.name, level: iss.level,
+      onProgram: e => this.editIssue(i, { program: e.target.value }),
+      onName: e => this.editIssue(i, { name: e.target.value }),
+      onLevel: e => this.editIssue(i, { level: e.target.value }),
+      add: () => this.addIssue(i), dismiss: () => this.dismissIssue(i),
+    }));
+    const images = cur ? cur.images : [];
+    const stageImgs = images.map(im => {
+      const st = this.store[im.id];
+      return {
+        key: im.id,
+        src: st ? (im.removeBg && st.procUrl ? st.procUrl : st.orig) : '',
+        down: e => this.imgDown(e, im.id),
+        style: { position: 'absolute', left: im.x + 'px', top: im.y + 'px', width: im.w + 'px', height: (im.w / im.ar) + 'px', cursor: 'grab', userSelect: 'none', touchAction: 'none', pointerEvents: 'auto' },
+      };
+    }).filter(m => m.src);
+    const imgRows = images.map(im => {
+      const st = this.store[im.id];
+      return {
+        key: im.id, name: im.name, removeBg: im.removeBg, tol: im.tol, w: im.w,
+        thumb: st ? (im.removeBg && st.procUrl ? st.procUrl : st.orig) : '',
+        select: () => this.setState({ sel: im.id }),
+        toggle: e => {
+          const on = e.target.checked;
+          this.patchImage(im.id, { removeBg: on });
+          if (on && st && !st.proc) { const c2 = this.cur(); const entry = c2 && c2.images.find(m => m.id === im.id); if (entry) this.processImg({ ...entry, removeBg: true }); }
+        },
+        tolChange: e => {
+          const tol = +e.target.value;
+          this.patchImage(im.id, { tol });
+          clearTimeout(this._tolT);
+          this._tolT = setTimeout(() => {
+            const c2 = this.cur(); const entry = c2 && c2.images.find(m => m.id === im.id);
+            if (entry) this.processImg(entry);
+          }, 200);
+        },
+        sizeChange: e => this.patchImage(im.id, { w: +e.target.value }),
+        del: e => { e.stopPropagation(); this.delImage(im.id); },
+        style: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px', borderRadius: '10px', border: sel === im.id ? '1.5px solid #486CD8' : '1.5px solid #e2e6f2', cursor: 'pointer', background: '#fff' },
+      };
+    });
+    const selIm = cur && sel ? images.find(m => m.id === sel) : null;
+    const chip = on => ({ padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', border: '1.5px solid ' + (on ? '#2638C4' : '#d4d9e8'), background: on ? '#2638C4' : '#fff', color: on ? '#fff' : '#3c4257', whiteSpace: 'nowrap' });
+    const showGuide = (this.props.showGuide === undefined || this.props.showGuide === null) ? true : this.props.showGuide;
+    let amountStyle = null, labelStyle = null, titleStyle = null, annualStyle = null, c1Style = null;
+    let orStyle = null, annualLabelStyle = null, c2CircleStyle = null, tkCircleStyle = null;
+    let c1HitStyle = null, c2HitStyle = null, titleHitStyle = null;
+    const lay = this.getLayout(cur);
+    if (isTicket) {
+      const tkcx = SPEC.TK.cx + lay.c1.dx, tkcy = SPEC.TK.cy + lay.c1.dy;
+      const aFS = this.fit(cur.amount, SPEC.TK.amtSize, SPEC.TK.amtMaxW, 800);
+      const lf = this.fitLines(cur.label, SPEC.TK.lblSize, SPEC.TK.lblMaxW, 700);
+      const tScale = (cur.titleScale === undefined || cur.titleScale === null) ? 1 : cur.titleScale;
+      const tf = this.fitLines(cur.title, SPEC.TK.tSize * tScale, SPEC.TK.tMaxW, 700);
+      const tlh = Math.round(SPEC.TK.tLh * tf.size / SPEC.TK.tSize);
+      amountStyle = { position: 'absolute', left: (tkcx - SPEC.TK.r) + 'px', width: (2 * SPEC.TK.r) + 'px', top: (SPEC.TK.amtCy + lay.c1.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: aFS + 'px', fontWeight: 800, color: '#fff', lineHeight: 1, pointerEvents: 'none' };
+      labelStyle = { position: 'absolute', left: (tkcx - SPEC.TK.r) + 'px', width: (2 * SPEC.TK.r) + 'px', top: (SPEC.TK.lblCy + lay.c1.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: lf.size + 'px', fontWeight: 700, color: '#fff', lineHeight: 1.12, whiteSpace: 'pre', pointerEvents: 'none' };
+      titleStyle = { position: 'absolute', left: (60 + lay.title.dx) + 'px', width: '1800px', top: (SPEC.TK.tCy + lay.title.dy - tlh / 2) + 'px', textAlign: 'center', fontSize: tf.size + 'px', lineHeight: tlh + 'px', fontWeight: 700, color: '#fff', whiteSpace: 'pre', pointerEvents: 'none' };
+      tkCircleStyle = { position: 'absolute', left: (tkcx - SPEC.TK.r) + 'px', top: (tkcy - SPEC.TK.r) + 'px', width: (2 * SPEC.TK.r) + 'px', height: (2 * SPEC.TK.r) + 'px', borderRadius: '50%', background: 'rgba(38,56,196,0.75)', pointerEvents: 'none' };
+      c1HitStyle = { position: 'absolute', left: (tkcx - SPEC.TK.r - 14) + 'px', top: (tkcy - SPEC.TK.r - 14) + 'px', width: (2 * (SPEC.TK.r + 14)) + 'px', height: (2 * (SPEC.TK.r + 14)) + 'px', borderRadius: '50%', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+      titleHitStyle = { position: 'absolute', left: (60 + lay.title.dx) + 'px', top: (SPEC.TK.tCy + lay.title.dy - tlh / 2 - 10) + 'px', width: '1800px', height: (tlh * tf.lines.length + 20) + 'px', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+    } else if (isShow) {
+      const tf = this.fitLines((cur.title || '').toUpperCase(), SPEC.SH.tSize, SPEC.SH.tMaxW, 800);
+      const tlh = Math.round(SPEC.SH.tLh * tf.size / SPEC.SH.tSize);
+      titleStyle = { position: 'absolute', left: (SPEC.SH.tX + lay.title.dx) + 'px', top: (SPEC.SH.tCy + lay.title.dy - tlh / 2) + 'px', fontSize: tf.size + 'px', lineHeight: tlh + 'px', fontWeight: 800, color: '#fff', whiteSpace: 'pre', textTransform: 'uppercase', pointerEvents: 'none' };
+      titleHitStyle = { position: 'absolute', left: (SPEC.SH.tX + lay.title.dx - 14) + 'px', top: (SPEC.SH.tCy + lay.title.dy - tlh / 2 - 10) + 'px', width: (SPEC.SH.tMaxW + 28) + 'px', height: (tlh * tf.lines.length + 20) + 'px', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+    } else if (isStd) {
+      const c1cx = SPEC.C1.cx + lay.c1.dx, c1cy = SPEC.C1.cy + lay.c1.dy;
+      const c2cx = SPEC.C2.cx + lay.c2.dx, c2cy = SPEC.C2.cy + lay.c2.dy;
+      const aFS = this.fit(cur.amount, SPEC.AMT.size, SPEC.AMT.maxW, 800);
+      const lf = this.fitLines(cur.label, SPEC.LBL.size, SPEC.LBL.maxW, 700);
+      const a2FS = this.fit(cur.annual, SPEC.A2.size, SPEC.A2.maxW, 800);
+      const tScale = (cur.titleScale === undefined || cur.titleScale === null) ? 1 : cur.titleScale;
+      const tf = this.fitLines(cur.title, SPEC.T.size * tScale, SPEC.T.maxW, 700);
+      const tlh = Math.round(SPEC.T.lh * tf.size / SPEC.T.size);
+      amountStyle = { position: 'absolute', left: (c1cx - SPEC.C1.r) + 'px', width: (2 * SPEC.C1.r) + 'px', top: (SPEC.AMT.cy + lay.c1.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: aFS + 'px', fontWeight: 800, color: '#fff', lineHeight: 1, pointerEvents: 'none' };
+      labelStyle = { position: 'absolute', left: (c1cx - SPEC.C1.r) + 'px', width: (2 * SPEC.C1.r) + 'px', top: (SPEC.LBL.cy + lay.c1.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: lf.size + 'px', fontWeight: 700, color: '#fff', lineHeight: 1.1, whiteSpace: 'pre', pointerEvents: 'none' };
+      annualStyle = { position: 'absolute', left: (c2cx - SPEC.C2.r) + 'px', width: (2 * SPEC.C2.r) + 'px', top: (SPEC.A2.cy + lay.c2.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: a2FS + 'px', fontWeight: 800, color: '#2638C4', lineHeight: 1, pointerEvents: 'none' };
+      orStyle = { position: 'absolute', left: (c2cx - SPEC.C2.r) + 'px', width: (2 * SPEC.C2.r) + 'px', top: (SPEC.OR.cy + lay.c2.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: SPEC.OR.size + 'px', fontWeight: 700, color: '#0A145A', lineHeight: 1, pointerEvents: 'none' };
+      annualLabelStyle = { position: 'absolute', left: (c2cx - SPEC.C2.r) + 'px', width: (2 * SPEC.C2.r) + 'px', top: (SPEC.A2L.cy + lay.c2.dy) + 'px', transform: 'translateY(-50%)', textAlign: 'center', fontSize: SPEC.A2L.size + 'px', fontWeight: 700, color: '#2638C4', lineHeight: 1, pointerEvents: 'none' };
+      titleStyle = { position: 'absolute', left: (SPEC.T.x + lay.title.dx) + 'px', top: (SPEC.T.cy + lay.title.dy - tlh / 2) + 'px', fontSize: tf.size + 'px', lineHeight: tlh + 'px', fontWeight: 700, color: '#fff', whiteSpace: 'pre', pointerEvents: 'none' };
+      c1Style = { position: 'absolute', left: (c1cx - SPEC.C1.r) + 'px', top: (c1cy - SPEC.C1.r) + 'px', width: (2 * SPEC.C1.r) + 'px', height: (2 * SPEC.C1.r) + 'px', borderRadius: '50%', background: 'rgba(38,56,196,0.75)', pointerEvents: 'none' };
+      c1HitStyle = { position: 'absolute', left: (c1cx - SPEC.C1.r - 14) + 'px', top: (c1cy - SPEC.C1.r - 14) + 'px', width: (2 * (SPEC.C1.r + 14)) + 'px', height: (2 * (SPEC.C1.r + 14)) + 'px', borderRadius: '50%', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+      titleHitStyle = { position: 'absolute', left: (SPEC.T.x + lay.title.dx - 14) + 'px', top: (SPEC.T.cy + lay.title.dy - tlh / 2 - 10) + 'px', width: (SPEC.T.maxW + 28) + 'px', height: (tlh * tf.lines.length + 20) + 'px', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+      if (cur.showSecondary) {
+        const mx = (c2cx - (c1cx - SPEC.C1.r)) + 'px', my = (c2cy - (c1cy - SPEC.C1.r)) + 'px';
+        const grad = 'radial-gradient(circle ' + SPEC.C2.r + 'px at ' + mx + ' ' + my + ', transparent ' + (SPEC.C2.r - 1) + 'px, #000 ' + SPEC.C2.r + 'px)';
+        c1Style.WebkitMaskImage = grad; c1Style.maskImage = grad;
+        c2CircleStyle = { position: 'absolute', left: (c2cx - SPEC.C2.r) + 'px', top: (c2cy - SPEC.C2.r) + 'px', width: (2 * SPEC.C2.r) + 'px', height: (2 * SPEC.C2.r) + 'px', borderRadius: '50%', background: 'rgba(240,240,240,0.75)', pointerEvents: 'none' };
+        c2HitStyle = { position: 'absolute', left: (c2cx - SPEC.C2.r - 14) + 'px', top: (c2cy - SPEC.C2.r - 14) + 'px', width: (2 * (SPEC.C2.r + 14)) + 'px', height: (2 * (SPEC.C2.r + 14)) + 'px', borderRadius: '50%', cursor: 'grab', pointerEvents: 'auto', background: 'transparent' };
+      }
+    }
+    const nz = o => o && (o.dx || o.dy);
+    const hasLayoutOverride = !!(cur && cur.layout && (nz(cur.layout.c1) || nz(cur.layout.c2) || nz(cur.layout.title)));
+    const giftsN = queue.filter(q => (q.mode || 'standard') !== 'show').length;
+    const showsN = queue.filter(q => q.mode === 'show').length;
+    const titleScaleVal = cur ? ((cur.titleScale === undefined || cur.titleScale === null) ? 1 : cur.titleScale) : 1;
+    return {
+      status, sheetLabel, rows, queueRows, queueN: queue.length,
+      hasCur: !!cur, noCur: !cur, noCurOverlay: !cur,
+      isStd, isTicket, isShow, notShow: !!cur && !isShow,
+      emptyHint: !!cur && images.length === 0,
+      emptyHintText: isShow ? 'Drop the show art here' : 'Drop gift images here',
+      emptyHintStyle: isShow
+        ? { position: 'absolute', left: '120px', top: '220px', width: '760px', height: '640px', border: '3px dashed rgba(255,255,255,.5)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '34px', fontWeight: 700, color: 'rgba(255,255,255,.85)', pointerEvents: 'none', textAlign: 'center' }
+        : { position: 'absolute', left: '170px', top: '120px', width: '900px', height: '640px', border: '3px dashed rgba(255,255,255,.55)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '34px', fontWeight: 700, color: 'rgba(255,255,255,.85)', pointerEvents: 'none', textAlign: 'center' },
+      tabIsShows: tab === 'shows',
+      tabGifts: () => this.setState({ tab: 'gifts' }),
+      tabShows: () => this.setState({ tab: 'shows' }),
+      tabIssuesClick: () => this.setState({ tab: 'issues' }),
+      tabGiftsStyle: chip(tab === 'gifts'), tabShowsStyle: chip(tab === 'shows'), tabIssuesStyle: chip(tab === 'issues'),
+      tabIsIssues: tab === 'issues', issuesCount: issues.length, noIssues: tab === 'issues' && issues.length === 0, issueRows,
+      hasHidden: tab === 'shows' && hiddenShows.length > 0, hiddenCount: hiddenShows.length, restoreHidden: () => this.restoreHidden(),
+      modeStd: () => this.setMode('standard'), modeTicket: () => this.setMode('ticket'), modeShow: () => this.setMode('show'),
+      modeStdStyle: chip(isStd), modeTicketStyle: chip(isTicket), modeShowStyle: chip(isShow),
+      hasLayoutOverride, resetLayout: () => this.resetLayout(),
+      showBroadcastBg: bg === 'blue' && !isShow,
+      showChecker: bg === 'checker' && !isShow,
+      setBgBlue: () => this.setState({ bg: 'blue' }),
+      setBgCheck: () => this.setState({ bg: 'checker' }),
+      bgBlueStyle: chip(bg === 'blue'), bgCheckStyle: chip(bg === 'checker'),
+      sizeNote: isShow ? '1920 × 1080 · exports as a full-frame opaque PNG' : '1920 × 1080 · exports with transparent background',
+      showGuideLine: showGuide && !isShow,
+      showSafeZone: showGuide && !isShow,
+      stageBoxRef: this.stageBoxRef, stageRef: this.stageRef,
+      sheetInputRef: this.sheetInputRef, imgInputRef: this.imgInputRef, urlInputRef: this.urlInputRef,
+      stageOuterStyle: { width: (1920 * scale) + 'px', height: (1080 * scale) + 'px', margin: '0 auto', position: 'relative', overflow: 'hidden', borderRadius: '10px', boxShadow: '0 2px 14px rgba(10,20,90,.16)', background: '#fff' },
+      stageScaleStyle: { position: 'absolute', left: '0', top: '0', width: '1920px', height: '1080px', transform: 'scale(' + scale + ')', transformOrigin: '0 0' },
+      imgWrapStyle: isShow
+        ? { position: 'absolute', left: '0', top: '0', width: '1920px', height: '1080px', clipPath: 'circle(' + SPEC.SH.r + 'px at ' + SPEC.SH.cx + 'px ' + SPEC.SH.cy + 'px)', pointerEvents: 'none' }
+        : { position: 'absolute', left: '0', top: '0', width: '1920px', height: '1080px', pointerEvents: 'none' },
+      onStageDown: e => { if (e.target === e.currentTarget) this.setState({ sel: null }); },
+      onDragOver: e => e.preventDefault(),
+      onDrop: e => { e.preventDefault(); this.addFiles(e.dataTransfer.files); },
+      stageImgs,
+      selBox: !!selIm,
+      selBoxStyle: selIm ? { position: 'absolute', left: selIm.x + 'px', top: selIm.y + 'px', width: selIm.w + 'px', height: (selIm.w / selIm.ar) + 'px', outline: '3px dashed #48D3CD', pointerEvents: 'none' } : null,
+      onResizeDown: e => this.resizeDown(e),
+      c1Style, amountStyle, labelStyle, annualStyle, titleStyle, orStyle, annualLabelStyle, c2CircleStyle, tkCircleStyle,
+      c1HitStyle, c2HitStyle, titleHitStyle,
+      c1Down: e => this.groupDown(e, 'c1'), c2Down: e => this.groupDown(e, 'c2'), titleDown: e => this.groupDown(e, 'title'),
+      amount: cur ? cur.amount : '', label: cur ? cur.label : '',
+      annual: cur ? cur.annual : '', showSecondary: !!(cur && cur.showSecondary),
+      title: cur ? cur.title : '', titleText: cur ? cur.title : '',
+      showTitleText: cur ? (cur.title || '').toUpperCase() : '',
+      hasOriginal: !!(cur && !isShow && cur.giftIdx >= 0 && gifts[cur.giftIdx]),
+      originalText: (cur && !isShow && cur.giftIdx >= 0 && gifts[cur.giftIdx]) ? gifts[cur.giftIdx].name : '',
+      titleHeading: isShow ? 'Show title' : 'Gift title',
+      imagesHeading: isShow ? 'Show art' : 'Gift images',
+      titleHint: isShow ? 'Displays in caps next to the Nashville PBS logo.' : 'Line breaks are kept in the graphic. Long lines shrink to fit.',
+      titleScale: titleScaleVal, titleScalePct: Math.round(titleScaleVal * 100) + '%',
+      onTitleScale: e => this.updateCur({ titleScale: +e.target.value }),
+      onAmount: e => this.updateCur({ amount: e.target.value }),
+      onLabel: e => this.updateCur({ label: e.target.value }),
+      onAnnual: e => this.updateCur({ annual: e.target.value }),
+      toggleSecondary: e => this.updateCur({ showSecondary: e.target.checked }),
+      onTitle: e => this.updateCur({ title: e.target.value }),
+      suggestClick: () => {
+        const c2 = this.cur(); if (!c2) return;
+        const g = c2.giftIdx >= 0 ? this.state.gifts[c2.giftIdx] : null;
+        const sug = suggestTitle(g ? g.name : c2.title);
+        if (sug) this.updateCur({ title: sug }); else this.flash('No item keywords found in the name');
+      },
+      onSheetClick: () => this.sheetInputRef.current && this.sheetInputRef.current.click(),
+      onSheetFile: e => this.onSheetFile(e),
+      onImgsClick: () => this.imgInputRef.current && this.imgInputRef.current.click(),
+      onImgFiles: e => { this.addFiles(e.target.files); e.target.value = ''; },
+      onUrlAdd: () => {
+        const v = this.urlInputRef.current && this.urlInputRef.current.value;
+        if (v && v.trim()) { this.loadImageFromUrl(v.trim()); this.urlInputRef.current.value = ''; }
+      },
+      autoArrangeClick: () => this.autoArrange(),
+      imgRows,
+      newBlank: () => this.newBlank(),
+      newBlankShow: () => this.newBlankShow(),
+      fileVal: cur ? cur.file : '',
+      onFile: e => this.updateCur({ file: e.target.value }),
+      autoFileName: cur ? this.autoFile(cur) : '',
+      exportCurClick: () => this.exportCur(),
+      giftsN, showsN,
+      exportGiftsClick: () => this.exportList(queue.filter(q => (q.mode || 'standard') !== 'show'), 'gift PNGs'),
+      exportShowsClick: () => this.exportList(queue.filter(q => q.mode === 'show'), 'show PNGs'),
+      exportAllClick: () => this.exportBundle(),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
