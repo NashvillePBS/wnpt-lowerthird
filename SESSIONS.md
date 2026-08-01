@@ -213,3 +213,22 @@ export at exactly 910×320 and confirmed the preview on a real phone. Follow-up 
 patcher (`scripts/`); `dceaead` added `worker/wrangler.toml` and recorded that edge
 bot-filtering cannot attach to workers.dev (build.md §11.6). **Session 1 is fully
 closed.**
+
+**Session 2 — 2026-08-01, commits `80bb075` (patcher fix) and `5f2f1a8` (tutorial).**
+Shipped the §12.3 first-run tutorial exactly as scoped: a dismissible "A few things worth
+knowing" modal covering Create multiple, Import from content, the Series picker on
+Nashville PBS Brand, Light Mode, Slice event focal points, and credits `---` page breaks,
+plus the Session-1 New collection control. Dismissal persists in `localStorage`
+(`lt_tips_seen`), and a "Show tips" control next to the Lower Thirds heading on the
+splash screen reopens it. Along the way, patching the tutorial into `dist/` surfaced two
+undocumented encoding rules baked into the bundle by Design's build — a camelCase
+attribute rewrite (`onClick=` → `sc-camel-on-click=`, matching `support.js`'s own
+`CAMEL_ATTR_RE`) and backslash-doubling — neither previously in `patch-dist.py`'s escape
+table. A first attempt at the camel-attribute fix applied it indiscriminately and
+corrupted the component script (`closeTips = () => {...}` became invalid JS); caught by
+booting the page and reading the console, not by the patcher, since the substitution
+itself matched cleanly. Fixed by splitting `esc()` at the `<script data-dc-script>`
+boundary so the rewrite only touches template hunks, and documented both rules plus the
+corruption story in `scripts/patch-dist.md`. Verified on the deployed URL: first visit
+shows the tutorial, dismissal survives a reload, "Show tips" reopens it, and the
+generator and credits flows are unaffected. **Session 2 is fully closed.**

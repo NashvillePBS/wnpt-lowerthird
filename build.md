@@ -1015,6 +1015,17 @@ short — highlight the features above, skip anything self-evident from the UI.
 
 This is a UI feature; **prefer building it in Design** (§14).
 
+**Shipped 2026-08-01 (Session 2):** a global first-run modal, gated on `lt_tips_seen` in
+`localStorage`, covering all six features above plus the Session-1 New collection
+control. "Show tips" reopens it from the splash screen only.
+
+**Not yet done — scoped but not scheduled:** the modal is a one-shot overview, not
+contextual help. A future session should move (or add) tips into the moment each
+feature is actually used — e.g. a hint by the Import-from-content button, by the Light
+Mode toggle, by Save collection itself — and make "Show tips" reachable from the
+generator screens too, not just the splash. Do not build this without an explicit
+go-ahead; it is a real gap, not an oversight to quietly patch over.
+
 ### 12.4 Usage logging
 
 **Problem:** staff report using the tool but there's no record of it. Today the only
