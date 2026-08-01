@@ -101,14 +101,18 @@ for tag, i1, i2, j1, j2 in ops:
 template_end_idx = next(
     i for i, line in enumerate(old_lines) if TEMPLATE_END_MARKER in line)
 
+def block(lines, a, b, ctx):
+    return "".join(lines[max(0, a - ctx):min(len(lines), b + ctx)])
+
+
 dist = open(DIST, encoding="utf-8").read()
 print(f"{len(merged)} merged hunks")
 for k, (i1, i2, j1, j2) in enumerate(merged):
     is_template = i1 < template_end_idx
     applied = False
     for ctx in range(1, MAX_CTX + 1):
-        o = "".join(old_lines[max(0, i1 - ctx):min(len(old_lines), i2 + ctx)])
-        n = "".join(new_lines[max(0, j1 - ctx):min(len(new_lines), j2 + ctx)])
+        o = block(old_lines, i1, i2, ctx)
+        n = block(new_lines, j1, j2, ctx)
         eo = esc(o, is_template)
         c = dist.count(eo)
         if c == 1:
@@ -116,6 +120,20 @@ for k, (i1, i2, j1, j2) in enumerate(merged):
             print(f"hunk {k}: applied with ctx={ctx} ({len(o)} -> {len(n)} chars)")
             applied = True
             break
+        if c > 1:
+            # N identical edits at N identical sites (e.g. relabeling three
+            # byte-identical header buttons): safe iff this hunk and the
+            # remaining hunks include exactly c copies of the SAME old->new
+            # block. Then each hunk consumes the first remaining match, in
+            # order — difflib emitted them in order, so this is exact.
+            twins = sum(1 for (a1, a2, b1, b2) in merged[k:]
+                        if block(old_lines, a1, a2, ctx) == o
+                        and block(new_lines, b1, b2, ctx) == n)
+            if twins == c:
+                dist = dist.replace(eo, esc(n, is_template), 1)
+                print(f"hunk {k}: applied first-of-{c} identical sites at ctx={ctx}")
+                applied = True
+                break
         if c == 0:
             print(f"ABORT: hunk {k} has 0 matches at ctx={ctx} — the bundle text "
                   f"differs from HEAD source here (stale dist? asset line? "

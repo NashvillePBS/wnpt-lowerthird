@@ -58,7 +58,14 @@ too wide, not as a reason to widen the camel rewrite's scope.
    lines.
 3. For each hunk, escape the old text per the table above and require it to
    appear **exactly once** in the bundle. Context grows one line at a time
-   (up to 12) until the match is unique.
+   (up to 12) until the match is unique. One sanctioned exception: when the
+   same edit is made at N byte-identical sites (e.g. relabeling the three
+   identical screen-header buttons) and the current-plus-remaining hunks
+   contain exactly N copies of that same old→new block, each hunk consumes
+   the first remaining match in order — difflib emits hunks in file order,
+   so this is exact, not a guess. Added 2026-08-01 after the header-button
+   relabel: ctx=1 matched 3×, and widening to ctx=2 hit the header's
+   data-URI'd logo `<img>`, so no unique context existed at all.
 4. Only after every hunk has matched exactly once is the file written. A count
    of 0 or a never-unique hunk aborts with the offending text printed and
    **nothing written**.
