@@ -165,3 +165,24 @@ the bug fixes prove the workflow. Do not begin without his explicit go-ahead.
 
 All bug specifications live in `build.md` §12. Session 1 covers **§12.1, §12.2, and
 §12.6** — read §12.7 first, it explains why those three are one problem rather than three.
+
+---
+
+## Completed
+
+**Session 1 — 2026-08-01, commit `d9729d8`.** All three display bugs shipped and
+deployed: §12.1 gates the Secondary placeholder on content (`!hasSec && !hasName`, via a
+`secPlaceholder` flag) so named entries show no ghost; §12.2 extracts the reset into
+`freshCollectionState()` — which, unlike `enterShow`, preserves the picked Series — runs
+it on successful save, and adds a New collection control with an unsaved-work confirm;
+§12.6 puts `width:max-content` on the preview capture node so bars keep broadcast
+geometry and the existing `scaleToFit` scaler engages below the 820px breakpoint instead
+of letting text wrap. Verified on the deployed URL: no ghost on named entries, a real
+scratch save to Airtable (`recDwCHIe5OFiDgTn`, "SCRATCH - Session 1 verification (safe
+to delete)" — deletable), the post-save reset with the success message naming what was
+saved, load-then-escape of an existing collection, Series retention through the reset,
+and a 375px viewport where the capture node measured full geometry (682×232) under a
+0.49 transform with no reflow. Outstanding: the §12.6 check on a real phone, and Shane's
+measurement that a Slice export reads exactly 910×320 (record in build.md §12.6 when
+reported). Follow-up commit `54a25fb` documented the repo-only workflow (build.md §13.1)
+and committed the dist patcher (`scripts/`).
