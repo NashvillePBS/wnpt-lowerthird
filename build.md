@@ -1088,11 +1088,10 @@ fixed 910×320); station and box are the styles that reflow, so test those.
 proportions, same relative spacing — not a rearranged one. Then confirm the exported PNG
 dimensions are unchanged from before the fix, on both a station-style bar and a Slice bar.
 
-**Session 1 (2026-08-01) did not confirm exported PNG dimensions.** The fix touched only
-the preview node, and the export path renders from separate builders into the off-screen
-host — unchanged by construction — but that is reasoning, not measurement. Shane is
-verifying that a Slice export reads exactly 910×320. Record the result here when he
-reports it. _Pending._
+**Exported PNG dimensions confirmed unchanged.** Session 1 (2026-08-01) touched only
+the preview node — the export path renders from separate builders into the off-screen
+host — and Shane measured a post-fix Slice export at exactly **910×320** (confirmed
+2026-08-01). The preview fix did not alter export geometry.
 
 ### 12.7 These three bugs are one bug
 
