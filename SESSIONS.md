@@ -190,6 +190,17 @@ the bug fixes prove the workflow. Do not begin without his explicit go-ahead.
 
 ---
 
+## Pledge Graphics cloud sync — after Session 3, own session
+
+The Pledge Graphics page (`pledge/`, added 2026-08-01 — build.md §13.8) works today on
+`localStorage` only. Design's spec for moving it to a shared Airtable-backed queue with
+image round-trip is committed verbatim at `pledge/SYNC-SPEC.md`. This is a bigger build
+than Session 3's logging (~7 Worker endpoints, attachment uploads, debounced autosave,
+offline fallback) — do not fold it into Session 3, and read §13.8's rules first:
+`pledge/` has **no bundle and no patcher**; edit `pledge/index.html` directly.
+
+---
+
 ## Bug details
 
 All bug specifications live in `build.md` §12. Session 1 covers **§12.1, §12.2, and
@@ -236,3 +247,14 @@ boundary so the rewrite only touches template hunks, and documented both rules p
 corruption story in `scripts/patch-dist.md`. Verified on the deployed URL: first visit
 shows the tutorial, dismissal survives a reload, "Show tips" reopens it, and the
 generator and credits flows are unaffected. **Session 2 is fully closed.**
+
+**Pledge Graphics added — 2026-08-01.** First Design→Code handoff of a whole generator,
+integrated per Option B (build.md §13.8): the working app landed verbatim at `pledge/`
+with its own vendored `support.js` (newer than the studio's — deliberate), `_ds` hrefs
+repointed to the shared repo copy, and a Pledge Graphics card added to the picker's MISC
+section linking to it. Verified locally (boots clean from the repo tree, tabs
+interactive, all shared `_ds` requests 200, card renders and navigates) and on the
+deployed URL. The Airtable cloud-sync spec from the handoff is parked verbatim at
+`pledge/SYNC-SPEC.md` for its own session after Session 3. The handoff format (working
+`.dc.html` + imported modules + assets + README) is the proven template for future
+generators.

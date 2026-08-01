@@ -1529,3 +1529,45 @@ raise it. The filename convention in §1.10 is the only contract that matters on
 keep it stable.
 
 ---
+
+### 13.8 Pledge Graphics — sibling page, not a studio screen (Shane, 2026-08-01)
+
+The Pledge Graphics generator lives at **`pledge/`** in this repo and is linked from a
+card in the picker's MISC section. It is deliberately **not** merged into the studio
+component. Reasons, recorded so the next session doesn't "unify" it casually:
+
+- It arrived from Design as a complete, working single-file app on the same dc runtime,
+  already proven in production at its own URL. Merging ~1,200 lines of template + class
+  into the studio's source would have been the largest patcher diff ever taken, for no
+  producer-facing gain.
+- It loads the `_ds` design-system CSS globally; the studio deliberately does not.
+  Merging risks restyling the studio in subtle ways.
+
+**How `pledge/` works — different rules from the studio:**
+
+- `pledge/index.html` IS the source — it is the Design handoff `.dc.html` verbatim,
+  except the eight `_ds/` hrefs are repointed to `../_ds/` (shared, byte-verified
+  identical). **There is no bundle and no patcher for this page**: edit
+  `pledge/index.html` directly, commit, push. `scripts/patch-dist.py` applies only to
+  the studio.
+- `pledge/support.js` is **vendored on purpose** and is NEWER than the repo-root
+  `support.js` the studio uses (Design's runtime evolved between exports; md5s differ).
+  Do not consolidate the two, do not "update" the studio's copy to match, and do not
+  point pledge at `../support.js` — each app ships the runtime it was tested with.
+- `pledge/sheet-parser.js` (dependency-free CSV/XLSX parsing) and `pledge/assets/` are
+  local to the page. Its localStorage key is `ppg-v1` — no collision with `lt_*`.
+- The MISC card is an `<a href="pledge/">` in the studio template — the one place the
+  two apps touch. The old standalone deploy at nashvillepbs.github.io/pledge-graphics/
+  can be retired once producers have switched.
+
+**Future work — Airtable cloud sync:** Design's handoff spec is committed verbatim at
+`pledge/SYNC-SPEC.md` (shared queue in Airtable, image round-trip via attachment
+uploads, ~7 Worker endpoints, continuous debounced autosave, localStorage offline
+fallback). That is a **substantially bigger build than §12.4 logging** — its own session
+after Session 3, not rolled into it. Whether the endpoints join
+`worker/lower-thirds-worker.js` or a second Worker is a decision for that session.
+
+**Handoff verdict, for future Design handoffs:** this format worked — a working
+`.dc.html`, every module it imports, its assets, and a README. Request exactly this
+again. Design must still never export over the repo (§13.1); the zip-and-integrate
+path is the proven one.

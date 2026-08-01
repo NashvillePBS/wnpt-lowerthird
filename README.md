@@ -14,6 +14,7 @@ GitHub Pages serves the root `index.html`, which is a byte-for-byte copy of
 |---|---|
 | `Nashville PBS - Lower Thirds Studio.dc.html` | **THE SOURCE** |
 | `dist/` | Generated bundle — never edit directly |
+| `pledge/` | Pledge Graphics — self-contained sibling page, its own vendored runtime (build.md §13.8) |
 | `worker/` | Cloudflare Worker, the Airtable proxy |
 | `_ds/`, `assets/`, `fonts/` | Design system, artwork, PBS Sans |
 | `scripts/` | The dist patcher and its documentation |
