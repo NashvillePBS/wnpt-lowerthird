@@ -32,15 +32,51 @@ old_lines = old_src.splitlines(keepends=True)
 new_lines = new_src.splitlines(keepends=True)
 
 
-def esc(t: str) -> str:
+import re
+
+# Mirrors support.js's own CAMEL_ATTR_RE (build-time-baked into the bundle):
+# any camelCase attribute name (onClick, onChange, viewBox, ...) is rewritten
+# to "sc-camel-" + kebab-case so the browser's HTML parser never lowercases it
+# away. Discovered 2026-08-01: a hunk whose context spans an untouched
+# onClick=/viewBox=/etc. attribute failed to match because the bundle has
+# already applied this rewrite; the source (and git HEAD) has not.
+#
+# This rewrite applies ONLY to the template markup, never to the component
+# script: applying it there mangled `closeTips = () => {...}` (a JS class
+# field — matches the same "lowercase-then-uppercase, then optional space,
+# then =" shape) into `sc-camel-close-tips = () => {...}`, a syntax error.
+# The two live in one file but are split by the `<script data-dc-script>`
+# tag; TEMPLATE_END_MARKER locates that boundary in the OLD file so hunks
+# on either side of it are escaped differently.
+CAMEL_ATTR_RE = re.compile(r"(\s)([a-z]+[A-Z][A-Za-z0-9]*)(\s*=)")
+TEMPLATE_END_MARKER = '<script type="text/x-dc" data-dc-script>'
+
+
+def _to_camel_attr(m):
+    sp, name, eq = m.group(1), m.group(2), m.group(3)
+    kebab = re.sub(r"[A-Z]", lambda c: "-" + c.group(0).lower(), name)
+    return sp + "sc-camel-" + kebab + eq
+
+
+def esc(t: str, is_template: bool) -> str:
     """Escape plain source text into the bundle's embedded-string encoding.
 
     Verified against the bundle (2026-07-31): double quotes become \\", real
     newlines become the two characters backslash-n, the two characters "<" "/"
     become "<" + \\u002F (script-tag safety), and non-ASCII stays raw UTF-8.
-    Backslashes in a hunk mean these rules are unverified for it — abort.
+    Verified 2026-08-01: camelCase attribute names (onClick, onChange, onInput,
+    onFocus, onBlur, onDrop, onDragOver, onDragLeave, viewBox, ...) are
+    rewritten sc-camel-kebab-case in the TEMPLATE ONLY, same rule as
+    support.js's CAMEL_ATTR_RE — the component script is never run through it
+    (see TEMPLATE_END_MARKER above).
+    Also verified 2026-08-01 (the `api()` regex literal, `/\\/+$/`): a literal
+    backslash becomes two backslashes, the ordinary JS-string-literal rule —
+    must run before quote/newline/`</` escaping so it doesn't double-escape
+    the backslashes those steps introduce.
     """
-    assert "\\" not in t, "hunk contains a backslash; escaping rules unverified"
+    if is_template:
+        t = CAMEL_ATTR_RE.sub(_to_camel_attr, t)
+    t = t.replace("\\", "\\\\")
     t = t.replace('"', '\\"')
     t = t.replace("\n", "\\n")
     t = t.replace("</", "<\\u002F")
@@ -62,17 +98,21 @@ for tag, i1, i2, j1, j2 in ops:
     else:
         merged.append((i1, i2, j1, j2))
 
+template_end_idx = next(
+    i for i, line in enumerate(old_lines) if TEMPLATE_END_MARKER in line)
+
 dist = open(DIST, encoding="utf-8").read()
 print(f"{len(merged)} merged hunks")
 for k, (i1, i2, j1, j2) in enumerate(merged):
+    is_template = i1 < template_end_idx
     applied = False
     for ctx in range(1, MAX_CTX + 1):
         o = "".join(old_lines[max(0, i1 - ctx):min(len(old_lines), i2 + ctx)])
         n = "".join(new_lines[max(0, j1 - ctx):min(len(new_lines), j2 + ctx)])
-        eo = esc(o)
+        eo = esc(o, is_template)
         c = dist.count(eo)
         if c == 1:
-            dist = dist.replace(eo, esc(n))
+            dist = dist.replace(eo, esc(n, is_template))
             print(f"hunk {k}: applied with ctx={ctx} ({len(o)} -> {len(n)} chars)")
             applied = True
             break
