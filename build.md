@@ -596,6 +596,10 @@ Everything below was read out of `worker/lower-thirds-worker.js` and
     `worker/lower-thirds-worker.js` is safe to commit.
   - `ALLOW_ORIGIN` (Plaintext) = `https://nashvillepbs.github.io`
 - **Observability:** Logs Enabled, 100% sampling, no export destination, no Tail Worker.
+- **CDN dependencies:** `html-to-image@1.11.11` and `jszip@3.10.1` load from the jsdelivr
+  CDN (source lines 30–31). This bounds §11.2's "never fails on a bad network" reasoning:
+  fonts and assets are inlined in `dist/`, but the export machinery itself is not — if
+  jsdelivr is unreachable at page load, rendering and ZIP download are unavailable.
 
 **Deployment method — no pipeline exists.** Every version in the Worker's history is
 "Manually deployed" from the Cloudflare Dashboard by `wnpt.digital`. The repo has never
@@ -645,7 +649,7 @@ Series `tbldxGvIU3nxZhfE7` · Content `tbl7u0utEYTfwPya9`
 | `GET /series` | `search` | `{series:[{id,title}]}`, alphabetical, blanks filtered |
 | `GET /lower-thirds` | `search` | `{lowerThirds:[{id,name,secondary,lightMode,png}]}` |
 | `GET /collections` | `series`, `search`, `limit` (≤50, default 5), `offset` | `{collections:[{id,name,count,created}], nextOffset}`, sorted by `Created` desc |
-| `GET /collection` | `id` (required) | `{id,name,series,contentId,contentTitle,zip,entries[]}` |
+| `GET /collection` | `id` (required) | `{id,name,series,contentId,contentTitle,zip,entries[]}`; missing `id` → `400 {error:"missing id"}` |
 | `POST /save` | JSON body (§11.5) | `{ok,collectionId,seriesId,lowerThirdIds}` |
 
 Unmatched path → `404 {error:"not found",path}`. Any throw → `500 {error}`.
@@ -668,6 +672,9 @@ Request body:
 `saveCollection()` order of operations:
 
 1. Resolve `seriesTitle` → Series record via `findByField`. **Throws if not found.**
+   (Only when `seriesTitle` is non-empty — an empty title skips the lookup and saves the
+   Collection with no Series link. The client always sends one, so that branch is
+   theoretical.)
 2. Upsert the Collection (`Collection Name` + `Series` link). Create if no `collectionId`.
 3. Per entry: upsert Lower Third (`Name`, `Secondary`, `Light Mode`, `Content` link),
    then if `pngBase64` — clear the `PNG` attachment, then upload the new one.
@@ -786,7 +793,6 @@ that hypothesis has been ruled out.
 To re-verify after any Worker change, open that URL directly in a browser tab. Direct
 navigation is not subject to CORS, so the JSON is readable even though `ALLOW_ORIGIN` is
 locked to the Pages origin.
-- **ZIP library:** JSZip 3.10.1, loaded from CDN.
 
 ### 11.10 Nashville PBS Brand: Series picker → Content picker (verified in source)
 
@@ -860,7 +866,8 @@ locations do this:
 
 Each placeholder uses the **same font size, weight, and letter-spacing as real secondary
 text** — only opacity differs. The export builders iterate `secLinesOf(entry)` only
-(lines 1238, 1260), so no placeholder ever reaches the PNG.
+(lines 1238 station-ID, 1260 station, 1272 slice, 1290 box), so no placeholder ever
+reaches the PNG.
 
 So: import a one-line record → the name fills in → a ghost "Secondary" sits beneath it at
 40% opacity, looking like content → the downloaded PNG correctly has none. The export is
@@ -880,12 +887,18 @@ bug.
 
 **DECIDED (Shane, 2026-07-31): hide the Secondary placeholder once the entry has a name.**
 
-Gate the secondary placeholder on `noSec && noName` rather than `noSec` alone, at all five
-locations. Effect:
+Gate the secondary placeholder on `noSec && !hasName` rather than `noSec` alone, at all
+five locations. `hasName` already exists as a computed flag at line 1913
+(`!!(sel && sel.name)`) — it tracks content only. No new flag is needed. Effect:
 
 - Blank entry → both placeholders show. Unchanged; the empty-state affordance is kept.
 - Named entry, no secondary → **no ghost**. The preview now matches the export exactly.
 - Imported entry → correct automatically, because imported entries always carry a name.
+
+**`noSec && noName` is the wrong condition — do not use it.** `noName` (line 1914) is
+`!(sel && sel.name) && !s.nameFocused`: it goes false when the name input is merely
+*focused*, so on a blank entry the Secondary ghost would vanish the moment someone
+clicks into the name field. The placeholder must be gated on content, not focus.
 
 Leave the Name placeholder logic alone — it already works. Do not restyle either
 placeholder; the fix is the gating condition, nothing else.
@@ -957,15 +970,24 @@ context. At minimum, `collectionId` must be cleared on save even if nothing else
 
 The reset clears entries, selection, `collectionId`, `collName`, and **`contentId` /
 `contentTitle` / `contentLowerThirds`**. Keep only the current show, the Series selection,
-and the Worker connection. This is exactly what `enterShow` already does, minus the show
-change — which is why extracting that block is the right implementation.
+and the Worker connection.
+
+**WARNING — do not extract the `enterShow` block verbatim.** `enterShow` clears
+`pickedSeriesId` / `pickedSeriesTitle` (line 787), and the post-save reset must **not**.
+Copying the block as-is means that on Nashville PBS Brand the picked Series is dropped
+after every save, and the next save silently files under the WNPT Brand default —
+`seriesTitle()` falls back to `cfg.series` when `pickedSeriesTitle` is empty. The
+extracted reset must be parameterized so the post-save path preserves the show **and**
+the Series. The explicit "New collection" control may clear the Series too, matching
+`enterShow` — that's a user-initiated fresh start, not a silent one.
 
 Also add an explicit escape hatch that doesn't depend on a save succeeding: a "New
 collection" / "Clear" control that resets the same state. The absence of any way out
 is as much the bug as the stale state.
 
-Confirm the success message names what was saved before the form clears, so the reset
-doesn't read as "my work vanished."
+The success message already names what was saved — line 1382 flashes
+`Saved "<name>" to Airtable.` — so nothing to add there; just don't lose it when the
+reset lands, or the reset reads as "my work vanished."
 
 ### 12.3 First-run tutorial for the non-obvious features
 
@@ -1036,19 +1058,31 @@ erodes trust in a tool whose entire value is "what you see is what you key over 
 Several people have had to be told "no, it's fine, just export it" — a UX failure even
 though the output is right.
 
-**Fix direction:** the preview node must render at fixed broadcast geometry regardless of
-viewport, and be **scaled to fit** its container — never reflowed. The Credits preview
-already does exactly this (`min(availW/1920, availH/1080, 1)`, §9 item 8); apply the same
-approach to the lower-third preview. Transform-scale the wrapper; do not let the bar's
-own layout respond to the breakpoint.
+**Mechanism — verified in source. The scaler already exists; the capture node's layout
+is what breaks.**
 
-**Critical constraint:** the scaling transform must live on a wrapper **outside** the
-captured export node — same rule as the checkerboard (§1.2) and the credits title-safe
-guide (§4). A transform inside the capture node will change exported pixel dimensions and
-silently break delivery specs.
+A scale-to-fit wrapper is already in place: `scalerRef` wraps `capRef` (lines 306–307),
+and `scaleToFit` (lines 809–820) transform-scales it on window resize and via a
+ResizeObserver. The transform already lives on a wrapper **outside** the captured node,
+so the checkerboard rule (§1.2, §4) is already satisfied. Do not add a second scaler and
+do not modify `scaleToFit` — neither is the bug.
 
-Slice's fixed 910×320 and the 1920×1080 full-screen graphics have the same requirement:
-scale to fit, never reflow.
+The bug is upstream of the scaler. `capRef` is `display:inline-block` inside the
+responsive column; below the 820px media query (line 22), shrink-to-fit caps its layout
+width at the narrow container. Station and box bars compress and their secondary lines
+wrap (they have no `nowrap`). `scaleToFit` then measures the **already-squeezed** node,
+finds it fits, and applies scale ≈ 1 — so the reflowed bar shows at full size instead of
+a scaled-down correct one.
+
+The export never sees any of this: it renders into the 8000px off-screen host (line 703),
+and the export bar builders set `width:max-content` on their wrappers (lines 1222, 1232,
+1252, 1254). The preview templates of the same bars lack those widths entirely — that is
+the whole preview/export divergence.
+
+**Fix:** make the preview capture node lay out at unconstrained / `max-content` width,
+mirroring the export builders, so the bar keeps broadcast geometry and `scaleToFit`
+actually engages on narrow viewports. Slice mostly escapes the bug already (its bar is a
+fixed 910×320); station and box are the styles that reflow, so test those.
 
 **Verify:** on a real phone, the preview must be a smaller version of the export — same
 proportions, same relative spacing — not a rearranged one. Then confirm the exported PNG
