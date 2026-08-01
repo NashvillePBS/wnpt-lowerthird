@@ -1088,6 +1088,12 @@ fixed 910×320); station and box are the styles that reflow, so test those.
 proportions, same relative spacing — not a rearranged one. Then confirm the exported PNG
 dimensions are unchanged from before the fix, on both a station-style bar and a Slice bar.
 
+**Session 1 (2026-08-01) did not confirm exported PNG dimensions.** The fix touched only
+the preview node, and the export path renders from separate builders into the off-screen
+host — unchanged by construction — but that is reasoning, not measurement. Shane is
+verifying that a Slice export reads exactly 910×320. Record the result here when he
+reports it. _Pending._
+
 ### 12.7 These three bugs are one bug
 
 §12.1, §12.6, and §9 item 2 are the same failure: **the on-screen preview disagrees with
@@ -1180,11 +1186,30 @@ rather than dropping them into an "unknown type" bucket.
 
 ### 13.1 Source of truth — read this first
 
-`Nashville PBS - Lower Thirds Studio.dc.html` is the source. `dist/index.html`,
-`dist-airtable/index.html`, and `dist-cdn/index.html` are **generated**.
+**HARD RULE (Shane, 2026-08-01): Claude Code is the ONLY writer to this repo.**
+Design is a sketchpad, not a source of truth. Design cannot read the repo back —
+it can only hand work forward. Anything built in Design arrives as markup or a
+component to **integrate into the existing `.dc.html` by hand**. Never export
+Design's output over the repo folder: its canvas holds a stale copy of this file
+and an export would silently revert committed work with no error.
 
-**Never edit a `dist/` file directly.** It will be silently overwritten on the next
-Design sync and the change will be lost with no error. Edit the `.dc.html` and rebuild.
+`Nashville PBS - Lower Thirds Studio.dc.html` is the source. `dist/index.html`,
+`dist-airtable/index.html`, and `dist-cdn/index.html` are **generated** — and there
+is **no local bundler**. Design is the bundler; it produced the dist builds, and no
+build command exists in this repo. `dist/index.html` embeds the entire `.dc.html`
+source as an escaped JS string with asset URLs rewritten to data URIs.
+
+The workflow, in Code, every time:
+
+1. Edit the `.dc.html`.
+2. Patch `dist/index.html` with the committed patcher — see
+   [`scripts/patch-dist.md`](scripts/patch-dist.md) **before** improvising anything.
+3. Mirror: `cp dist/index.html index.html` (GitHub Pages serves the root file;
+   the two must stay byte-identical).
+4. Commit and push — that is the deploy.
+
+**Never edit a `dist/` file directly** except through the patcher, and never edit
+the root `index.html` except by copying the patched dist over it.
 
 `support.js` is also generated (`dc-runtime`) and carries its own do-not-edit banner.
 
