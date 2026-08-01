@@ -538,7 +538,7 @@ loads** → **run `fitEl`** → **double `requestAnimationFrame`** → capture �
   data-loss path, not a UI annoyance — see §12.2.
 - **ADDED — a full reset already exists.** `enterShow(key)` clears entries, selection,
   `collectionId`, `collName`, collections, all content state, and all series state. The
-  "All shows" control reaches it. Reuse that block; do not write a second reset.
+  "Back to main" control reaches it. Reuse that block; do not write a second reset.
 
 ### Worker URL
 - Stored in `localStorage` under **`lt_worker_url`**, falling back to `DEFAULT_WORKER`.
@@ -971,7 +971,8 @@ the first collection. Treat this as the actual severity of the bug.
 **A reset already exists — reuse it, do not write a new one.** `enterShow(key)` clears
 `entries`, `selected`, `collectionId`, `collName`, `collections`, `contentId`,
 `contentTitle`, `contentResults`, `contentLowerThirds`, `pickedSeriesId`,
-`pickedSeriesTitle`, and status. The "All shows" control (top-left) returns to the picker,
+`pickedSeriesTitle`, and status. The "Back to main" control (top-left, labeled "All
+shows" until 2026-08-01) returns to the picker,
 so re-entering a show is today's working escape hatch — it is simply not discoverable as
 "start a new collection."
 
