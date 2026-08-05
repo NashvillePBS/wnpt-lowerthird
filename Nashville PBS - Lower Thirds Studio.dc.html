@@ -1357,7 +1357,28 @@ class Component extends DCLogic {
   buildBar(entry) { const c = this.cfg(); if (c.logoStation) return this.buildStationIdBar(entry); const st = c.style; if (st === "slice") return this.buildSliceBar(entry); if (st === "box") return this.buildBoxBar(entry); return this.buildStationBar(entry); }
 
   toBlob = (dataUrl) => fetch(dataUrl).then(r => r.blob());
-  captureNode = async (node) => window.htmlToImage.toPng(node, { pixelRatio: this.SCALE });
+  // html-to-image rasterizes the node into an SVG foreignObject at its natural (unscaled) CSS
+  // size, then canvas-stretches that fixed-resolution bitmap to pixelRatio×, which blurs text —
+  // pixelRatio alone never buys real sharpness. Forcing the SVG's own width/height to the scaled
+  // target (via explicit width/height options) while visually scaling the node with a real
+  // transform makes the browser paint at the target resolution instead of upscaling a small raster.
+  captureAtScale = async (node, scale, extraOpts) => {
+    const s = scale || 1;
+    const opts = Object.assign({ pixelRatio: 1 }, extraOpts);
+    if (s <= 1) return window.htmlToImage.toPng(node, opts);
+    const rect = node.getBoundingClientRect();
+    const w = rect.width, h = rect.height;
+    const prevT = node.style.transform, prevO = node.style.transformOrigin;
+    node.style.transformOrigin = "top left";
+    node.style.transform = "scale(" + s + ")";
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    try {
+      return await window.htmlToImage.toPng(node, Object.assign(opts, { width: Math.ceil(w * s), height: Math.ceil(h * s) }));
+    } finally {
+      node.style.transform = prevT; node.style.transformOrigin = prevO;
+    }
+  };
+  captureNode = async (node) => this.captureAtScale(node, this.SCALE);
 
   renderEntry = async (entry) => {
     const host = this._refs.exportRef;
@@ -1704,7 +1725,7 @@ class Component extends DCLogic {
     const node = this.buildSliceNode(key); host.appendChild(node);
     await this.waitSliceImgs(node);
     const pr = outW ? outW / S.w : 1;
-    const url = await window.htmlToImage.toPng(node, { width:S.w, height:S.h, pixelRatio:pr, cacheBust:true });
+    const url = await this.captureAtScale(node, pr, { cacheBust: true });
     host.removeChild(node); return url;
   };
   renderSlicePreview = () => {
