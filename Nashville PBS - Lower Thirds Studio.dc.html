@@ -47,11 +47,24 @@ a:hover{color:#0F1E8C;text-decoration:underline}
     </header>
 
     <div style="flex:1;padding:44px 40px 64px;max-width:1180px;width:100%;box-sizing:border-box;margin:0 auto">
+      <div style="margin-bottom:20px;background:#fff;border:1px solid #d7dbe8;border-radius:12px;overflow:hidden">
+        <button onClick="{{ toggleTips }}" style="width:100%;display:flex;align-items:center;gap:10px;background:#f6f7fb;border:none;padding:14px 22px;cursor:pointer;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180" style-hover="background:#eef1fb">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ tipsChevronStyle }}"><path d="m9 18 6-6-6-6"></path></svg>Tips &amp; shortcuts
+        </button>
+        <sc-if value="{{ tipsOpen }}">
+          <div style="padding:18px 22px 20px;display:flex;flex-direction:column;gap:14px;border-top:1px solid #e4e7f1">
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Create multiple</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Paste a list of names and credits at once instead of adding entries one by one.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Import from content</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Pick a Content item that already has lower thirds attached to reuse its entries here.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Series picker (Nashville PBS Brand)</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">File entries under a specific series instead of the default brand bucket.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Light Mode</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Swap in dark text when a lower third will sit on a light or white background.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">New collection</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Start over without losing your picked Series — you'll be asked to confirm first if there's unsaved work.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Slice event focal points</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Drag position, zoom, and angle per size so the photo crops well across all six outputs.</div></div>
+            <div><div style="font-weight:700;font-size:14px;color:#0A145A">Credits page breaks</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Type <strong style="font-weight:700">---</strong> on its own line to force a new credits page.</div></div>
+          </div>
+        </sc-if>
+      </div>
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
         <div style="font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180">Lower Thirds</div>
-        <button onClick="{{ openTips }}" title="Show tips" style="display:flex;align-items:center;gap:6px;background:#eef1fb;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1.5px solid #b9c2ea;border-radius:999px;padding:5px 12px;cursor:pointer" style-hover="background:#e3e8fa;border-color:#2638C4">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 2-2 3.5"></path><path d="M12 17h.01"></path></svg>Show tips
-        </button>
       </div>
       <div id="pick-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
 
@@ -521,30 +534,6 @@ a:hover{color:#0F1E8C;text-decoration:underline}
       </div>
     </sc-if>
   </sc-if>
-  <!-- first-run tutorial -->
-  <sc-if value="{{ tipsOpen }}">
-    <div style="position:fixed;inset:0;background:rgba(10,20,90,.42);display:flex;align-items:center;justify-content:center;z-index:60;padding:24px">
-      <div style="background:#fff;border-radius:16px;width:520px;max-width:100%;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)">
-        <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid #e4e7f1">
-          <div style="font-weight:800;font-size:17px;color:#0A145A">A few things worth knowing</div>
-          <button onClick="{{ closeTips }}" style="margin-left:auto;display:flex;width:30px;height:30px;flex:none;align-items:center;justify-content:center;border:none;background:#f4f6fc;border-radius:8px;cursor:pointer;color:#5a6180"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
-        </div>
-        <div style="flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px">
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Create multiple</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Paste a list of names and credits at once instead of adding entries one by one.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Import from content</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Pick a Content item that already has lower thirds attached to reuse its entries here.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Series picker (Nashville PBS Brand)</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">File entries under a specific series instead of the default brand bucket.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Light Mode</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Swap in dark text when a lower third will sit on a light or white background.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">New collection</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Start over without losing your picked Series — you'll be asked to confirm first if there's unsaved work.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Slice event focal points</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Drag position, zoom, and angle per size so the photo crops well across all six outputs.</div></div>
-          <div><div style="font-weight:700;font-size:14px;color:#0A145A">Credits page breaks</div><div style="font-size:13px;color:#5a6180;line-height:1.5;margin-top:2px">Type <strong style="font-weight:700">---</strong> on its own line to force a new credits page.</div></div>
-        </div>
-        <div style="display:flex;align-items:center;padding:16px 24px;border-top:1px solid #e4e7f1">
-          <button onClick="{{ closeTips }}" style="margin-left:auto;background:#2638C4;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:14px;border:none;border-radius:999px;padding:10px 22px;cursor:pointer" style-hover="background:#0F1E8C">Got it</button>
-        </div>
-      </div>
-    </div>
-  </sc-if>
-
   <!-- ════════ CREDITS GENERATOR ════════ -->
   <sc-if value="{{ isCredits }}">
     <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
@@ -874,7 +863,7 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    this.setState({ workerUrl: localStorage.getItem("lt_worker_url") || Component.DEFAULT_WORKER, tipsOpen: !localStorage.getItem("lt_tips_seen") });
+    this.setState({ workerUrl: localStorage.getItem("lt_worker_url") || Component.DEFAULT_WORKER });
     this.applyShowMetrics();
     this.fit();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(this.fit);
@@ -910,8 +899,7 @@ class Component extends DCLogic {
     this.setState({ workerUrl: url });
   };
   api(path) { return this.state.workerUrl.replace(/\/+$/, "") + path; }
-  closeTips = () => { localStorage.setItem("lt_tips_seen", "1"); this.setState({ tipsOpen: false }); };
-  openTips = () => this.setState({ tipsOpen: true });
+  toggleTips = () => this.setState(s => ({ tipsOpen: !s.tipsOpen }));
   seriesTitle() { return this.state.pickedSeriesTitle || this.cfg().series; }
   flash(msg, kind = "ok") { this.setState({ status: msg, statusKind: kind }); }
 
@@ -1879,8 +1867,8 @@ class Component extends DCLogic {
       prevCreditsPage: this.prevCreditsPage,
       nextCreditsPage: this.nextCreditsPage,
       tipsOpen: s.tipsOpen,
-      closeTips: this.closeTips,
-      openTips: this.openTips,
+      toggleTips: this.toggleTips,
+      tipsChevronStyle: "transition:transform .15s ease;transform:rotate(" + (s.tipsOpen ? "90" : "0") + "deg)",
       // screens
       isPicker: s.screen === "picker",
       isGen: s.screen === "generator",
