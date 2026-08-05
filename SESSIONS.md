@@ -248,6 +248,41 @@ corruption story in `scripts/patch-dist.md`. Verified on the deployed URL: first
 shows the tutorial, dismissal survives a reload, "Show tips" reopens it, and the
 generator and credits flows are unaffected. **Session 2 is fully closed.**
 
+**Station ID logo/export fixes + tips redesign — 2026-08-05, commits `c85448c`, `6609ec6`,
+`7495742`.** Three small fixes from a live-testing session, unrelated to the numbered
+sequence above.
+
+`c85448c` — the Station ID PNG export was rendering the PBS "head" mark invisible.
+`whiteLogoSVG()` (the inline logo used only for that export path, kept separate from
+`assets/NashvillePBS_Logo_Horizontal_White.svg` so the bundle doesn't 404 on it) wrapped
+every path in one `fill="#ffffff"` group, so the head icon — which the real asset colors
+`#2638C4` to stand out against the white circle behind it — painted white-on-white and
+disappeared. Split into two fill groups matching the real asset. Verified by rasterizing
+the corrected markup the way the export does and sampling the head icon's pixel color
+(`rgb(38,56,196)` = `#2638C4`, not white).
+
+`6609ec6` — exports at `scale > 1` (Nashville PBS Brand's is 4) looked blurry against a
+sharp on-screen preview. Root cause traced to the vendored `html-to-image@1.11.11`
+source: it rasterizes the node into an SVG `foreignObject` at the node's natural
+(unscaled) CSS size, then canvas-stretches that fixed-resolution bitmap by `pixelRatio` —
+so a higher `scale` was upscaling a small raster, not actually rendering more detail.
+Added `captureAtScale()`: measures the node's natural size, applies a real CSS
+`transform: scale()`, and passes the *scaled* size as explicit `width`/`height` options
+with `pixelRatio: 1`, so the browser paints text at the target resolution instead of
+interpolating it up afterward. Wired into `captureNode` (station/box/station-id bars) and
+`renderSlicePng`'s bigger marketing-size variant; the 1920×1080 credits export already
+renders at true native size and needed no change. Verified by capturing the real
+"Nashville PBS Brand" export through the running app, cropping a glyph, and confirming
+tight anti-aliasing edges instead of the wide blur the old code produced.
+
+`7495742` — replaced the Session 2 "Show tips" popup (a dismissible modal, gated on
+`localStorage.lt_tips_seen`) with a closed-by-default accordion above the Lower Thirds
+heading, using the same collapse pattern as the Collections list (`toggleColl` /
+`collOpen`). Dropped the first-visit auto-open and dismissal tracking — the section is
+just always there, closed. Session 2's writeup above describes the popup as it existed
+then; that UI no longer exists in the code. Verified in the local dist build: closed by
+default, expands in place with all seven tips, no console errors.
+
 **Pledge Graphics added — 2026-08-01.** First Design→Code handoff of a whole generator,
 integrated per Option B (build.md §13.8): the working app landed verbatim at `pledge/`
 with its own vendored `support.js` (newer than the studio's — deliberate), `_ds` hrefs
