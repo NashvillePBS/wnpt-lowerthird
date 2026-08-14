@@ -67,6 +67,8 @@ const F_G_TYPE = "Graphics Type";   // multipleSelects
 const F_G_ATTACHMENT = "Attachments";
 const F_G_CREATED = "Created";
 const F_G_USER = "User Table";      // link on Graphics → User Table
+const F_G_REVIEW = "Needs Review";  // checkbox — drives the review email automation
+const F_G_REVIEW_NOTES = "Review Notes"; // long text — becomes the email body
 // The only Graphics Type options that exist in the base. Airtable rejects an
 // unknown option outright (no typecast here), so check first and say why.
 const GRAPHICS_TYPES = ["Business Card", "Name Tag", "Station ID"];
@@ -314,6 +316,7 @@ async function saveCollection(api, body) {
 //   graphicsType: "Business Card" | "Name Tag",
 //   pdfBase64: string,
 //   fileName?: string,
+//   details?: { title, email, phone, cell },  // what the operator actually typed
 // }
 // Creates one Graphics row named "{Person} - {Graphics Type} - {YYYY-MM-DD}" and
 // uploads the print-ready PDF into it. Never updates an existing row: every save
@@ -339,6 +342,15 @@ async function saveGraphic(api, body) {
   };
   if (userId) fields[F_G_USER] = [userId];
 
+  // Flag anything the User Table doesn't already agree with, so the source of
+  // truth can be reconciled instead of drifting. Set on the create call itself so
+  // the review automation sees it on the recordCreated trigger.
+  const review = await reviewNotes(api, { userId, personName, graphicsType, details: body.details });
+  if (review) {
+    fields[F_G_REVIEW] = true;
+    fields[F_G_REVIEW_NOTES] = review;
+  }
+
   const created = await api.create(T_GRAPHICS, [{ fields }]);
   const recordId = created[0].id;
   await api.uploadAttachment(
@@ -346,7 +358,73 @@ async function saveGraphic(api, body) {
     fileName || slug(recordName) + ".pdf",
   );
 
-  return { ok: true, recordId, name: recordName };
+  return { ok: true, recordId, name: recordName, needsReview: !!review };
+}
+
+/* Does this save disagree with the User Table? Returns the note to file, or "" when
+   everything matched (and so nothing needs a human).
+
+   Two cases are worth flagging:
+     • nobody was picked from the search — the person may be missing from the User
+       Table entirely, or the operator skipped the lookup;
+     • somebody was picked, but a field on the card differs from their record —
+       usually a promotion or a new number that never made it back to the table.
+
+   Deliberately NOT flagged: a blank office phone (the card falls back to the
+   station number, which is not a contradiction) and a blank cell (optional by
+   design). Phone numbers compare on digits only, so (615) 259-9325 and
+   615.259.9325 are the same number. */
+async function reviewNotes(api, { userId, personName, graphicsType, details }) {
+  const d = details || {};
+  const typed = {
+    Name: (personName || "").trim(),
+    Title: (d.title || "").trim(),
+    Email: (d.email || "").trim(),
+    "Business Phone Number": (d.phone || "").trim(),
+    "Business Cell Phone": (d.cell || "").trim(),
+  };
+  // one line per field, as Markdown bullets: the notes are read both in the
+  // Airtable cell and as the body of the review email, and single newlines
+  // collapse when Airtable renders Markdown into an email
+  const listTyped = () => Object.keys(typed)
+    .filter((k) => typed[k])
+    .map((k) => `- **${k}:** ${typed[k]}`)
+    .join("\n");
+
+  if (!userId) {
+    return `${personName} was not picked from the User Table, so this ${graphicsType.toLowerCase()} was built from typed details.\n\n` +
+      `What was entered:\n${listTyped()}\n\n` +
+      `If they're staff, add them to the User Table so the next card pulls automatically. ` +
+      `If they're already in there, the person who made this skipped the Find Employee lookup.`;
+  }
+
+  let user;
+  try {
+    user = await api.get(T_USERS, userId);
+  } catch (e) {
+    // a lookup failure must never cost someone their card
+    return `Couldn't read the User Table record for ${personName} to compare it (${e.message || e}). Worth a look.`;
+  }
+  const f = user.fields || {};
+  const onRecord = {
+    Name: String(f[F_USER_NAME] || "").trim(),
+    Title: String(f[F_USER_TITLE] || "").trim(),
+    Email: String(f[F_USER_EMAIL] || "").trim(),
+    "Business Phone Number": String(f[F_USER_PHONE] || "").trim(),
+    "Business Cell Phone": String(f[F_USER_CELL] || "").trim(),
+  };
+  const isPhone = (k) => k === "Business Phone Number" || k === "Business Cell Phone";
+  const same = (k, a, b) => (isPhone(k)
+    ? a.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "") === b.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "")
+    : a.toLowerCase() === b.toLowerCase());
+
+  const diffs = Object.keys(typed)
+    .filter((k) => typed[k] && !same(k, typed[k], onRecord[k]))
+    .map((k) => `- **${k}** — on the ${graphicsType.toLowerCase()}: ${typed[k]} · in the User Table: ${onRecord[k] || "(empty)"}`);
+
+  if (!diffs.length) return "";
+  return `${personName}'s ${graphicsType.toLowerCase()} was built with details that differ from their User Table record:\n\n${diffs.join("\n")}\n\n` +
+    `Update the User Table if the card is right, or reissue the card if the table is.`;
 }
 
 /* ----------------------------- helpers ----------------------------- */

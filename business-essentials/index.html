@@ -59,10 +59,23 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         <button onClick="{{ setModeTag }}" style="{{ tagTabStyle }}">Name Tag</button>
       </div>
 
+      <!-- Instructions, open by default. People were skipping the lookup and typing
+           details by hand, which quietly drifts from the User Table. -->
+      <details open="{{ instructionsOpen }}" style="margin:4px 22px 0;border:1px solid #dde1ee;border-radius:10px;background:#f6f7fb">
+        <summary style="cursor:pointer;padding:10px 13px;font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180;list-style:none">How to use this</summary>
+        <div style="padding:0 13px 12px;font-size:12.5px;line-height:1.55;color:#5a6180">
+          <div style="display:flex;gap:8px;margin-top:2px"><span style="font-weight:800;color:#2638C4">1.</span><span><strong style="color:#0A145A">Start with Find Employee.</strong> Search the person by name and pick them — their name, title, email and phone numbers come straight from the User Table, already correct.</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">2.</span><span><strong style="color:#0A145A">Not in the list?</strong> Go ahead and build the card and name tag by typing the details in yourself. The save is flagged for review so the User Table can be brought up to date.</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">3.</span><span>Every field stays editable after a lookup — but if you change one, that difference gets flagged for review too.</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">4.</span><span>Pick <strong style="color:#0A145A">Business Card</strong> or <strong style="color:#0A145A">Name Tag</strong>, then <strong style="color:#0A145A">Download PDF</strong> for print or <strong style="color:#0A145A">Save</strong> to file it in Airtable. Fill in both and you can do both at once.</span></div>
+        </div>
+      </details>
+
       <div style="padding:14px 22px;display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;flex-direction:column;gap:8px;position:relative">
           <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Find Employee</label>
           <input value="{{ userSearch }}" onInput="{{ onUserSearch }}" placeholder="Search staff by name…" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          <div style="font-size:11.5px;font-weight:600;line-height:1.45;color:#8890ad">Pulls their details from the User Table. Not listed? Type everything in below and build it anyway.</div>
           <sc-if value="{{ showUserResults }}">
             <div style="position:absolute;top:62px;left:0;right:0;background:#fff;border:1.5px solid #c7cde0;border-radius:10px;box-shadow:0 12px 28px rgba(10,20,90,.18);max-height:220px;overflow:auto;z-index:20">
               <sc-if value="{{ userLoading }}"><div style="padding:12px 14px;font-size:13px;color:#8890ad">Searching…</div></sc-if>
@@ -945,6 +958,14 @@ class Component extends DCLogic {
             graphicsType: f.target === "card" ? "Business Card" : "Name Tag",
             pdfBase64,
             fileName: f.name,
+            // what was actually typed — the Worker compares this against the
+            // User Table record and flags the row for review when they disagree
+            details: {
+              title: this.state.title,
+              email: this.state.email,
+              phone: this.state.phone,
+              cell: this.state.cell,
+            },
           }),
         });
         const data = await res.json();
@@ -1022,6 +1043,9 @@ class Component extends DCLogic {
       downloadPdf: this.downloadPdf,
       // same wording on both tabs — which output it is is already the selected tab
       downloadLabel: s.exporting ? "Rendering…" : "Download PDF",
+      // open on load: the lookup step is the one people skip. A bare `open`
+      // attribute doesn't survive the template parse, so it's a real prop.
+      instructionsOpen: true,
       isBlocked: blocked,
       blockedHint: blocked
         ? "The " + this.labelFor(s.mode) + " still needs " + this.listOf(missing) + " before it can be downloaded or saved."

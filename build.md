@@ -1788,5 +1788,53 @@ Three things to know about it:
   simultaneously. Fixing it properly wants a created-time field to compare against, which
   is a schema change and therefore Shane's call.
 
-**Still open:** enabling that automation, and a printer's-eye check of the first real
+### 13.9.2 In-tool instructions and the review email (Shane, 2026-08-14)
+
+**Why:** people were skipping the User-table lookup and typing details by hand, so the
+card and the table drift apart with nobody noticing.
+
+**Instructions in the sidebar.** A `<details>` block at the top of the sidebar, **open on
+load**, with four numbered steps: start with Find Employee; if they're not listed, go ahead
+and build it by typing the details (the save gets flagged); edited fields get flagged too;
+then Download PDF or Save. A one-line hint sits under the Find Employee field itself, which
+is the bit that was actually being skipped. Note for editing: a bare `open` attribute does
+not survive the template parse — it is passed as a real prop (`instructionsOpen`).
+
+**The review path — Worker decides, automation notifies.** The comparison lives in the
+Worker (`reviewNotes()`), not in an automation script, because it is ordinary JS that can
+be tested against the real base. `POST /save-graphic` now takes a `details` object (what
+was typed: title, email, phone, cell) and on every save either:
+
+- **nobody was picked** → flag it, note what was entered, and say either "add them to the
+  User Table" or "whoever made this skipped the lookup"; or
+- **somebody was picked but a field differs** → flag it with one line per field, card value
+  vs table value; or
+- **everything matches** → write nothing at all, so a clean save stays silent.
+
+Deliberately not flagged: a blank office phone (the card falls back to the station number,
+which isn't a contradiction) and a blank cell (optional by design). Phone numbers compare
+on **digits only** with a leading 1 stripped, so `(615) 259-9325` and `615.259.9325` are
+the same number; email compares case-insensitively. A failed User-table read is reported as
+a note rather than throwing — a lookup problem must never cost somebody their card.
+
+Two new Graphics fields carry it (additive, and the only schema change this work needed):
+`Needs Review` (checkbox, `fldSDWMr5FlCIr25P`) and `Review Notes` (long text,
+`fldGpMJlDJPkEbDad`). Both are written on the **create** call so the `recordCreated`
+trigger sees them. The notes are Markdown bullets on purpose: they are read both in the
+Airtable cell and as an email body, and single newlines collapse when Airtable renders
+Markdown into mail.
+
+The notifier is a second automation, **`wflgnNNLVCvMfmEl5`** "Graphics — email Shane when a
+card needs review" (https://airtable.com/appmpL4OjEpPoYmcD/wflgnNNLVCvMfmEl5): trigger
+`recordCreated` on Graphics → branch on `Needs Review` → `microsoftOutlookSendEmail` from
+**Shane's Outlook** (`eacK83zDiT67E8AcA`, already connected to the base) to
+sburkeen@wnpt.org, body = Review Notes + the record URL. Like the archive automation it is
+saved **off** and has to be switched on in the UI.
+
+Verified end to end against the deployed Worker with three saves: manual entry → flagged
+with the typed details listed; picked-then-edited → flagged with a line per differing
+field; picked and matching (email in different case, blank phone) → `needsReview: false`
+and no notes. Test rows deleted afterwards.
+
+**Still open:** enabling both automations, and a printer's-eye check of the first real
 job — the file is genuinely separated now, but no vendor has run it yet.
