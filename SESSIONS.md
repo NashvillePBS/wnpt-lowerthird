@@ -293,3 +293,40 @@ deployed URL. The Airtable cloud-sync spec from the handoff is parked verbatim a
 `pledge/SYNC-SPEC.md` for its own session after Session 3. The handoff format (working
 `.dc.html` + imported modules + assets + README) is the proven template for future
 generators.
+
+**Business Essentials added — 2026-08-13.** Second Design→Code handoff of a whole
+generator, integrated on the §13.8 pattern: the app landed at `business-essentials/` with
+its own vendored `support.js`, assets, fonts (woff2 + ttf) and `print-colors.json`, its
+header restyled to the studio's generator header (Back to main pill, logo / label
+lockup), and a Business Essentials card added to the picker's MISC section. Three pieces
+of work beyond the drop-in:
+
+*Worker.* `GET /users` and `POST /save-graphic` were added to the existing
+`worker/lower-thirds-worker.js` rather than deployed as a second Worker — same base, same
+secret, same CORS origin, so one deploy and one token. The handoff's placeholder table
+IDs were replaced with the real ones (User Table `tbl7qTD9DIc3itsMj`, Graphics
+`tblZKp11zMShtmjIx`) and three of its guessed field names turned out to be wrong against
+the base: the attachment field is `Attachments`, the person link is `User Table`, the
+archive checkbox is `Archived`. `Graphics Type` is a multiple-select, so it writes as an
+array and the Worker validates the value first instead of letting Airtable 422. Deployed
+with `wrangler` (`keep_vars` intact); `/series`, `/content` and the new `/users` all
+verified against the deployed URL afterwards.
+
+*CMYK vector export.* The handoff's "optional" third task, now done: the 600dpi RGB
+raster is gone and the PDF is drawn instead — vector paths for artwork, real text in
+embedded PBS Sans TTFs (`@pdf-lib/fontkit`), every colour `PDFLib.cmyk()` from
+`print-colors.json`. Geometry is read out of the live preview rather than re-declared, so
+the Circle Crop clearances and type floors are inherited from the template by
+construction. Artwork is clipped to the BleedBox and pages carry real TrimBox/BleedBox.
+Verified on the generated files: only `k`/`K` colour operators and zero image XObjects in
+the content streams, correct page/trim/bleed sizes on both outputs, the QR sampling
+module-for-module identical to its source SVG out of a rasterised page (0 of 1089
+wrong), and a title baseline within 0.17pt of the DOM's.
+
+*Colour discipline.* The `reference/` InDesign JPGs are geometry-accurate but not
+colour-accurate — deliberately left out of the repo so a later session can't sample the
+shifted blues and "correct" the palette. The warning is recorded in build.md §13.9 and at
+the top of `business-essentials/BUILD-NOTES.md`.
+
+Still open: the Airtable automation that checks `Archived` on superseded Graphics rows
+(intentionally not the Worker's job), and a real print job through a vendor's RIP.

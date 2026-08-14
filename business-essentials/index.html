@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif}
+a{color:#0A145A;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+@media (max-width:900px){
+  #be-grid{grid-template-columns:1fr !important;grid-template-rows:auto auto !important}
+  #be-aside{border-right:none !important;border-bottom:1px solid #d7dbe8 !important}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<!-- fontkit lets pdf-lib embed the PBS Sans TTFs, so the PDF carries real text
+     rather than a raster. Without it there is no export at all — the tool says
+     so instead of quietly falling back to RGB pixels. -->
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+</helmet>
+
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0A145A"></rect><rect x="18" y="34" width="64" height="32" rx="3" fill="#fff"></rect><circle cx="33" cy="50" r="7" fill="#2638C4"></circle><rect x="48" y="43" width="28" height="5" fill="#0A145A"></rect><rect x="48" y="53" width="20" height="4" fill="#8890ad"></rect></svg>
+</template>
+
+<div ref="{{ rootRef }}" style="min-height:100vh;display:flex;flex-direction:column;font-family:'PBS Sans',Arial,sans-serif;color:#0A145A">
+
+  <!-- Header matches the studio's generator header (build.md §13.9): same back
+       pill, same logo / label lockup, same connection button. -->
+  <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+    <a href="../" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px" style-hover="background:rgba(255,255,255,.18)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>Business Essentials</span></div>
+    <button onClick="{{ configure }}" title="Airtable connection" style="margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;cursor:pointer">
+      <span style="width:8px;height:8px;border-radius:50%;background:{{ connDot }}"></span>{{ connLabel }}
+    </button>
+  </header>
+
+  <div id="be-grid" style="flex:1;display:grid;grid-template-columns:380px 1fr;min-height:0">
+
+    <aside id="be-aside" style="background:#fff;border-right:1px solid #d7dbe8;display:flex;flex-direction:column;min-height:0;overflow:auto">
+      <div style="padding:20px 22px 8px;display:flex;gap:8px">
+        <button onClick="{{ setModeCard }}" style="{{ cardTabStyle }}">Business Card</button>
+        <button onClick="{{ setModeTag }}" style="{{ tagTabStyle }}">Name Tag</button>
+      </div>
+
+      <div style="padding:14px 22px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:8px;position:relative">
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Find in User Table</label>
+          <input value="{{ userSearch }}" onInput="{{ onUserSearch }}" placeholder="Search staff by name…" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          <sc-if value="{{ showUserResults }}">
+            <div style="position:absolute;top:62px;left:0;right:0;background:#fff;border:1.5px solid #c7cde0;border-radius:10px;box-shadow:0 12px 28px rgba(10,20,90,.18);max-height:220px;overflow:auto;z-index:20">
+              <sc-if value="{{ userLoading }}"><div style="padding:12px 14px;font-size:13px;color:#8890ad">Searching…</div></sc-if>
+              <sc-if value="{{ userEmpty }}"><div style="padding:12px 14px;font-size:13px;color:#8890ad">No matches.</div></sc-if>
+              <sc-for list="{{ userResults }}" as="u" hint-placeholder-count="0">
+                <button onClick="{{ u.onPick }}" style="display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;cursor:pointer;font-family:'PBS Sans',Arial,sans-serif" style-hover="background:#f4f6fc">
+                  <div style="font-weight:700;font-size:14px;color:#0A145A">{{ u.name }}</div>
+                  <div style="font-weight:500;font-size:12px;color:#8890ad">{{ u.title }}</div>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="height:1px;background:#e4e7f1;margin:4px 0"></div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Name</label>
+          <input value="{{ name }}" onInput="{{ onName }}" placeholder="e.g. Becky Magura" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Title</label>
+          <input value="{{ title }}" onInput="{{ onTitle }}" placeholder="e.g. President &amp; CEO" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Name size</label>
+            <span style="font-weight:600;font-size:12px;color:#8890ad">{{ nameSizeLabel }}</span>
+            <button onClick="{{ resetNameSize }}" style="margin-left:auto;background:none;border:none;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:0">Reset</button>
+          </div>
+          <input type="range" min="14" max="44" step="1" value="{{ nameSize }}" onInput="{{ onNameSize }}" style="width:100%;accent-color:#2638C4;cursor:pointer">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Title size</label>
+            <span style="font-weight:600;font-size:12px;color:#8890ad">{{ titleSizeLabel }}</span>
+            <button onClick="{{ resetTitleSize }}" style="margin-left:auto;background:none;border:none;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:0">Reset</button>
+          </div>
+          <input type="range" min="8" max="28" step="1" value="{{ titleSize }}" onInput="{{ onTitleSize }}" style="width:100%;accent-color:#2638C4;cursor:pointer">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Email</label>
+          <input value="{{ email }}" onInput="{{ onEmail }}" placeholder="e.g. name@wnpt.org" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+        </div>
+        <sc-if value="{{ isCard }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Office phone</label>
+            <input value="{{ phone }}" onInput="{{ onPhone }}" placeholder="(615) 259-9325 (default)" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Cell phone <span style="font-weight:500;color:#aab0c8;text-transform:none">(optional)</span></label>
+            <input value="{{ cell }}" onInput="{{ onCell }}" placeholder="e.g. (931) 261-4704" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="margin-top:auto;border-top:1px solid #e4e7f1;padding:18px 22px;display:flex;flex-direction:column;gap:10px">
+        <button onClick="{{ downloadPdf }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#0A145A;color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 20px;cursor:pointer" style-hover="background:#0F1E8C">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+          {{ downloadLabel }}
+        </button>
+        <button onClick="{{ saveToAirtable }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#f4f6fc">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+          {{ saveLabel }}
+        </button>
+        <sc-if value="{{ hasFitWarning }}">
+          <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;font-weight:600;line-height:1.45;padding:9px 11px;border-radius:8px;background:#fff1ed;color:#a8391b;border:1px solid #ffd4c8">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+            <span>{{ fitWarning }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasStatus }}"><div style="{{ statusStyle }}">{{ status }}</div></sc-if>
+      </div>
+    </aside>
+
+    <main style="position:relative;display:flex;align-items:center;justify-content:center;padding:40px;background:#e4e7f1;overflow:auto">
+      <div ref="{{ scalerRef }}" style="display:flex;flex-direction:column;align-items:center;gap:28px;transform-origin:center center">
+
+        <sc-if value="{{ isCard }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:28px;flex-wrap:wrap;justify-content:center">
+
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8890ad">Front</div>
+              <div style="position:relative;width:540px;height:324px;box-shadow:0 8px 24px rgba(10,20,90,.22)">
+                <div ref="{{ frontRef }}" style="position:absolute;inset:0;overflow:hidden;background:#2638C4">
+                  <img src="assets/card-front-pattern.svg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                  <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:57px;right:44px;height:19px">
+                  <div style="position:absolute;bottom:52px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                    <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                      <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
+                      <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                    </div>
+                    <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
+                  </div>
+                </div>
+                <div style="position:absolute;inset:18px;border:1px dashed rgba(255,255,255,.45);pointer-events:none"></div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8890ad">Back</div>
+              <div style="position:relative;width:540px;height:324px;box-shadow:0 8px 24px rgba(10,20,90,.22)">
+                <div ref="{{ backRef }}" style="position:absolute;inset:0;overflow:hidden;background:#fff">
+                  <svg viewBox="0 0 1224 792" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block"><path fill="#0A145A" d="M-.5,792.2h693.2c83.6-110.1,133.1-247.4,133.1-396.2S776.5,110.4,693.3.4H-.5v791.8Z"></path></svg>
+                  <div style="position:absolute;top:55px;left:54px;display:flex;flex-direction:column;gap:4px">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <span style="font-weight:700;font-size:13px;letter-spacing:.04em;color:#48D3CD;white-space:nowrap">@nashvillepbs</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#48D3CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#48D3CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><path d="M17.5 6.5h.01"></path></svg>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#48D3CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#48D3CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path><path d="m10 15 5-3-5-3z"></path></svg>
+                    </div>
+                    <div style="font-weight:700;font-size:13px;letter-spacing:.04em;color:#48D3CD;white-space:nowrap">wnpt.org</div>
+                  </div>
+                  <div style="position:absolute;top:130px;left:54px;right:234px;display:flex;flex-direction:column;gap:3px">
+                    <div data-fit="name" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap;font-size:24px"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ name }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Full Name</span></sc-if></div>
+                    <div data-fit="title" style="font-weight:700;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;font-size:13px"><sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ true }}"><span style="color:#48D3CD">{{ title }}</span></sc-if><sc-if value="{{ noTitle }}"><span style="color:rgba(72,211,205,.5)">Title</span></sc-if></div>
+                  </div>
+                  <div style="position:absolute;bottom:53px;left:54px;display:flex;flex-direction:column;gap:11px">
+                    <div style="font-weight:500;font-size:15px;color:#fff;white-space:nowrap">{{ backEmail }}</div>
+                    <div style="display:flex;flex-direction:column;gap:3px">
+                      <div style="font-weight:500;font-size:14px;color:#fff;white-space:nowrap">{{ backPhoneLine }}</div>
+                      <sc-if value="{{ hasCell }}"><div style="font-weight:500;font-size:14px;color:#fff;white-space:nowrap">{{ backCellLine }}</div></sc-if>
+                    </div>
+                  </div>
+                  <img src="assets/NashvillePBS_Logo_Horizontal_Color.svg" style="position:absolute;top:57px;right:36px;height:19px">
+                  <div style="position:absolute;bottom:53px;left:385px;font-weight:600;font-size:12.5px;line-height:1.5;color:#0A145A;white-space:nowrap;display:flex;flex-direction:column">
+                    <div>161 Rains Ave.</div>
+                    <div>Nashville, TN 37203</div>
+                  </div>
+                </div>
+                <div style="position:absolute;inset:18px;border:1px dashed rgba(10,20,90,.28);pointer-events:none"></div>
+              </div>
+            </div>
+
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isTag }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8890ad">Name Tag</div>
+            <div style="position:relative;width:468px;height:216px;box-shadow:0 8px 24px rgba(10,20,90,.22)">
+              <div ref="{{ tagRef }}" style="position:absolute;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px">
+                <img src="assets/NashvillePBS_Logo_Horizontal_Color.svg" style="height:27px">
+                <div data-fit="tagname" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap;font-size:35px"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#171717">{{ name }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:#c7cde0">Full Name</span></sc-if></div>
+                <div data-fit="tagtitle" style="font-weight:700;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;font-size:15px"><sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ true }}"><span style="color:#2638C4">{{ title }}</span></sc-if><sc-if value="{{ noTitle }}"><span style="color:#c7cde0">Title</span></sc-if></div>
+              </div>
+              <div style="position:absolute;inset:18px;border:1px dashed rgba(10,20,90,.28);pointer-events:none"></div>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    mode: "card",
+    name: "", title: "", email: "", phone: "", cell: "",
+    cardNameSize: 24, tagNameSize: 35,
+    cardTitleSize: 13, tagTitleSize: 15,
+    fitWarning: "",
+    selectedUserId: null,
+    userSearch: "", userResults: [], userLoading: false, showResults: false,
+    workerUrl: "",
+    status: "", statusKind: "", saving: false,
+  };
+  // Same Worker as the studio (build.md §11.1) — one deploy, one token. The
+  // connection button still overrides it via localStorage["be_worker_url"].
+  static DEFAULT_WORKER = "https://autumn-rain-853e.wnpt-digital.workers.dev";
+  DEFAULT_PHONE = "(615) 259-9325";
+  // The old EXPORT_DPI/EXPORT_RATIO pair is gone: the export is vector now, so
+  // there is no raster to be 600dpi. The "don't lower the dpi" rule in
+  // BUILD-NOTES is satisfied by there being no resolution at all.
+  _refs = {};
+
+  // The cards are authored at 2px per point, so a px floor of 12 == 6pt on paper.
+  // These floors are PRINT LEGIBILITY floors, not aesthetics — do not lower them.
+  // Shrinking stops at the floor; if the text still doesn't fit we report it rather
+  // than shrink into unprintable type or silently cross the Circle Crop chord.
+  FLOORS = { name: 14, title: 12, tagname: 20, tagtitle: 12 }; // px (÷2 = pt)
+
+  fitEl = (el, base, min, maxW) => {
+    if (!el) return true;
+    el.style.fontSize = base + "px";
+    if (el.scrollWidth > maxW) {
+      el.style.fontSize = Math.max(min, Math.floor(base * (maxW / el.scrollWidth))) + "px";
+    }
+    return el.scrollWidth <= maxW + 1;
+  };
+  fitAll = () => {
+    const root = this._refs.rootRef;
+    if (!root) return;
+    const over = [];
+    const F = this.FLOORS;
+    const check = (sel, base, min, maxW, label) => {
+      root.querySelectorAll(sel).forEach((el) => {
+        if (!this.fitEl(el, base, min, maxW)) over.push(label);
+      });
+    };
+    // 252px = the Circle Crop chord on the card; 380px = the name tag's safe width
+    check('[data-fit="name"]', this.state.cardNameSize, F.name, 252, "name");
+    check('[data-fit="title"]', this.state.cardTitleSize, F.title, 252, "title");
+    check('[data-fit="tagname"]', this.state.tagNameSize, F.tagname, 380, "name");
+    check('[data-fit="tagtitle"]', this.state.tagTitleSize, F.tagtitle, 380, "title");
+    const which = Array.from(new Set(over));
+    const msg = which.length
+      ? "The " + which.join(" and ") + (which.length > 1 ? " are" : " is") +
+        " too long to fit at the smallest size that still prints legibly. Shorten " +
+        (which.length > 1 ? "them" : "it") + " — otherwise the text crosses the circle crop edge."
+      : "";
+    if (msg !== this.state.fitWarning) this.setState({ fitWarning: msg });
+    this.scaleToFit();
+  };
+  scaleToFit = () => {
+    const scaler = this._refs.scalerRef;
+    if (!scaler || !scaler.parentElement) return;
+    scaler.style.transform = "none";
+    const avail = scaler.parentElement.clientWidth - 40;
+    const w = scaler.scrollWidth;
+    scaler.style.transform = "scale(" + Math.min(1, avail / w) + ")";
+  };
+
+  componentDidMount() {
+    this.setState({ workerUrl: localStorage.getItem("be_worker_url") || Component.DEFAULT_WORKER });
+    this.fitAll();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(this.fitAll);
+    this._onResize = () => this.scaleToFit();
+    window.addEventListener("resize", this._onResize);
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => this.scaleToFit());
+      if (this._refs.scalerRef && this._refs.scalerRef.parentElement) this._ro.observe(this._refs.scalerRef.parentElement);
+    }
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._onResize);
+    if (this._ro) this._ro.disconnect();
+  }
+  componentDidUpdate() { this.fitAll(); }
+
+  // ---------- connection ----------
+  configure = () => {
+    const cur = this.state.workerUrl || "";
+    const v = window.prompt("Airtable connection (Cloudflare Worker URL):", cur);
+    if (v === null) return;
+    const url = v.trim().replace(/\/+$/, "");
+    localStorage.setItem("be_worker_url", url);
+    this.setState({ workerUrl: url });
+  };
+  api(path) { return this.state.workerUrl.replace(/\/+$/, "") + path; }
+  flash(msg, kind = "ok") { this.setState({ status: msg, statusKind: kind }); }
+
+  // ---------- fields ----------
+  setModeCard = () => this.setState({ mode: "card" });
+  setModeTag = () => this.setState({ mode: "tag" });
+  onName = (e) => this.setState({ name: e.target.value });
+  onTitle = (e) => this.setState({ title: e.target.value });
+  onEmail = (e) => this.setState({ email: e.target.value });
+  onPhone = (e) => this.setState({ phone: e.target.value });
+  onCell = (e) => this.setState({ cell: e.target.value });
+  onNameSize = (e) => {
+    const v = parseInt(e.target.value, 10);
+    this.setState(this.state.mode === "card" ? { cardNameSize: v } : { tagNameSize: v });
+  };
+  resetNameSize = () => this.setState(this.state.mode === "card" ? { cardNameSize: 24 } : { tagNameSize: 35 });
+  onTitleSize = (e) => {
+    const v = parseInt(e.target.value, 10);
+    this.setState(this.state.mode === "card" ? { cardTitleSize: v } : { tagTitleSize: v });
+  };
+  resetTitleSize = () => this.setState(this.state.mode === "card" ? { cardTitleSize: 13 } : { tagTitleSize: 15 });
+
+  // ---------- user search ----------
+  onUserSearch = (e) => {
+    const v = e.target.value;
+    this.setState({ userSearch: v, showResults: true });
+    clearTimeout(this._userDebounce);
+    this._userDebounce = setTimeout(() => this.searchUsers(), 300);
+  };
+  searchUsers = async () => {
+    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
+    if (!this.state.userSearch.trim()) { this.setState({ userResults: [] }); return; }
+    this.setState({ userLoading: true });
+    try {
+      const u = new URL(this.api("/users"));
+      u.searchParams.set("search", this.state.userSearch.trim());
+      const res = await fetch(u.toString());
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      this.setState({ userResults: data.users || [] });
+    } catch (err) {
+      this.flash("User search failed: " + (err.message || err), "err");
+    } finally {
+      this.setState({ userLoading: false });
+    }
+  };
+  pickUser = (u) => this.setState({
+    name: u.name || "", title: u.title || "", email: u.email || "",
+    phone: u.phone || "", cell: u.cell || "",
+    selectedUserId: u.id, userSearch: u.name || "", showResults: false,
+  });
+
+  // ---------- export ----------
+  fileBaseName() {
+    const slug = (this.state.name || "business-essentials").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "business-essentials";
+    return slug + (this.state.mode === "card" ? "-business-card" : "-name-tag");
+  }
+
+  /* ══════════════ CMYK vector export ══════════════
+     The PDF is drawn, not photographed: every shape is a vector path and every
+     line of type is real text in an embedded PBS Sans, all painted in DeviceCMYK.
+     There is no raster stage and no EXPORT_DPI — resolution is meaningless here.
+
+     Geometry comes from the live preview rather than a second copy of the layout.
+     addVectorPage walks the card node, reads each element's own box out of the
+     DOM, and re-draws it in points. That is deliberate: the Circle Crop clearances
+     and the type floors (BUILD-NOTES) are solved once, in the template, and the
+     print file inherits them by construction. A layout tweak can never leave the
+     preview and the PDF disagreeing.
+
+     Assumptions this makes about the template — all true today, and worth knowing
+     before changing it:
+       • every text run is a single line (`white-space:nowrap`); a wrapped run
+         would be drawn as one line, so the walker warns instead of guessing.
+       • artwork is `<img>`/inline `<svg>` with flat `fill`s, no CSS `<style>`
+         blocks (that rule already holds — see CLAUDE.md).
+       • colours are brand colours. Anything outside the palette is reported. */
+
+  PT_PER_PX = 0.5; // the faces are authored at 2px per point
+
+  // Official CMYK builds, from print-colors.json (PBS Brand Guide). These are
+  // NEVER derived from the hex: a naive conversion of PBS Blue gives
+  // C81 M71 Y0 K23 instead of the real C100 M65 Y0 K0.
+  CMYK = {
+    "#2638C4": [1, 0.65, 0, 0],       // PBS Blue    — pattern field, QR modules
+    "#0A145A": [1, 0.95, 0, 0.42],    // Navy Blue   — silhouettes, back plate, address
+    "#48D3CD": [0.49, 0, 0.23, 0],    // Teal        — handle, social icons, title
+    "#FFFFFF": [0, 0, 0, 0],          // White
+    "#0F1E8C": [1, 0.8, 0, 0.21],     // Medium Blue
+    "#FFCF00": [0, 0.09, 1, 0],       // Yellow
+    "#FE704E": [0, 0.59, 0.5, 0],     // Coral
+    // The name tag's near-black name. Not a palette colour: a small dark text
+    // build is K-only on purpose — four-colour black would register-fringe.
+    "#171717": [0, 0, 0, 1],
+  };
+
+  // "rgb(38, 56, 196)" / "rgba(255,255,255,0.4)" → { color, opacity } in CMYK.
+  // Off-palette colours fall back to a computed build and are collected in
+  // _offPalette so they surface instead of shipping unnoticed. Only the empty-field
+  // placeholder greys should ever land here.
+  cmykOf(css) {
+    const m = String(css).match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(",").map((v) => parseFloat(v));
+    const [r, g, b] = p, a = p.length > 3 ? p[3] : 1;
+    if (!a) return null;
+    const hex = "#" + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
+    let build = this.CMYK[hex];
+    if (!build) {
+      const [R, G, B] = [r / 255, g / 255, b / 255];
+      const k = 1 - Math.max(R, G, B);
+      build = k >= 1 ? [0, 0, 0, 1] : [(1 - R - k) / (1 - k), (1 - G - k) / (1 - k), (1 - B - k) / (1 - k), k];
+      this._offPalette = this._offPalette || new Set();
+      this._offPalette.add(hex);
+    }
+    return { color: window.PDFLib.cmyk(...build), opacity: a };
+  }
+
+  // fonts + artwork are fetched once and reused across exports
+  loadVectorFonts = async (doc) => {
+    if (!window.fontkit) throw new Error("fontkit didn't load — the PDF needs it to embed PBS Sans");
+    doc.registerFontkit(window.fontkit);
+    const FILES = { 400: "PBSSans.ttf", 500: "PBSSans-Medium.ttf", 700: "PBSSans-Bold.ttf", 800: "PBSSans-Black.ttf" };
+    if (!this._ttf) {
+      const out = {};
+      for (const w of Object.keys(FILES)) {
+        const res = await fetch("fonts/ttf/" + FILES[w]);
+        if (!res.ok) throw new Error("missing font fonts/ttf/" + FILES[w]);
+        out[w] = await res.arrayBuffer();
+      }
+      this._ttf = out;
+    }
+    const fonts = {};
+    for (const w of Object.keys(this._ttf)) fonts[w] = await doc.embedFont(this._ttf[w], { subset: true });
+    return fonts;
+  };
+  fontFor(weight) {
+    const f = this._vec.fonts, w = parseInt(weight, 10) || 400;
+    return w >= 800 ? f[800] : w >= 700 ? f[700] : w >= 500 ? f[500] : f[400];
+  }
+  svgAsset = async (url) => {
+    this._svg = this._svg || {};
+    if (!this._svg[url]) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("missing artwork " + url);
+      this._svg[url] = new DOMParser().parseFromString(await res.text(), "image/svg+xml").documentElement;
+    }
+    return this._svg[url];
+  };
+
+  /* ---- css px on the card → points on the page ---- */
+  // The preview is scaled by scaleToFit, so client rects are divided back out.
+  pxOf(clientX, clientY) {
+    const v = this._vec;
+    return { x: (clientX - v.rootRect.left) / v.domScale, y: (clientY - v.rootRect.top) / v.domScale };
+  }
+  X(px) { return this._vec.x0 + px * this.PT_PER_PX; }
+  Y(py) { return this._vec.yTop - py * this.PT_PER_PX; }
+
+  /* ---- SVG shapes → path data (pdf-lib draws paths, not shapes) ---- */
+  shapePath(el) {
+    const n = (el.tagName || "").toLowerCase();
+    const a = (name, d = 0) => { const v = parseFloat(el.getAttribute(name)); return isNaN(v) ? d : v; };
+    const K = 0.5522847498; // circular arc → cubic Bézier
+    if (n === "path") return el.getAttribute("d") || "";
+    if (n === "rect") {
+      const x = a("x"), y = a("y"), w = a("width"), h = a("height");
+      let rx = a("rx", 0), ry = a("ry", a("rx", 0));
+      rx = Math.min(rx, w / 2); ry = Math.min(ry || rx, h / 2);
+      if (!rx || !ry) return `M${x},${y}H${x + w}V${y + h}H${x}Z`;
+      const kx = rx * K, ky = ry * K;
+      return `M${x + rx},${y}H${x + w - rx}` +
+        `C${x + w - rx + kx},${y} ${x + w},${y + ry - ky} ${x + w},${y + ry}` +
+        `V${y + h - ry}C${x + w},${y + h - ry + ky} ${x + w - rx + kx},${y + h} ${x + w - rx},${y + h}` +
+        `H${x + rx}C${x + rx - kx},${y + h} ${x},${y + h - ry + ky} ${x},${y + h - ry}` +
+        `V${y + ry}C${x},${y + ry - ky} ${x + rx - kx},${y} ${x + rx},${y}Z`;
+    }
+    if (n === "circle" || n === "ellipse") {
+      const cx = a("cx"), cy = a("cy");
+      const rx = n === "circle" ? a("r") : a("rx"), ry = n === "circle" ? a("r") : a("ry");
+      const kx = rx * K, ky = ry * K;
+      return `M${cx - rx},${cy}C${cx - rx},${cy - ky} ${cx - kx},${cy - ry} ${cx},${cy - ry}` +
+        `C${cx + kx},${cy - ry} ${cx + rx},${cy - ky} ${cx + rx},${cy}` +
+        `C${cx + rx},${cy + ky} ${cx + kx},${cy + ry} ${cx},${cy + ry}` +
+        `C${cx - kx},${cy + ry} ${cx - rx},${cy + ky} ${cx - rx},${cy}Z`;
+    }
+    if (n === "line") return `M${a("x1")},${a("y1")}L${a("x2")},${a("y2")}`;
+    if (n === "polyline" || n === "polygon") {
+      const pts = (el.getAttribute("points") || "").trim().split(/[\s,]+/);
+      if (pts.length < 4) return "";
+      let d = `M${pts[0]},${pts[1]}`;
+      for (let i = 2; i < pts.length - 1; i += 2) d += `L${pts[i]},${pts[i + 1]}`;
+      return d + (n === "polygon" ? "Z" : "");
+    }
+    return "";
+  }
+
+  /* ---- draw an <svg> root into a css-px box on the card ----
+     fit "slice" = object-fit:cover / preserveAspectRatio slice (the pattern and
+     the back plate); "meet" = everything else. Both are uniform scales, which is
+     what keeps the back's arc identical to the front's. */
+  drawSvgRoot(svgEl, box, fit, inherited = {}) {
+    const vbAttr = (svgEl.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+    const vb = vbAttr.length === 4 && vbAttr.every((n) => !isNaN(n)) ? vbAttr : [0, 0, box.w, box.h];
+    const [vx, vy, vw, vh] = vb;
+    const s = fit === "slice" ? Math.max(box.w / vw, box.h / vh) : Math.min(box.w / vw, box.h / vh);
+    const ox = box.x + (box.w - vw * s) / 2, oy = box.y + (box.h - vh * s) / 2; // xMidYMid
+    const place = {
+      x: this.X(ox - s * vx), y: this.Y(oy - s * vy), scale: s * this.PT_PER_PX,
+    };
+    const root = {
+      fill: svgEl.getAttribute("fill") || inherited.fill || null,
+      stroke: svgEl.getAttribute("stroke") || inherited.stroke || null,
+      strokeWidth: svgEl.getAttribute("stroke-width") || inherited.strokeWidth || null,
+    };
+    const walk = (node, inh) => {
+      for (const child of node.children) {
+        const tag = (child.tagName || "").toLowerCase();
+        const own = {
+          fill: child.getAttribute("fill") || inh.fill,
+          stroke: child.getAttribute("stroke") || inh.stroke,
+          strokeWidth: child.getAttribute("stroke-width") || inh.strokeWidth,
+        };
+        if (tag === "g" || tag === "svg") { walk(child, own); continue; }
+        const d = this.shapePath(child);
+        if (!d) continue;
+        const opts = { ...place };
+        const fill = own.fill && own.fill !== "none" ? this.cmykOf(this.toRgb(own.fill)) : null;
+        const stroke = own.stroke && own.stroke !== "none" ? this.cmykOf(this.toRgb(own.stroke)) : null;
+        if (fill) { opts.color = fill.color; opts.opacity = fill.opacity; }
+        if (stroke) {
+          opts.borderColor = stroke.color;
+          opts.borderOpacity = stroke.opacity;
+          // stays in SVG user units: drawSvgPath sets the line width inside the
+          // scaled CTM, so scaling it here would thin the icons out twice
+          opts.borderWidth = parseFloat(own.strokeWidth) || 1;
+          opts.borderLineCap = window.PDFLib.LineCapStyle.Round;
+        }
+        if (!fill && !stroke) continue;
+        this._vec.page.drawSvgPath(d, opts);
+      }
+    };
+    walk(svgEl, root);
+  }
+  // named/hex colours out of the SVG files → the rgb() string cmykOf reads
+  toRgb(v) {
+    const probe = this._probe || (this._probe = document.createElement("span"));
+    probe.style.color = "";
+    probe.style.color = v;
+    if (!probe.style.color) return "rgba(0,0,0,0)";
+    document.body.appendChild(probe);
+    const out = getComputedStyle(probe).color;
+    probe.remove();
+    return out;
+  }
+
+  /* ---- one text run: real text, positioned off the DOM's own box ---- */
+  drawTextNode(node) {
+    const el = node.parentElement;
+    if (!el) return;
+    const raw = node.nodeValue.replace(/\s+/g, " ");
+    if (!raw.trim()) return;
+    const cs = getComputedStyle(el);
+    const paint = this.cmykOf(cs.color);
+    if (!paint) return;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const rects = range.getClientRects();
+    if (!rects.length) return;
+    if (rects.length > 1) console.warn("[business-essentials] wrapped text run — the PDF draws it on one line:", raw);
+    const r = rects[0];
+
+    let text = raw;
+    if (cs.textTransform === "uppercase") text = text.toUpperCase();
+    else if (cs.textTransform === "lowercase") text = text.toLowerCase();
+    else if (cs.textTransform === "capitalize") text = text.replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const size = parseFloat(cs.fontSize);
+    const font = this.fontFor(cs.fontWeight);
+    const ls = cs.letterSpacing === "normal" ? 0 : (parseFloat(cs.letterSpacing) || 0);
+
+    // baseline: the browser's own ascent for this face and size
+    const mc = this._mctx || (this._mctx = document.createElement("canvas").getContext("2d"));
+    mc.font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
+    const m = mc.measureText(text);
+    const top = this.pxOf(r.left, r.top);
+    const boxH = r.height / this._vec.domScale;
+    const baseline = top.y + (boxH - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+
+    const y = this.Y(baseline);
+    const opts = { size: size * this.PT_PER_PX, font, color: paint.color, opacity: paint.opacity };
+    if (!ls) {
+      this._vec.page.drawText(text, { x: this.X(top.x), y, ...opts });
+      return;
+    }
+    // CSS letter-spacing has no pdf-lib equivalent — step the pen per character
+    let pen = top.x;
+    for (const ch of text) {
+      if (ch !== " ") this._vec.page.drawText(ch, { x: this.X(pen), y, ...opts });
+      pen += font.widthOfTextAtSize(ch, size) + ls;
+    }
+  }
+
+  /* ---- walk one card face ---- */
+  drawNode = async (node) => {
+    if (node.nodeType === 3) { this.drawTextNode(node); return; }
+    if (node.nodeType !== 1) return;
+    const tag = node.tagName.toLowerCase();
+    const cs = getComputedStyle(node);
+    if (cs.display === "none" || cs.visibility === "hidden" || parseFloat(cs.opacity) === 0) return;
+    const rect = node.getBoundingClientRect();
+    const p = this.pxOf(rect.left, rect.top);
+    const box = { x: p.x, y: p.y, w: rect.width / this._vec.domScale, h: rect.height / this._vec.domScale };
+
+    const bg = this.cmykOf(cs.backgroundColor);
+    if (bg && box.w && box.h) {
+      this._vec.page.drawRectangle({
+        x: this.X(box.x), y: this.Y(box.y + box.h),
+        width: box.w * this.PT_PER_PX, height: box.h * this.PT_PER_PX,
+        color: bg.color, opacity: bg.opacity,
+      });
+    }
+
+    if (tag === "img") {
+      const src = node.getAttribute("src") || "";
+      if (!/\.svg($|\?)/i.test(src)) throw new Error("only vector artwork can go in a CMYK PDF: " + src);
+      this.drawSvgRoot(await this.svgAsset(src), box, cs.objectFit === "cover" ? "slice" : "meet");
+      return;
+    }
+    if (tag === "svg") {
+      this.drawSvgRoot(node, box, (node.getAttribute("preserveAspectRatio") || "").includes("slice") ? "slice" : "meet");
+      return; // its children are shapes, not DOM boxes
+    }
+    for (const child of Array.from(node.childNodes)) await this.drawNode(child);
+  };
+
+  addVectorPage = async (doc, node, trimW, trimH, bleed, gap, mark, fonts) => {
+    const PDFLib = window.PDFLib;
+    const margin = bleed + gap + mark;
+    const pageW = trimW + margin * 2, pageH = trimH + margin * 2;
+    const page = doc.addPage([pageW, pageH]);
+    const rootRect = node.getBoundingClientRect();
+    this._vec = {
+      page, doc, fonts, rootRect,
+      domScale: rootRect.width / node.offsetWidth, // undo the preview's scaleToFit
+      x0: margin - bleed, yTop: pageH - (margin - bleed),
+    };
+
+    // Clip to the bleed box: the pattern is cover-cropped and would otherwise
+    // paint over the clear space the crop marks live in.
+    const artX0 = margin - bleed, artY0 = margin - bleed;
+    const artX1 = artX0 + trimW + bleed * 2, artY1 = artY0 + trimH + bleed * 2;
+    page.pushOperators(
+      PDFLib.pushGraphicsState(),
+      PDFLib.moveTo(artX0, artY0), PDFLib.lineTo(artX1, artY0),
+      PDFLib.lineTo(artX1, artY1), PDFLib.lineTo(artX0, artY1),
+      PDFLib.closePath(), PDFLib.clip(), PDFLib.endPath(),
+    );
+    await this.drawNode(node);
+    page.pushOperators(PDFLib.popGraphicsState());
+
+    // Crop marks — K-only black, outside the bleed, no 4-colour registration mush
+    const trimX0 = margin, trimX1 = margin + trimW, trimY0 = margin, trimY1 = margin + trimH;
+    const black = PDFLib.cmyk(0, 0, 0, 1);
+    const ln = (x1, y1, x2, y2) => page.drawLine({ start: { x: x1, y: pageH - y1 }, end: { x: x2, y: pageH - y2 }, thickness: 0.5, color: black });
+    ln(trimX0, 0, trimX0, mark); ln(0, trimY0, mark, trimY0);
+    ln(trimX1, 0, trimX1, mark); ln(pageW - mark, trimY0, pageW, trimY0);
+    ln(trimX0, pageH - mark, trimX0, pageH); ln(0, trimY1, mark, trimY1);
+    ln(trimX1, pageH - mark, trimX1, pageH); ln(pageW - mark, trimY1, pageW, trimY1);
+
+    // TrimBox/BleedBox so a RIP knows where the page actually cuts
+    page.node.set(PDFLib.PDFName.of("TrimBox"), doc.context.obj([trimX0, trimY0, trimX1, trimY1]));
+    page.node.set(PDFLib.PDFName.of("BleedBox"), doc.context.obj([artX0, artY0, artX1, artY1]));
+    this._vec = null;
+  };
+
+  buildPdf = async () => {
+    const doc = await window.PDFLib.PDFDocument.create();
+    this._offPalette = new Set();
+    const fonts = await this.loadVectorFonts(doc);
+    if (this.state.mode === "card") {
+      await this.addVectorPage(doc, this._refs.frontRef, 252, 144, 9, 6, 14, fonts);
+      await this.addVectorPage(doc, this._refs.backRef, 252, 144, 9, 6, 14, fonts);
+    } else {
+      await this.addVectorPage(doc, this._refs.tagRef, 216, 90, 9, 6, 14, fonts);
+    }
+    if (this._offPalette.size) {
+      console.warn("[business-essentials] colours converted rather than taken from print-colors.json:", [...this._offPalette].join(", "));
+    }
+    doc.setTitle(this.fileBaseName());
+    doc.setProducer("Nashville PBS Business Essentials");
+    return doc.save();
+  };
+
+  downloadPdf = async () => {
+    if (!window.PDFLib) { this.flash("The PDF library didn't load — check the network and reload.", "err"); return; }
+    this.flash("Rendering PDF…", "busy");
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const bytes = await this.buildPdf();
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = this.fileBaseName() + ".pdf";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      this.flash("Downloaded " + a.download, "ok");
+    } catch (err) {
+      this.flash("Export failed: " + (err.message || err), "err");
+    }
+  };
+
+  bytesToBase64 = (bytes) => new Promise((resolve) => {
+    const blob = new Blob([bytes]);
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1]);
+    reader.readAsDataURL(blob);
+  });
+
+  saveToAirtable = async () => {
+    if (this.state.saving) return;
+    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
+    const name = this.state.name.trim();
+    if (!name) { this.flash("Enter a name first.", "err"); return; }
+    this.setState({ saving: true });
+    this.flash("Rendering & saving…", "busy");
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const bytes = await this.buildPdf();
+      const pdfBase64 = await this.bytesToBase64(bytes);
+      const res = await fetch(this.api("/save-graphic"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: this.state.selectedUserId || null,
+          personName: name,
+          graphicsType: this.state.mode === "card" ? "Business Card" : "Name Tag",
+          pdfBase64,
+          fileName: this.fileBaseName() + ".pdf",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
+      this.flash("Saved to Airtable Graphics.", "ok");
+    } catch (err) {
+      this.flash("Save failed: " + (err.message || err), "err");
+    } finally {
+      this.setState({ saving: false });
+    }
+  };
+
+  renderVals() {
+    const s = this.state;
+    const connected = !!s.workerUrl;
+    const isCard = s.mode === "card";
+    const effPhone = (s.phone || "").trim() || this.DEFAULT_PHONE;
+    const statusStyle = "font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;" +
+      (s.statusKind === "err" ? "background:#fdece8;color:#c23a1a" : s.statusKind === "busy" ? "background:#eef1fb;color:#2638C4" : "background:#e8f7f5;color:#0f8a82");
+    const tabBase = "flex:1;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13.5px;border-radius:999px;padding:10px 14px;cursor:pointer;border:1.5px solid ";
+    return {
+      rootRef: (el) => { this._refs.rootRef = el; },
+      scalerRef: (el) => { this._refs.scalerRef = el; },
+      frontRef: (el) => { this._refs.frontRef = el; },
+      backRef: (el) => { this._refs.backRef = el; },
+      tagRef: (el) => { this._refs.tagRef = el; },
+      connLabel: connected ? "Airtable connected" : "Connect Airtable",
+      connDot: connected ? "#48D3CD" : "#FE704E",
+      configure: this.configure,
+      isCard, isTag: !isCard,
+      cardTabStyle: tabBase + (isCard ? "#0A145A;background:#0A145A;color:#fff" : "#c7cde0;background:#fff;color:#0A145A"),
+      tagTabStyle: tabBase + (!isCard ? "#0A145A;background:#0A145A;color:#fff" : "#c7cde0;background:#fff;color:#0A145A"),
+      setModeCard: this.setModeCard, setModeTag: this.setModeTag,
+      // fields
+      name: s.name, title: s.title, email: s.email, phone: s.phone, cell: s.cell,
+      nameSize: isCard ? s.cardNameSize : s.tagNameSize,
+      nameSizeLabel: (isCard ? s.cardNameSize : s.tagNameSize) + "px",
+      onNameSize: this.onNameSize,
+      resetNameSize: this.resetNameSize,
+      titleSize: isCard ? s.cardTitleSize : s.tagTitleSize,
+      titleSizeLabel: (isCard ? s.cardTitleSize : s.tagTitleSize) + "px",
+      onTitleSize: this.onTitleSize,
+      resetTitleSize: this.resetTitleSize,
+      onName: this.onName, onTitle: this.onTitle, onEmail: this.onEmail, onPhone: this.onPhone, onCell: this.onCell,
+      hasName: !!s.name, noName: !s.name,
+      hasTitle: !!s.title, noTitle: !s.title,
+      hasCell: !!s.cell.trim(),
+      backEmail: s.email || "email@wnpt.org",
+      backPhoneLine: effPhone + " - Office",
+      backCellLine: (s.cell || "") + " - Cell",
+      // user search
+      userSearch: s.userSearch, onUserSearch: this.onUserSearch,
+      showUserResults: s.showResults && (s.userLoading || !!s.userSearch.trim()),
+      userLoading: s.userLoading,
+      userEmpty: !s.userLoading && !!s.userSearch.trim() && !s.userResults.length,
+      userResults: s.userResults.map((u) => ({ name: u.name || "Untitled", title: u.title || "—", onPick: () => this.pickUser(u) })),
+      // actions
+      downloadPdf: this.downloadPdf,
+      downloadLabel: isCard ? "Download print PDF (front + back)" : "Download name tag PDF",
+      saveToAirtable: this.saveToAirtable,
+      saveLabel: s.saving ? "Saving…" : "Save to Airtable Graphics",
+      hasStatus: !!s.status, status: s.status, statusStyle,
+      hasFitWarning: !!s.fitWarning, fitWarning: s.fitWarning,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

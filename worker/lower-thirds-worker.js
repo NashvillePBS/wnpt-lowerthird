@@ -22,6 +22,18 @@
  *   • A Collection links to exactly one Series (the show).
  *   • Each Lower Third links to the Collection's chosen Content (episode).
  *   • WNPT Brand is the only Series whose collections have NO Content link.
+ *
+ * BUSINESS ESSENTIALS (business-essentials/ — cards + name tags, build.md §13.9)
+ *   User Table (tbl7qTD9DIc3itsMj)  read only: "Name","Title","Email",
+ *                                   "Business Phone Number","Business Cell Phone"
+ *   Graphics   (tblZKp11zMShtmjIx)  written: "Name","Graphics Type","Attachments",
+ *                                   "Created","User Table" (link → User Table)
+ *
+ *   • Same base, same secret, same CORS origin as everything above — these two
+ *     endpoints were added here rather than as a second Worker so there is one
+ *     deploy and one token to rotate.
+ *   • "Archived" on Graphics is deliberately NOT written here; an Airtable
+ *     automation flags superseded rows (build.md §13.9).
  */
 
 const T_LOWER = "tbliZoHF9pEYT3aVx";   // Lower Thirds
@@ -36,6 +48,28 @@ const F_CONTENT_LT = "Lower Thirds";    // long text on Content (producer-entere
 const F_CONTENT_SERIES = "Series"; // link on Content → Series
 const F_COLL_SERIES = "Series";    // link on Collections → Series
 const F_LT_CONTENT = "Content";    // link on Lower Thirds → Content
+
+/* Business Essentials — verified against the base 2026-08-13. The field names
+   below are the real columns, not the handoff's guesses: the attachment field
+   is "Attachments" (plural), the link to a person is "User Table", and
+   "Graphics Type" is a MULTIPLE-select, so it is written as an array. */
+const T_USERS = "tbl7qTD9DIc3itsMj";    // User Table
+const T_GRAPHICS = "tblZKp11zMShtmjIx"; // Graphics
+
+const F_USER_NAME = "Name";
+const F_USER_TITLE = "Title";
+const F_USER_EMAIL = "Email";
+const F_USER_PHONE = "Business Phone Number";
+const F_USER_CELL = "Business Cell Phone";
+
+const F_G_NAME = "Name";
+const F_G_TYPE = "Graphics Type";   // multipleSelects
+const F_G_ATTACHMENT = "Attachments";
+const F_G_CREATED = "Created";
+const F_G_USER = "User Table";      // link on Graphics → User Table
+// The only Graphics Type options that exist in the base. Airtable rejects an
+// unknown option outright (no typecast here), so check first and say why.
+const GRAPHICS_TYPES = ["Business Card", "Name Tag", "Station ID"];
 
 export default {
   async fetch(request, env) {
@@ -175,6 +209,29 @@ export default {
         return json(result);
       }
 
+      // GET /users?search=  → staff lookup for Business Essentials
+      if (request.method === "GET" && path.endsWith("/users")) {
+        const search = (url.searchParams.get("search") || "").trim();
+        const recs = await api.listAll(T_USERS, search ? searchFilter(search, F_USER_NAME) : null);
+        return json({
+          users: recs.map(r => ({
+            id: r.id,
+            name: r.fields[F_USER_NAME] || "",
+            title: r.fields[F_USER_TITLE] || "",
+            email: r.fields[F_USER_EMAIL] || "",
+            phone: r.fields[F_USER_PHONE] || "",
+            cell: r.fields[F_USER_CELL] || "",
+          })).filter(u => u.name),
+        });
+      }
+
+      // POST /save-graphic  → one Graphics row + the print PDF as its attachment
+      if (request.method === "POST" && path.endsWith("/save-graphic")) {
+        const body = await request.json();
+        const result = await saveGraphic(api, body);
+        return json(result);
+      }
+
       return json({ error: "not found", path }, 404);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -248,6 +305,46 @@ async function saveCollection(api, body) {
   }
 
   return { ok: true, collectionId, seriesId, lowerThirdIds: ids };
+}
+
+/* ------------------- Business Essentials save logic ------------------- */
+// body = {
+//   userId?: string,               // User Table record, only when picked from search
+//   personName: string,
+//   graphicsType: "Business Card" | "Name Tag",
+//   pdfBase64: string,
+//   fileName?: string,
+// }
+// Creates one Graphics row named "{Person} - {Graphics Type} - {YYYY-MM-DD}" and
+// uploads the print-ready PDF into it. Never updates an existing row: every save
+// is a new record, and the Airtable automation flags the superseded ones.
+async function saveGraphic(api, body) {
+  const { userId, personName, graphicsType, pdfBase64, fileName } = body;
+  if (!personName || !graphicsType || !pdfBase64) {
+    throw new Error("personName, graphicsType and pdfBase64 are required");
+  }
+  if (!GRAPHICS_TYPES.includes(graphicsType)) {
+    throw new Error(`Unknown Graphics Type "${graphicsType}" — the base allows: ${GRAPHICS_TYPES.join(", ")}`);
+  }
+
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const recordName = `${personName} - ${graphicsType} - ${today}`;
+
+  const fields = {
+    [F_G_NAME]: recordName,
+    [F_G_TYPE]: [graphicsType], // multiple-select: always an array
+    [F_G_CREATED]: today,
+  };
+  if (userId) fields[F_G_USER] = [userId];
+
+  const created = await api.create(T_GRAPHICS, [{ fields }]);
+  const recordId = created[0].id;
+  await api.uploadAttachment(
+    recordId, F_G_ATTACHMENT, pdfBase64, "application/pdf",
+    fileName || slug(recordName) + ".pdf",
+  );
+
+  return { ok: true, recordId, name: recordName };
 }
 
 /* ----------------------------- helpers ----------------------------- */

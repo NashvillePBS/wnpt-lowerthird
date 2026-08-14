@@ -1572,3 +1572,106 @@ after Session 3, not rolled into it. Whether the endpoints join
 `.dc.html`, every module it imports, its assets, and a README. Request exactly this
 again. Design must still never export over the repo (§13.1); the zip-and-integrate
 path is the proven one.
+
+---
+
+### 13.9 Business Essentials — sibling page, CMYK vector export (Shane, 2026-08-13)
+
+The business card + name tag generator lives at **`business-essentials/`** and is linked
+from a card in the picker's MISC section. Second handoff integrated on the §13.8
+pattern; read that section first, then the differences below.
+
+**How the page works — same rules as `pledge/`:**
+
+- `business-essentials/index.html` IS the source. It is the handoff `.dc.html` with the
+  header restyled to the studio's generator header and the Worker URL defaulted (below).
+  **No bundle, no patcher** — edit it directly, commit, push. `scripts/patch-dist.py`
+  applies only to the studio.
+- `business-essentials/support.js` is vendored. It happens to be byte-identical to the
+  repo-root copy today (md5 `450f2a9297cd55032eb905780de3016b`); it stays a separate
+  file anyway, for the reason §13.8 gives — each app ships the runtime it was tested
+  with. Don't repoint it at `../support.js`.
+- Everything else the page needs is local too: `assets/` (card pattern, QR, both logo
+  lockups), `fonts/` (woff2 for screen, **`fonts/ttf/` for PDF embedding**), and
+  `print-colors.json`. The page is self-contained by design — it was handed over that
+  way and it stays that way.
+- localStorage key is `be_worker_url`. No collision with `lt_*` or `ppg-v1`.
+- `business-essentials/BUILD-NOTES.md` is the handoff's own notes, kept with the page.
+  **Read it before touching the layout** — the Circle Crop numbers, the pattern's
+  shape→colour mapping and the type floors are all load-bearing and were derived
+  empirically, not chosen.
+
+**⚠️ The `reference/` exports are geometry-only.** The InDesign JPGs the layout was
+measured from are *not* colour-accurate: the CMYK→sRGB conversion shifted the blues to
+about `#005698`/`#13376f`. They are deliberately **not** in this repo so nobody samples
+them. The brand values come from `print-colors.json` and nowhere else. If you ever need
+the reference art back, it is in the original handoff zip — measure positions from it,
+never colours.
+
+**Worker — the endpoints joined the existing one.** `GET /users` and
+`POST /save-graphic` were added to `worker/lower-thirds-worker.js` rather than deployed
+as a second Worker: same base, same secret, same `ALLOW_ORIGIN`, so this is one deploy
+and one token to rotate. Real IDs, verified against the base 2026-08-13:
+
+| | Table | Fields used |
+|---|---|---|
+| User Table | `tbl7qTD9DIc3itsMj` | read: `Name`, `Title`, `Email`, `Business Phone Number`, `Business Cell Phone` |
+| Graphics | `tblZKp11zMShtmjIx` | written: `Name`, `Graphics Type`, `Attachments`, `Created`, `User Table` |
+
+Three field names in the handoff were guesses and are **wrong** — the base has
+`Attachments` (plural), the link field is `User Table` (not `User`), and the archive
+checkbox is `Archived` (not `Archive`). `Graphics Type` is a **multiple**-select, so it
+is written as an array; its only options are `Business Card`, `Name Tag`, `Station ID`,
+and the Worker rejects anything else with a readable error rather than letting Airtable
+422 (there is no `typecast` on the create).
+
+`Archived` is still not written by the Worker — that stays an Airtable automation on new
+Graphics rows (same `User Table` + same `Graphics Type` → check `Archived` on the older
+ones). Rationale in BUILD-NOTES: doing it here needs a race-safe find-and-update per
+save. **This automation does not exist yet — it is the one piece of the brief still
+open.**
+
+The page defaults to `Component.DEFAULT_WORKER` (the same
+`autumn-rain-853e.wnpt-digital.workers.dev` the studio uses), so it is connected on
+first open; the header button still overrides it into `localStorage`.
+
+**The export is true CMYK vector — no raster stage.** This closes the "optional" item in
+the handoff README. The old path rendered the face to a 600dpi PNG with `html-to-image`
+and embedded it as RGB; the new path draws the page:
+
+- Every shape is a vector path (`drawSvgPath`) and every line of type is real text in an
+  embedded PBS Sans (`fonts/ttf/`, via `@pdf-lib/fontkit`). No image XObjects at all.
+- Every colour is `PDFLib.cmyk(...)` from the table in the component's `CMYK` map, which
+  is transcribed from `print-colors.json`. **Never compute these from hex** (§ the whole
+  point: PBS Blue converts to C81 M71 Y0 K23, the real build is C100 M65 Y0 K0). An
+  off-palette colour still exports, but via a computed build *and* a console warning
+  naming it — today only the empty-field placeholder grey `#C7CDE0` hits that path. The
+  name tag's near-black `#171717` is mapped explicitly to K-only.
+- **Geometry is read from the live preview**, not re-declared. `addVectorPage` walks the
+  card node, takes each element's own box out of the DOM (dividing out the preview's
+  `scaleToFit`), and re-draws it in points. So the Circle Crop clearances and the type
+  floors are solved once, in the template, and the print file inherits them. A layout
+  tweak cannot leave preview and PDF disagreeing. Text baselines come from the browser's
+  own font metrics (`fontBoundingBoxAscent`); CSS `letter-spacing` has no pdf-lib
+  equivalent, so those runs are drawn a character at a time.
+- Artwork is clipped to the BleedBox before drawing, so the cover-cropped pattern cannot
+  paint into the clear space the crop marks live in. Pages carry real `TrimBox` and
+  `BleedBox` entries now.
+- `EXPORT_DPI`/`EXPORT_RATIO` are gone. The "don't drop below 600dpi" rule in BUILD-NOTES
+  is satisfied by there being no resolution at all.
+
+What this assumes about the template — all true today, and worth knowing before editing
+it: every text run is a single line (`white-space:nowrap`; a wrapped run is drawn on one
+line and warns), artwork is `<img>`/inline `<svg>` with flat `fill`s and no `<style>`
+blocks, and colours are brand colours.
+
+Verified on the generated files, not by eye alone: 2 pages at 310×202pt with
+TrimBox 252×144 and BleedBox 270×162 (name tag 274×148 / 216×90 / 234×108); content
+streams contain only `k`/`K` colour operators (zero `rg`/`g`, zero image XObjects); four
+PBS Sans subsets embedded; the QR decodes **module-for-module identical** to
+`assets/app-qr.svg` (0 mismatches of 1089) when sampled out of a rasterised page, so
+polarity and finder patterns survived; and a title baseline lands within 0.17pt of where
+the DOM puts it, with rendered text width within 0.2% of the browser's.
+
+**Still open:** the Archive automation above, and a printer's-eye check of the first real
+job — the file is genuinely separated now, but no vendor has run it yet.

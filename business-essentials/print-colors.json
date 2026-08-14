@@ -1,0 +1,23 @@
+{
+  "_source": "PBS Brand Guide, Primary Palette (p17). CMYK is authoritative for print; hex/RGB are digital-only per the guide. PMS recorded for reference only — Nashville PBS's print vendors generally cannot run spot, so process CMYK is the target.",
+  "colors": {
+    "pbs-blue":    { "hex": "#2638C4", "cmyk": [100, 65,   0,  0], "pms": "293"  },
+    "navy-blue":   { "hex": "#0A145A", "cmyk": [100, 95,   0, 42], "pms": "2757" },
+    "medium-blue": { "hex": "#0F1E8C", "cmyk": [100, 80,   0, 21], "pms": "280"  },
+    "white":       { "hex": "#FFFFFF", "cmyk": [0,    0,   0,  0], "pms": null   },
+    "teal":        { "hex": "#48D3CD", "cmyk": [49,   0,  23,  0], "pms": "3252" },
+    "yellow":      { "hex": "#FFCF00", "cmyk": [0,    9, 100,  0], "pms": "109"  },
+    "coral":       { "hex": "#FE704E", "cmyk": [0,   59,  50,  0], "pms": "2345" }
+  },
+  "usedOnBusinessCard": {
+    "patternField": "pbs-blue",
+    "headSilhouettes": "navy-blue",
+    "backPlate": "navy-blue",
+    "qrModules": "pbs-blue",
+    "qrBackground": "white",
+    "handleAndSocialIcons": "teal",
+    "cardTitleLine": "teal",
+    "addressText": "navy-blue",
+    "cropMarks": "K-only black (C0 M0 Y0 K100)"
+  }
+}
