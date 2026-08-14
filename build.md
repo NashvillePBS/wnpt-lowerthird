@@ -132,6 +132,15 @@ bundling. Two separate causes, both now fixed and both easy to reintroduce:
 **Do not replace `whiteLogoSVG()` with `<img src="assets/...">`.** It will look fine in
 dev and ship broken.
 
+The head mark has since gone white-on-white twice more (2026-08-05, once in the Station ID
+lockup and once reported against a Credits export). Both times the colour lived only on a
+`<g fill>` wrapper. As of 2026-08-14 **every path in `whiteLogoSVG()` carries its own
+`fill`** — white paths `#ffffff`, the two head paths `#2638C4` — so nothing about the logo's
+colour depends on group inheritance surviving the trip to the exported PNG. The `<g fill>`
+wrappers are still there; they are now redundant, and that is the point. Verified by pixel
+sampling the credits footer before and after: 474 blue px either way, so this is a
+robustness change with no visual delta.
+
 ### 2.4 Auto-creating Airtable Content records when none was picked
 Rejected and removed. The tool was inventing Content rows to satisfy a link field, which
 polluted the Content table with duplicates of real episodes. Now: no Content picked →
