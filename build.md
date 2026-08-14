@@ -1685,6 +1685,15 @@ actually prints has a value: name tag = name + title; business card = name + tit
 (office phone falls back to the station number and the cell line is optional, so neither
 gates anything). From that:
 
+- **Nothing incomplete leaves the tool** (Shane, 2026-08-14). While the selected output is
+  missing a line it prints, **Download and Save are disabled** and a quiet grey note in the
+  sidebar names what is missing ("The business card still needs an email before it can be
+  downloaded or saved."). `missingFor(target)` is the single source of truth and `ready()`
+  derives from it. Both handlers re-check before doing any work, so a stale enabled button
+  or a scripted click still can't get an unfinished face out. The reason this matters:
+  before it, a card with no email exported with the placeholder `email@wnpt.org` printed as
+  though it were real, and a missing title printed as a blank line — both only discovered
+  after paying a printer.
 - **Download** stays single-output — the tab you are on. Saving just a card or just a tag
   was the behaviour Shane liked; it is untouched.
 - **Download both (ZIP)** appears only when `bothReady()`, i.e. both faces are complete on
