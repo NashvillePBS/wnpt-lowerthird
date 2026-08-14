@@ -760,10 +760,22 @@ class Component extends DCLogic {
     const el = this._refs[name];
     return el && el.isConnected && el.offsetWidth ? el : null;
   }
-  nextFrames = (n = 2) => new Promise((resolve) => {
-    const step = (left) => (left <= 0 ? resolve() : requestAnimationFrame(() => step(left - 1)));
-    step(n);
-  });
+  // One "settle" step. Deliberately NOT requestAnimationFrame alone: rAF never
+  // fires in a hidden or backgrounded tab, and an export started before the
+  // operator switches away would hang on "Rendering…" forever (it did). Race a
+  // frame against a timer so this stays frame-accurate when visible and still
+  // finishes when it isn't.
+  settle = (n = 2) => {
+    const once = () => new Promise((resolve) => {
+      let done = false;
+      const fire = () => { if (!done) { done = true; resolve(); } };
+      requestAnimationFrame(fire);
+      setTimeout(fire, 40);
+    });
+    let chain = Promise.resolve();
+    for (let i = 0; i < n; i++) chain = chain.then(once);
+    return chain;
+  };
   withMode = async (mode, fn) => {
     const prev = this.state.mode;
     if (prev === mode) return await fn();
@@ -772,14 +784,14 @@ class Component extends DCLogic {
       ? this.liveRef("frontRef") && this.liveRef("backRef")
       : this.liveRef("tagRef"));
     let ok = false;
-    for (let i = 0; i < 40 && !ok; i++) { await this.nextFrames(1); ok = !!mounted(); }
+    for (let i = 0; i < 60 && !ok; i++) { await this.settle(1); ok = !!mounted(); }
     if (!ok) throw new Error("the " + this.labelFor(mode) + " preview didn't render in time");
-    await this.nextFrames(2); // let componentDidUpdate's fitAll settle the type sizes
+    await this.settle(2); // let componentDidUpdate's fitAll settle the type sizes
     try {
       return await fn();
     } finally {
       this.setState({ mode: prev });
-      await this.nextFrames(2);
+      await this.settle(2);
     }
   };
 
@@ -807,6 +819,9 @@ class Component extends DCLogic {
     this._offPalette = new Set();
     const files = [];
     for (const t of targets) {
+      // a two-output export takes a few seconds and switches tabs to measure the
+      // other face — say which one is being drawn rather than sit on "Rendering…"
+      if (targets.length > 1) this.flash("Rendering the " + this.labelFor(t) + "…", "busy");
       files.push({ target: t, name: this.fileBaseName(t) + ".pdf", bytes: await this.buildPdfFor(t) });
     }
     if (this._offPalette.size) {

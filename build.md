@@ -1700,9 +1700,17 @@ gates anything). From that:
 
 **Rendering the output you're not looking at.** The vector walker measures live DOM boxes,
 and only one face is mounted at a time (`sc-if`). `withMode()` therefore switches tabs,
-waits for the runtime to commit the render (rAF poll on the ref, plus two frames for
-`componentDidUpdate`'s `fitAll` to settle the type sizes), captures, and switches back.
-The tab visibly flips for a moment during a two-output export — that is the price of
+waits for the runtime to commit the render (poll on the ref, plus two settle steps for
+`componentDidUpdate`'s `fitAll` to apply the type sizes), captures, and switches back.
+
+**`settle()` races a frame against a 40ms timer on purpose.** A first cut waited on
+`requestAnimationFrame` alone, which never fires in a hidden or backgrounded tab: an
+export started and then left in the background sat on "Rendering…" forever. Caught on the
+deployed page when the browser pane was hidden, verified fixed by stubbing
+`requestAnimationFrame` to a no-op and watching the two-output export still finish. Do not
+"simplify" this back to a bare rAF wait.
+A two-output export takes a few seconds — the status line names the face being drawn as it
+goes, rather than sitting on one message. The tab visibly flips for a moment during it — that is the price of
 measuring real geometry instead of keeping a second copy of the layout, and it is the
 right trade. `liveRef()` refuses a ref that is detached or zero-width, so a mis-timed
 capture fails loudly instead of drawing a blank page.
