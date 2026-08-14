@@ -1678,5 +1678,76 @@ PBS Sans subsets embedded; the QR decodes **module-for-module identical** to
 polarity and finder patterns survived; and a title baseline lands within 0.17pt of where
 the DOM puts it, with rendered text width within 0.2% of the browser's.
 
-**Still open:** the Archive automation above, and a printer's-eye check of the first real
+### 13.9.1 Both outputs at once, leave warnings, and the Archive automation (Shane, 2026-08-14)
+
+**Which outputs an action applies to.** `ready()` calls a face finished when every line it
+actually prints has a value: name tag = name + title; business card = name + title + email
+(office phone falls back to the station number and the cell line is optional, so neither
+gates anything). From that:
+
+- **Download** stays single-output — the tab you are on. Saving just a card or just a tag
+  was the behaviour Shane liked; it is untouched.
+- **Download both (ZIP)** appears only when `bothReady()`, i.e. both faces are complete on
+  their own. Two separate PDFs inside one ZIP, correctly named, rather than one mixed-page-size
+  file — a vendor gets `{name}-business-card.pdf` and `{name}-name-tag.pdf`. `jszip@3.10.1`
+  (the version the studio pins) is loaded for this; if it fails to load the download falls
+  back to handing over the two PDFs one at a time rather than failing.
+- **Save to Airtable** follows the same rule and says so in its own label: "Save card +
+  name tag to Airtable" when both are ready, otherwise "Save business card…"/"Save name
+  tag…". Both ready → **two Graphics rows**, one per Graphics Type, each with its own PDF.
+  A failure part-way through names what already landed, because the rows are separate
+  writes.
+
+**Rendering the output you're not looking at.** The vector walker measures live DOM boxes,
+and only one face is mounted at a time (`sc-if`). `withMode()` therefore switches tabs,
+waits for the runtime to commit the render (rAF poll on the ref, plus two frames for
+`componentDidUpdate`'s `fitAll` to settle the type sizes), captures, and switches back.
+The tab visibly flips for a moment during a two-output export — that is the price of
+measuring real geometry instead of keeping a second copy of the layout, and it is the
+right trade. `liveRef()` refuses a ref that is detached or zero-width, so a mis-timed
+capture fails loudly instead of drawing a blank page.
+
+**Leave warnings.** `state.dirty` is set by `edit()` — the single funnel every field
+change and slider now goes through, including a user pick from the search — and cleared
+only by a **successful Airtable save**. A download deliberately does not clear it: the
+warning is about the Airtable record, not about having a file on disk. Two guards:
+
+- `beforeunload` for tab close / reload. The browser shows its own generic wording; there
+  is no way to pass custom text.
+- The Back to main control is a real `<a href="../">` (middle-click and open-in-new-tab
+  still work) with an `onClick` that `confirm()`s with our own sentence and calls
+  `preventDefault()` if declined. Accepting sets a `_leaving` flag so `beforeunload` does
+  not ask a second time on the way out.
+
+**The Archive automation now exists** — built via the Airtable API on 2026-08-14 as
+`wflg53gTxHRRXUVGP`, "Graphics — archive superseded cards and name tags"
+(https://airtable.com/appmpL4OjEpPoYmcD/wflg53gTxHRRXUVGP). It is saved as a **draft and
+is OFF**; the API cannot enable an automation, so Shane turns it on in the UI.
+
+Shape: trigger `recordCreated` on Graphics → `findRecords` (same `User Table` link via
+`hasAnyOf` over the trigger's own linked ids, same `Graphics Type`, `Archived` unchecked)
+→ `repeatingGroup` over the matches → `conditionalGroup` that checks `Archived` on every
+match except the row that just arrived.
+
+Three things to know about it:
+
+- **Record-id comparisons need coercion.** `left`/`right` on a conditional branch must
+  type as `string`; `readProperty(pickBranchData(...), "id")` types as *Airtable record
+  ID* and is rejected outright. Wrapping both sides in `trim()` fixes it (`lowercase()`
+  would too, but case-folding record ids is theoretically lossy). Same for the
+  linked-record emptiness check: `isNotEmpty` on a link field with `valueType: text` is
+  rejected, so the guard is `length(link) > 0` as a number comparison.
+- **Rows with no `User Table` link are left alone**, deliberately: without the link there
+  is no reliable way to tell whose card it is (two people can type the same name), and the
+  guard above means an unlinked row can never trigger a mass archive. Tell staff to pick
+  the person from the search — the tool links the record whenever they do.
+- **Known edge, accepted:** two rows of the *same* Graphics Type for the same person
+  created within the automation's own execution window (a few seconds) could archive each
+  other, since each run sees the other row as an unarchived sibling. Saving both outputs
+  at once is safe — those rows have different Graphics Types — and the page blocks
+  concurrent saves, so this needs two people saving the same person's same output
+  simultaneously. Fixing it properly wants a created-time field to compare against, which
+  is a schema change and therefore Shane's call.
+
+**Still open:** enabling that automation, and a printer's-eye check of the first real
 job — the file is genuinely separated now, but no vendor has run it yet.

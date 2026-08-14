@@ -45,8 +45,13 @@ is wired into the studio, the Worker, and the CMYK export — is in `build.md` �
 - The address block **bottom-aligns with the last line of the contact block** — both are
   anchored with the same `bottom` value, whether or not the cell line is present.
 - Every field stays manually editable regardless of what Airtable supplied.
-- `Archived` on Graphics is **not** written by the Worker — it's an Airtable automation
-  (still to be built, see build.md §13.9).
+- `Archived` on Graphics is **not** written by the Worker — it's an Airtable automation,
+  "Graphics — archive superseded cards and name tags", which exists as a **draft that has
+  to be switched on in the Airtable UI** (build.md §13.9.1). Rows with no `User Table`
+  link are left alone by design.
+- **Download** is always the tab you're on. **Download both (ZIP)** and **Save** cover both
+  outputs once both are complete — name + title for the tag, name + title + email for the
+  card. The Save button's label always states what it is about to write.
 
 ### Before you call it done
 

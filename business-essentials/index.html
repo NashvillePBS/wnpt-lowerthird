@@ -26,6 +26,11 @@ a:hover{color:#0F1E8C;text-decoration:underline}
      rather than a raster. Without it there is no export at all — the tool says
      so instead of quietly falling back to RGB pixels. -->
 <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<!-- Only for the "download both" ZIP — the card and the name tag stay separate
+     PDFs so a printer gets two correctly named files, not one mixed-size job.
+     Same version the studio pins. If it fails to load the download falls back
+     to two sequential files. -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </helmet>
 
 <template id="__bundler_thumbnail">
@@ -37,7 +42,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
   <!-- Header matches the studio's generator header (build.md §13.9): same back
        pill, same logo / label lockup, same connection button. -->
   <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
-    <a href="../" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px" style-hover="background:rgba(255,255,255,.18)">
+    <a href="../" onClick="{{ backToMain }}" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px" style-hover="background:rgba(255,255,255,.18)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>Back to main
     </a>
     <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>Business Essentials</span></div>
@@ -119,6 +124,13 @@ a:hover{color:#0F1E8C;text-decoration:underline}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
           {{ downloadLabel }}
         </button>
+        <!-- Only offered once both outputs are complete on their own — see bothReady() -->
+        <sc-if value="{{ canDoBoth }}">
+          <button onClick="{{ downloadBoth }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#eef1fb;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c3ccef;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#e3e8f9;border-color:#2638C4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+            Download both (ZIP)
+          </button>
+        </sc-if>
         <button onClick="{{ saveToAirtable }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#f4f6fc">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
           {{ saveLabel }}
@@ -227,7 +239,11 @@ class Component extends DCLogic {
     selectedUserId: null,
     userSearch: "", userResults: [], userLoading: false, showResults: false,
     workerUrl: "",
-    status: "", statusKind: "", saving: false,
+    status: "", statusKind: "", saving: false, exporting: false,
+    // set by any edit, cleared by a successful Airtable save — drives the
+    // leave warnings. A download deliberately does NOT clear it: the warning is
+    // about the Airtable record, not about having a file on disk.
+    dirty: false,
   };
   // Same Worker as the studio (build.md §11.1) — one deploy, one token. The
   // connection button still overrides it via localStorage["be_worker_url"].
@@ -295,9 +311,19 @@ class Component extends DCLogic {
       this._ro = new ResizeObserver(() => this.scaleToFit());
       if (this._refs.scalerRef && this._refs.scalerRef.parentElement) this._ro.observe(this._refs.scalerRef.parentElement);
     }
+    // Closing the tab / reloading with unsaved work. The browser shows its own
+    // generic wording here — only the back link can carry our text.
+    this._onBeforeUnload = (e) => {
+      if (!this.state.dirty || this._leaving) return undefined;
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", this._onBeforeUnload);
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("beforeunload", this._onBeforeUnload);
     if (this._ro) this._ro.disconnect();
   }
   componentDidUpdate() { this.fitAll(); }
@@ -314,24 +340,56 @@ class Component extends DCLogic {
   api(path) { return this.state.workerUrl.replace(/\/+$/, "") + path; }
   flash(msg, kind = "ok") { this.setState({ status: msg, statusKind: kind }); }
 
+  // ---------- leaving with unsaved work ----------
+  LEAVE_WARNING = "This hasn't been saved to Airtable Graphics yet. Leave anyway?";
+  // The back control is a real <a href="../"> so middle-click and "open in new
+  // tab" still behave; this only intercepts the plain click.
+  backToMain = (e) => {
+    if (!this.state.dirty) return;
+    if (!window.confirm(this.LEAVE_WARNING)) {
+      if (e && e.preventDefault) e.preventDefault();
+      return;
+    }
+    this._leaving = true; // so beforeunload doesn't ask a second time
+  };
+
   // ---------- fields ----------
+  // edit() is how every field change goes in — one place to set the dirty flag
+  edit = (patch) => this.setState({ ...patch, dirty: true });
   setModeCard = () => this.setState({ mode: "card" });
   setModeTag = () => this.setState({ mode: "tag" });
-  onName = (e) => this.setState({ name: e.target.value });
-  onTitle = (e) => this.setState({ title: e.target.value });
-  onEmail = (e) => this.setState({ email: e.target.value });
-  onPhone = (e) => this.setState({ phone: e.target.value });
-  onCell = (e) => this.setState({ cell: e.target.value });
+  onName = (e) => this.edit({ name: e.target.value });
+  onTitle = (e) => this.edit({ title: e.target.value });
+  onEmail = (e) => this.edit({ email: e.target.value });
+  onPhone = (e) => this.edit({ phone: e.target.value });
+  onCell = (e) => this.edit({ cell: e.target.value });
   onNameSize = (e) => {
     const v = parseInt(e.target.value, 10);
-    this.setState(this.state.mode === "card" ? { cardNameSize: v } : { tagNameSize: v });
+    this.edit(this.state.mode === "card" ? { cardNameSize: v } : { tagNameSize: v });
   };
-  resetNameSize = () => this.setState(this.state.mode === "card" ? { cardNameSize: 24 } : { tagNameSize: 35 });
+  resetNameSize = () => this.edit(this.state.mode === "card" ? { cardNameSize: 24 } : { tagNameSize: 35 });
   onTitleSize = (e) => {
     const v = parseInt(e.target.value, 10);
-    this.setState(this.state.mode === "card" ? { cardTitleSize: v } : { tagTitleSize: v });
+    this.edit(this.state.mode === "card" ? { cardTitleSize: v } : { tagTitleSize: v });
   };
-  resetTitleSize = () => this.setState(this.state.mode === "card" ? { cardTitleSize: 13 } : { tagTitleSize: 15 });
+  resetTitleSize = () => this.edit(this.state.mode === "card" ? { cardTitleSize: 13 } : { tagTitleSize: 15 });
+
+  // ---------- which outputs are finished ----------
+  // "Ready" means every line that face actually prints has a value. The office
+  // phone falls back to the station number and the cell line is optional by
+  // design, so neither of those gates anything.
+  ready() {
+    const s = this.state, has = (v) => !!(v || "").trim();
+    return {
+      card: has(s.name) && has(s.title) && has(s.email),
+      tag: has(s.name) && has(s.title),
+    };
+  }
+  bothReady() { const r = this.ready(); return r.card && r.tag; }
+  // What Download-both and Save act on: both outputs once both are complete,
+  // otherwise just the tab you're looking at.
+  targets() { return this.bothReady() ? ["card", "tag"] : [this.state.mode]; }
+  labelFor(t) { return t === "card" ? "business card" : "name tag"; }
 
   // ---------- user search ----------
   onUserSearch = (e) => {
@@ -357,16 +415,21 @@ class Component extends DCLogic {
       this.setState({ userLoading: false });
     }
   };
-  pickUser = (u) => this.setState({
+  pickUser = (u) => this.edit({
     name: u.name || "", title: u.title || "", email: u.email || "",
     phone: u.phone || "", cell: u.cell || "",
     selectedUserId: u.id, userSearch: u.name || "", showResults: false,
   });
 
   // ---------- export ----------
-  fileBaseName() {
+  fileBaseName(target) {
+    const t = target || this.state.mode;
     const slug = (this.state.name || "business-essentials").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "business-essentials";
-    return slug + (this.state.mode === "card" ? "-business-card" : "-name-tag");
+    return slug + (t === "card" ? "-business-card" : "-name-tag");
+  }
+  zipBaseName() {
+    const slug = (this.state.name || "business-essentials").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "business-essentials";
+    return slug + "-business-essentials";
   }
 
   /* ══════════════ CMYK vector export ══════════════
@@ -687,39 +750,110 @@ class Component extends DCLogic {
     this._vec = null;
   };
 
-  buildPdf = async () => {
+  /* ---- rendering an output that isn't the tab you're on ----
+     The walker measures live DOM boxes, so the face it draws has to be on screen.
+     Only one is mounted at a time (`sc-if`), so exporting the other one switches
+     tabs, waits for the runtime to commit the render, and switches back. The tab
+     visibly flips for a moment during a two-output export; that is the cost of
+     measuring real geometry rather than keeping a second copy of the layout. */
+  liveRef(name) {
+    const el = this._refs[name];
+    return el && el.isConnected && el.offsetWidth ? el : null;
+  }
+  nextFrames = (n = 2) => new Promise((resolve) => {
+    const step = (left) => (left <= 0 ? resolve() : requestAnimationFrame(() => step(left - 1)));
+    step(n);
+  });
+  withMode = async (mode, fn) => {
+    const prev = this.state.mode;
+    if (prev === mode) return await fn();
+    this.setState({ mode });
+    const mounted = () => (mode === "card"
+      ? this.liveRef("frontRef") && this.liveRef("backRef")
+      : this.liveRef("tagRef"));
+    let ok = false;
+    for (let i = 0; i < 40 && !ok; i++) { await this.nextFrames(1); ok = !!mounted(); }
+    if (!ok) throw new Error("the " + this.labelFor(mode) + " preview didn't render in time");
+    await this.nextFrames(2); // let componentDidUpdate's fitAll settle the type sizes
+    try {
+      return await fn();
+    } finally {
+      this.setState({ mode: prev });
+      await this.nextFrames(2);
+    }
+  };
+
+  // one print-ready PDF for one output
+  buildPdfFor = async (target) => {
     const doc = await window.PDFLib.PDFDocument.create();
-    this._offPalette = new Set();
     const fonts = await this.loadVectorFonts(doc);
-    if (this.state.mode === "card") {
-      await this.addVectorPage(doc, this._refs.frontRef, 252, 144, 9, 6, 14, fonts);
-      await this.addVectorPage(doc, this._refs.backRef, 252, 144, 9, 6, 14, fonts);
-    } else {
-      await this.addVectorPage(doc, this._refs.tagRef, 216, 90, 9, 6, 14, fonts);
-    }
-    if (this._offPalette.size) {
-      console.warn("[business-essentials] colours converted rather than taken from print-colors.json:", [...this._offPalette].join(", "));
-    }
-    doc.setTitle(this.fileBaseName());
+    await this.withMode(target, async () => {
+      if (target === "card") {
+        await this.addVectorPage(doc, this.liveRef("frontRef"), 252, 144, 9, 6, 14, fonts);
+        await this.addVectorPage(doc, this.liveRef("backRef"), 252, 144, 9, 6, 14, fonts);
+      } else {
+        await this.addVectorPage(doc, this.liveRef("tagRef"), 216, 90, 9, 6, 14, fonts);
+      }
+    });
+    doc.setTitle(this.fileBaseName(target));
     doc.setProducer("Nashville PBS Business Essentials");
     return doc.save();
   };
 
-  downloadPdf = async () => {
-    if (!window.PDFLib) { this.flash("The PDF library didn't load — check the network and reload.", "err"); return; }
-    this.flash("Rendering PDF…", "busy");
+  // [{ target, name, bytes }] for each requested output
+  buildFiles = async (targets) => {
+    if (!window.PDFLib) throw new Error("the PDF library didn't load — check the network and reload");
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    this._offPalette = new Set();
+    const files = [];
+    for (const t of targets) {
+      files.push({ target: t, name: this.fileBaseName(t) + ".pdf", bytes: await this.buildPdfFor(t) });
+    }
+    if (this._offPalette.size) {
+      console.warn("[business-essentials] colours converted rather than taken from print-colors.json:", [...this._offPalette].join(", "));
+    }
+    return files;
+  };
+
+  saveBlob = (blob, filename) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+
+  downloadPdf = () => this.exportFiles([this.state.mode]);
+  downloadBoth = () => this.exportFiles(["card", "tag"]);
+
+  exportFiles = async (targets) => {
+    if (this.state.exporting) return;
+    this.setState({ exporting: true });
+    this.flash(targets.length > 1 ? "Rendering both PDFs…" : "Rendering PDF…", "busy");
     try {
-      if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      const bytes = await this.buildPdf();
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = this.fileBaseName() + ".pdf";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      this.flash("Downloaded " + a.download, "ok");
+      const files = await this.buildFiles(targets);
+      if (files.length === 1) {
+        this.saveBlob(new Blob([files[0].bytes], { type: "application/pdf" }), files[0].name);
+        this.flash("Downloaded " + files[0].name, "ok");
+      } else if (window.JSZip) {
+        // one ZIP so the two PDFs arrive together, each still its own print file
+        const zip = new window.JSZip();
+        files.forEach((f) => zip.file(f.name, f.bytes));
+        const name = this.zipBaseName() + ".zip";
+        this.saveBlob(await zip.generateAsync({ type: "blob" }), name);
+        this.flash("Downloaded " + name + " (" + files.map((f) => f.name).join(", ") + ")", "ok");
+      } else {
+        // JSZip missing — hand over the PDFs one at a time rather than fail
+        for (const f of files) {
+          this.saveBlob(new Blob([f.bytes], { type: "application/pdf" }), f.name);
+          await new Promise((r) => setTimeout(r, 600));
+        }
+        this.flash("Downloaded " + files.map((f) => f.name).join(" and ") + " (as separate files).", "ok");
+      }
     } catch (err) {
       this.flash("Export failed: " + (err.message || err), "err");
+    } finally {
+      this.setState({ exporting: false });
     }
   };
 
@@ -730,31 +864,42 @@ class Component extends DCLogic {
     reader.readAsDataURL(blob);
   });
 
+  // One Graphics row per output: both when both are finished, otherwise just the
+  // tab you're on. Each row gets its own PDF and its own Graphics Type.
   saveToAirtable = async () => {
     if (this.state.saving) return;
     if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
     const name = this.state.name.trim();
     if (!name) { this.flash("Enter a name first.", "err"); return; }
+    const targets = this.targets();
     this.setState({ saving: true });
-    this.flash("Rendering & saving…", "busy");
+    this.flash(targets.length > 1 ? "Rendering & saving both…" : "Rendering & saving…", "busy");
     try {
-      if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      const bytes = await this.buildPdf();
-      const pdfBase64 = await this.bytesToBase64(bytes);
-      const res = await fetch(this.api("/save-graphic"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: this.state.selectedUserId || null,
-          personName: name,
-          graphicsType: this.state.mode === "card" ? "Business Card" : "Name Tag",
-          pdfBase64,
-          fileName: this.fileBaseName() + ".pdf",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
-      this.flash("Saved to Airtable Graphics.", "ok");
+      const files = await this.buildFiles(targets);
+      const saved = [];
+      for (const f of files) {
+        const pdfBase64 = await this.bytesToBase64(f.bytes);
+        const res = await fetch(this.api("/save-graphic"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: this.state.selectedUserId || null,
+            personName: name,
+            graphicsType: f.target === "card" ? "Business Card" : "Name Tag",
+            pdfBase64,
+            fileName: f.name,
+          }),
+        });
+        const data = await res.json();
+        // a partial failure has to say what did land — the rows are separate
+        if (!res.ok || data.error) {
+          throw new Error((data.error || ("HTTP " + res.status)) +
+            (saved.length ? " (the " + saved.join(" and ") + " saved first)" : ""));
+        }
+        saved.push(this.labelFor(f.target));
+      }
+      this.flash("Saved the " + saved.join(" and the ") + " to Airtable Graphics.", "ok");
+      this.setState({ dirty: false });
     } catch (err) {
       this.flash("Save failed: " + (err.message || err), "err");
     } finally {
@@ -807,10 +952,16 @@ class Component extends DCLogic {
       userEmpty: !s.userLoading && !!s.userSearch.trim() && !s.userResults.length,
       userResults: s.userResults.map((u) => ({ name: u.name || "Untitled", title: u.title || "—", onPick: () => this.pickUser(u) })),
       // actions
+      backToMain: this.backToMain,
       downloadPdf: this.downloadPdf,
-      downloadLabel: isCard ? "Download print PDF (front + back)" : "Download name tag PDF",
+      downloadLabel: s.exporting ? "Rendering…" : isCard ? "Download print PDF (front + back)" : "Download name tag PDF",
+      canDoBoth: this.bothReady(),
+      downloadBoth: this.downloadBoth,
       saveToAirtable: this.saveToAirtable,
-      saveLabel: s.saving ? "Saving…" : "Save to Airtable Graphics",
+      // the label always states exactly what the button will write
+      saveLabel: s.saving ? "Saving…"
+        : this.bothReady() ? "Save card + name tag to Airtable"
+        : isCard ? "Save business card to Airtable" : "Save name tag to Airtable",
       hasStatus: !!s.status, status: s.status, statusStyle,
       hasFitWarning: !!s.fitWarning, fitWarning: s.fitWarning,
     };
