@@ -61,7 +61,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 
       <div style="padding:14px 22px;display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;flex-direction:column;gap:8px;position:relative">
-          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Find in User Table</label>
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Find Employee</label>
           <input value="{{ userSearch }}" onInput="{{ onUserSearch }}" placeholder="Search staff by name…" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
           <sc-if value="{{ showUserResults }}">
             <div style="position:absolute;top:62px;left:0;right:0;background:#fff;border:1.5px solid #c7cde0;border-radius:10px;box-shadow:0 12px 28px rgba(10,20,90,.18);max-height:220px;overflow:auto;z-index:20">
@@ -103,18 +103,20 @@ a:hover{color:#0F1E8C;text-decoration:underline}
           </div>
           <input type="range" min="8" max="28" step="1" value="{{ titleSize }}" onInput="{{ onTitleSize }}" style="width:100%;accent-color:#2638C4;cursor:pointer">
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Email</label>
-          <input value="{{ email }}" onInput="{{ onEmail }}" placeholder="e.g. name@wnpt.org" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
-        </div>
+        <!-- Email, office phone and cell are card-only: none of them appear on the
+             name tag, which prints just the logo, the name and the title. -->
         <sc-if value="{{ isCard }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex;flex-direction:column;gap:8px">
-            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Office phone</label>
-            <input value="{{ phone }}" onInput="{{ onPhone }}" placeholder="(615) 259-9325 (default)" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Email</label>
+            <input value="{{ email }}" onInput="{{ onEmail }}" placeholder="e.g. name@wnpt.org" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
-            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Cell phone <span style="font-weight:500;color:#aab0c8;text-transform:none">(optional)</span></label>
-            <input value="{{ cell }}" onInput="{{ onCell }}" placeholder="e.g. (931) 261-4704" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Office phone</label>
+            <input value="{{ phone }}" onInput="{{ onPhone }}" onBlur="{{ tidyPhone }}" placeholder="(615) 259-9325 (default)" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Business Cell <span style="font-weight:500;color:#aab0c8;text-transform:none">(optional)</span></label>
+            <input value="{{ cell }}" onInput="{{ onCell }}" onBlur="{{ tidyCell }}" placeholder="e.g. (931) 261-4704" style="font-family:'PBS Sans',Arial,sans-serif;font-size:15px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
           </div>
         </sc-if>
       </div>
@@ -128,7 +130,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         <sc-if value="{{ canDoBoth }}">
           <button onClick="{{ downloadBoth }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#eef1fb;color:#2638C4;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c3ccef;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#e3e8f9;border-color:#2638C4">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
-            Download both (ZIP)
+            Download Both
           </button>
         </sc-if>
         <button onClick="{{ saveToAirtable }}" style="display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;color:#0A145A;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border:1.5px solid #c7cde0;border-radius:999px;padding:12px 18px;cursor:pointer" style-hover="background:#f4f6fc">
@@ -363,6 +365,22 @@ class Component extends DCLogic {
   onEmail = (e) => this.edit({ email: e.target.value });
   onPhone = (e) => this.edit({ phone: e.target.value });
   onCell = (e) => this.edit({ cell: e.target.value });
+  // Everything that prints reads (XXX) XXX-XXXX. The User table stores phone numbers
+  // however they were typed, so normalise on the way in as well as on the way out:
+  // fields tidy up on blur, prefills are formatted, and the card lines are formatted
+  // again at render so an untidied field can't reach the PDF. Anything that isn't a
+  // plain 10-digit US number (an extension, an international number, a half-typed
+  // one) is left exactly as entered rather than mangled.
+  formatPhone(v) {
+    const raw = String(v == null ? "" : v).trim();
+    if (!raw) return "";
+    const digits = raw.replace(/\D/g, "");
+    const ten = digits.length === 11 && digits[0] === "1" ? digits.slice(1) : digits;
+    if (ten.length !== 10) return raw;
+    return "(" + ten.slice(0, 3) + ") " + ten.slice(3, 6) + "-" + ten.slice(6);
+  }
+  tidyPhone = () => { const v = this.formatPhone(this.state.phone); if (v !== this.state.phone) this.edit({ phone: v }); };
+  tidyCell = () => { const v = this.formatPhone(this.state.cell); if (v !== this.state.cell) this.edit({ cell: v }); };
   onNameSize = (e) => {
     const v = parseInt(e.target.value, 10);
     this.edit(this.state.mode === "card" ? { cardNameSize: v } : { tagNameSize: v });
@@ -417,7 +435,7 @@ class Component extends DCLogic {
   };
   pickUser = (u) => this.edit({
     name: u.name || "", title: u.title || "", email: u.email || "",
-    phone: u.phone || "", cell: u.cell || "",
+    phone: this.formatPhone(u.phone), cell: this.formatPhone(u.cell),
     selectedUserId: u.id, userSearch: u.name || "", showResults: false,
   });
 
@@ -926,7 +944,7 @@ class Component extends DCLogic {
     const s = this.state;
     const connected = !!s.workerUrl;
     const isCard = s.mode === "card";
-    const effPhone = (s.phone || "").trim() || this.DEFAULT_PHONE;
+    const effPhone = this.formatPhone(s.phone) || this.DEFAULT_PHONE;
     const statusStyle = "font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;" +
       (s.statusKind === "err" ? "background:#fdece8;color:#c23a1a" : s.statusKind === "busy" ? "background:#eef1fb;color:#2638C4" : "background:#e8f7f5;color:#0f8a82");
     const tabBase = "flex:1;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13.5px;border-radius:999px;padding:10px 14px;cursor:pointer;border:1.5px solid ";
@@ -954,12 +972,13 @@ class Component extends DCLogic {
       onTitleSize: this.onTitleSize,
       resetTitleSize: this.resetTitleSize,
       onName: this.onName, onTitle: this.onTitle, onEmail: this.onEmail, onPhone: this.onPhone, onCell: this.onCell,
+      tidyPhone: this.tidyPhone, tidyCell: this.tidyCell,
       hasName: !!s.name, noName: !s.name,
       hasTitle: !!s.title, noTitle: !s.title,
       hasCell: !!s.cell.trim(),
       backEmail: s.email || "email@wnpt.org",
       backPhoneLine: effPhone + " - Office",
-      backCellLine: (s.cell || "") + " - Cell",
+      backCellLine: this.formatPhone(s.cell) + " - Cell",
       // user search
       userSearch: s.userSearch, onUserSearch: this.onUserSearch,
       showUserResults: s.showResults && (s.userLoading || !!s.userSearch.trim()),
@@ -969,7 +988,8 @@ class Component extends DCLogic {
       // actions
       backToMain: this.backToMain,
       downloadPdf: this.downloadPdf,
-      downloadLabel: s.exporting ? "Rendering…" : isCard ? "Download print PDF (front + back)" : "Download name tag PDF",
+      // same wording on both tabs — which output it is is already the selected tab
+      downloadLabel: s.exporting ? "Rendering…" : "Download PDF",
       canDoBoth: this.bothReady(),
       downloadBoth: this.downloadBoth,
       saveToAirtable: this.saveToAirtable,
