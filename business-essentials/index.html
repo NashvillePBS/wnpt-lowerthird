@@ -16,6 +16,11 @@
 body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif}
 a{color:#0A145A;text-decoration:none}
 a:hover{color:#0F1E8C;text-decoration:underline}
+/* the How to use this disclosure: hide the native marker, turn our own chevron */
+#be-howto summary::-webkit-details-marker{display:none}
+#be-howto summary::marker{content:""}
+#be-howto .be-chev{transition:transform .15s ease}
+#be-howto[open] .be-chev{transform:rotate(90deg)}
 @media (max-width:900px){
   #be-grid{grid-template-columns:1fr !important;grid-template-rows:auto auto !important}
   #be-aside{border-right:none !important;border-bottom:1px solid #d7dbe8 !important}
@@ -61,13 +66,15 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 
       <!-- Instructions, open by default. People were skipping the lookup and typing
            details by hand, which quietly drifts from the User Table. -->
-      <details open="{{ instructionsOpen }}" style="margin:4px 22px 0;border:1px solid #dde1ee;border-radius:10px;background:#f6f7fb">
-        <summary style="cursor:pointer;padding:10px 13px;font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180;list-style:none">How to use this</summary>
+      <details id="be-howto" style="margin:4px 22px 0;border:1px solid #dde1ee;border-radius:10px;background:#f6f7fb">
+        <summary style="cursor:pointer;padding:10px 13px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180;list-style:none">
+          <svg class="be-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m9 18 6-6-6-6"></path></svg>How to use this
+        </summary>
         <div style="padding:0 13px 12px;font-size:12.5px;line-height:1.55;color:#5a6180">
           <div style="display:flex;gap:8px;margin-top:2px"><span style="font-weight:800;color:#2638C4">1.</span><span><strong style="color:#0A145A">Start with Find Employee.</strong> Search the person by name and pick them — their name, title, email and phone numbers come straight from the User Table, already correct.</span></div>
           <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">2.</span><span><strong style="color:#0A145A">Not in the list?</strong> Go ahead and build the card and name tag by typing the details in yourself. The save is flagged for review so the User Table can be brought up to date.</span></div>
           <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">3.</span><span>Every field stays editable after a lookup — but if you change one, that difference gets flagged for review too.</span></div>
-          <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">4.</span><span>Pick <strong style="color:#0A145A">Business Card</strong> or <strong style="color:#0A145A">Name Tag</strong>, then <strong style="color:#0A145A">Download PDF</strong> for print or <strong style="color:#0A145A">Save</strong> to file it in Airtable. Fill in both and you can do both at once.</span></div>
+          <div style="display:flex;gap:8px;margin-top:8px"><span style="font-weight:800;color:#2638C4">4.</span><span>Pick <strong style="color:#0A145A">Business Card</strong> or <strong style="color:#0A145A">Name Tag</strong> and hit <strong style="color:#0A145A">Download PDF</strong> — fill in both and you can download both at once. Finished work files itself to Airtable, so there's nothing to save.</span></div>
         </div>
       </details>
 
@@ -152,10 +159,11 @@ a:hover{color:#0F1E8C;text-decoration:underline}
             Download Both
           </button>
         </sc-if>
-        <button onClick="{{ saveToAirtable }}" disabled="{{ isBlocked }}" style="{{ saveStyle }}" style-hover="{{ saveHover }}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
-          {{ saveLabel }}
-        </button>
+        <!-- No Save button: finished work files itself to Airtable Graphics
+             (autosave, §13.9.3). This line is the only thing the operator sees of it. -->
+        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:#8890ad">
+          <span style="width:7px;height:7px;border-radius:50%;flex:none;background:{{ autosaveDot }}"></span>{{ autosaveLabel }}
+        </div>
         <sc-if value="{{ hasFitWarning }}">
           <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;font-weight:600;line-height:1.45;padding:9px 11px;border-radius:8px;background:#fff1ed;color:#a8391b;border:1px solid #ffd4c8">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
@@ -260,11 +268,9 @@ class Component extends DCLogic {
     selectedUserId: null,
     userSearch: "", userResults: [], userLoading: false, showResults: false,
     workerUrl: "",
-    status: "", statusKind: "", saving: false, exporting: false,
-    // set by any edit, cleared by a successful Airtable save — drives the
-    // leave warnings. A download deliberately does NOT clear it: the warning is
-    // about the Airtable record, not about having a file on disk.
-    dirty: false,
+    status: "", statusKind: "", exporting: false,
+    // "" | pending | saving | saved | err — what the autosave line reports
+    autosaveState: "", autosaveMsg: "",
   };
   // Same Worker as the studio (build.md §11.1) — one deploy, one token. The
   // connection button still overrides it via localStorage["be_worker_url"].
@@ -332,19 +338,26 @@ class Component extends DCLogic {
       this._ro = new ResizeObserver(() => this.scaleToFit());
       if (this._refs.scalerRef && this._refs.scalerRef.parentElement) this._ro.observe(this._refs.scalerRef.parentElement);
     }
-    // Closing the tab / reloading with unsaved work. The browser shows its own
-    // generic wording here — only the back link can carry our text.
+    // Leaving mid-autosave. This is now a narrow case — the only way to reach it is
+    // to close or reload within a few seconds of the last keystroke — so it warns
+    // rather than losing the record, and staying lets the save finish.
     this._onBeforeUnload = (e) => {
-      if (!this.state.dirty || this._leaving) return undefined;
+      if (this._leaving || !this.hasUnsaved()) return undefined;
       e.preventDefault();
       e.returnValue = "";
       return "";
     };
     window.addEventListener("beforeunload", this._onBeforeUnload);
+    // Switching tabs or minimising: the page stays alive here, so this is the one
+    // "on the way out" hook that can actually complete a save.
+    this._onHide = () => { if (document.visibilityState === "hidden") this.flushAutosave(); };
+    document.addEventListener("visibilitychange", this._onHide);
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this._onResize);
     window.removeEventListener("beforeunload", this._onBeforeUnload);
+    document.removeEventListener("visibilitychange", this._onHide);
+    clearTimeout(this._autosaveTimer);
     if (this._ro) this._ro.disconnect();
   }
   componentDidUpdate() { this.fitAll(); }
@@ -361,24 +374,24 @@ class Component extends DCLogic {
   api(path) { return this.state.workerUrl.replace(/\/+$/, "") + path; }
   flash(msg, kind = "ok") { this.setState({ status: msg, statusKind: kind }); }
 
-  // ---------- leaving with unsaved work ----------
-  LEAVE_WARNING = "This hasn't been saved to Airtable Graphics yet. Leave anyway?";
-  // The back control is a real <a href="../"> so middle-click and "open in new
-  // tab" still behave; this only intercepts the plain click.
+  // ---------- leaving ----------
+  // The back control is a real <a href="../"> so middle-click and "open in new tab"
+  // still behave. On a plain click with work not yet filed, hold the navigation,
+  // let the autosave finish, then go — the operator sees "Saving…" for a moment
+  // instead of being asked a question they shouldn't have to answer.
   backToMain = (e) => {
-    if (!this.state.dirty) return;
-    if (!window.confirm(this.LEAVE_WARNING)) {
-      if (e && e.preventDefault) e.preventDefault();
-      return;
-    }
-    this._leaving = true; // so beforeunload doesn't ask a second time
+    if (!this.hasUnsaved()) return;
+    if (e && e.preventDefault) e.preventDefault();
+    this._leaving = true;
+    this.flushAutosave().then(() => { window.location.href = "../"; });
   };
 
   // ---------- fields ----------
-  // edit() is how every field change goes in — one place to set the dirty flag
-  edit = (patch) => this.setState({ ...patch, dirty: true });
-  setModeCard = () => this.setState({ mode: "card" });
-  setModeTag = () => this.setState({ mode: "tag" });
+  // edit() is how every field change goes in — one place to (re)arm the autosave
+  edit = (patch) => this.setState(patch, this.scheduleAutosave);
+  // switching tabs changes which output autosave is watching
+  setModeCard = () => this.setState({ mode: "card" }, this.scheduleAutosave);
+  setModeTag = () => this.setState({ mode: "tag" }, this.scheduleAutosave);
   onName = (e) => this.edit({ name: e.target.value });
   onTitle = (e) => this.edit({ title: e.target.value });
   onEmail = (e) => this.edit({ email: e.target.value });
@@ -433,9 +446,6 @@ class Component extends DCLogic {
   }
   bothReady() { const r = this.ready(); return r.card && r.tag; }
   listOf(items) { return items.length < 2 ? (items[0] || "") : items.slice(0, -1).join(", ") + " and " + items[items.length - 1]; }
-  // What Download-both and Save act on: both outputs once both are complete,
-  // otherwise just the tab you're looking at.
-  targets() { return this.bothReady() ? ["card", "tag"] : [this.state.mode]; }
   labelFor(t) { return t === "card" ? "business card" : "name tag"; }
 
   // ---------- user search ----------
@@ -864,12 +874,17 @@ class Component extends DCLogic {
     if (!window.PDFLib) throw new Error("the PDF library didn't load — check the network and reload");
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     this._offPalette = new Set();
+    this._lastRender = this._lastRender || {};
     const files = [];
     for (const t of targets) {
       // a two-output export takes a few seconds and switches tabs to measure the
       // other face — say which one is being drawn rather than sit on "Rendering…"
       if (targets.length > 1) this.flash("Rendering the " + this.labelFor(t) + "…", "busy");
-      files.push({ target: t, name: this.fileBaseName(t) + ".pdf", bytes: await this.buildPdfFor(t) });
+      const bytes = await this.buildPdfFor(t);
+      // kept so an autosave right after a download doesn't render the same face
+      // twice — and so Download Both lets both rows be filed without a tab flip
+      this._lastRender[t] = { key: this.contentKey(t), bytes };
+      files.push({ target: t, name: this.fileBaseName(t) + ".pdf", bytes });
     }
     if (this._offPalette.size) {
       console.warn("[business-essentials] colours converted rather than taken from print-colors.json:", [...this._offPalette].join(", "));
@@ -917,6 +932,9 @@ class Component extends DCLogic {
         }
         this.flash("Downloaded " + files.map((f) => f.name).join(" and ") + " (as separate files).", "ok");
       }
+      // a download is as finished as work gets — file it now, using the bytes
+      // that were just rendered
+      this.flushAutosave();
     } catch (err) {
       this.flash("Export failed: " + (err.message || err), "err");
     } finally {
@@ -931,58 +949,105 @@ class Component extends DCLogic {
     reader.readAsDataURL(blob);
   });
 
-  // One Graphics row per output: both when both are finished, otherwise just the
-  // tab you're on. Each row gets its own PDF and its own Graphics Type.
-  saveToAirtable = async () => {
-    if (this.state.saving) return;
-    if (!this.state.workerUrl) { this.flash("Set the Airtable connection first (top-right).", "err"); return; }
-    const name = this.state.name.trim();
-    const targets = this.targets();
-    for (const t of targets) {
-      const missing = this.missingFor(t);
-      if (missing.length) { this.flash("The " + this.labelFor(t) + " still needs " + this.listOf(missing) + ".", "err"); return; }
-    }
-    this.setState({ saving: true });
-    this.flash(targets.length > 1 ? "Rendering & saving both…" : "Rendering & saving…", "busy");
-    try {
-      const files = await this.buildFiles(targets);
-      const saved = [];
-      for (const f of files) {
-        const pdfBase64 = await this.bytesToBase64(f.bytes);
-        const res = await fetch(this.api("/save-graphic"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: this.state.selectedUserId || null,
-            personName: name,
-            graphicsType: f.target === "card" ? "Business Card" : "Name Tag",
-            pdfBase64,
-            fileName: f.name,
-            // what was actually typed — the Worker compares this against the
-            // User Table record and flags the row for review when they disagree
-            details: {
-              title: this.state.title,
-              email: this.state.email,
-              phone: this.state.phone,
-              cell: this.state.cell,
-            },
-          }),
-        });
-        const data = await res.json();
-        // a partial failure has to say what did land — the rows are separate
-        if (!res.ok || data.error) {
-          throw new Error((data.error || ("HTTP " + res.status)) +
-            (saved.length ? " (the " + saved.join(" and ") + " saved first)" : ""));
+  /* ══════════════ autosave ══════════════
+     There is no Save button. Finished work files itself to Airtable Graphics, because
+     the button was being skipped and an unrecorded card is worse than an extra row.
+
+     What it saves: the output on screen, once it is complete and you have stopped
+     typing for AUTOSAVE_IDLE_MS. It never renders the face you are NOT looking at —
+     that would flip the tab mid-edit — unless a Download Both already rendered it, in
+     which case those bytes are reused and both rows are filed.
+
+     One row per person per output per session: the Worker's `recordId` path rewrites
+     the row it already made instead of adding another, so a session of edits leaves
+     one row (and one review email) rather than a trail. Switching to a different
+     person starts fresh rows. */
+  AUTOSAVE_IDLE_MS = 3000;
+  _savedIds = {};    // target → Graphics record id for the person currently loaded
+  _savedKeys = {};   // target → the content that row already holds
+  _savedFor = null;  // which person those ids belong to
+
+  // everything that changes an output, so an idle edit that changes nothing re-saves nothing
+  contentKey(target) {
+    const s = this.state;
+    return JSON.stringify(target === "card"
+      ? ["card", s.name.trim(), s.title.trim(), s.email.trim(), this.formatPhone(s.phone), this.formatPhone(s.cell), s.cardNameSize, s.cardTitleSize]
+      : ["tag", s.name.trim(), s.title.trim(), s.tagNameSize, s.tagTitleSize]);
+  }
+  personKey() { return (this.state.selectedUserId || "manual") + "|" + this.state.name.trim().toLowerCase(); }
+
+  needsAutosave(target) {
+    if (!this.state.workerUrl) return false;
+    if (this.missingFor(target).length) return false;
+    if (this._savedFor !== this.personKey()) return true;
+    return this._savedKeys[target] !== this.contentKey(target);
+  }
+  // the tab you're on, plus the other one when a Download Both already rendered it
+  autosaveTargets() {
+    const active = this.state.mode, other = active === "card" ? "tag" : "card";
+    const out = this.needsAutosave(active) ? [active] : [];
+    const cached = this._lastRender && this._lastRender[other];
+    if (cached && cached.key === this.contentKey(other) && this.needsAutosave(other)) out.push(other);
+    return out;
+  }
+  hasUnsaved() { return !!this._autosaving || !!this.autosaveTargets().length; }
+
+  scheduleAutosave = () => {
+    clearTimeout(this._autosaveTimer);
+    if (!this.autosaveTargets().length) return;
+    this.setState({ autosaveState: "pending" });
+    this._autosaveTimer = setTimeout(() => { this.flushAutosave(); }, this.AUTOSAVE_IDLE_MS);
+  };
+
+  flushAutosave = () => {
+    clearTimeout(this._autosaveTimer);
+    if (this._autosaving) return this._autosaving; // coalesce; the in-flight one wins
+    const targets = this.autosaveTargets();
+    if (!targets.length) return Promise.resolve();
+    this._autosaving = (async () => {
+      // a different person means new rows, not a rewrite of somebody else's
+      if (this._savedFor !== this.personKey()) { this._savedIds = {}; this._savedKeys = {}; }
+      this.setState({ autosaveState: "saving" });
+      try {
+        const saved = [];
+        for (const target of targets) {
+          const key = this.contentKey(target);
+          const cached = this._lastRender && this._lastRender[target];
+          const bytes = cached && cached.key === key ? cached.bytes : (await this.buildFiles([target]))[0].bytes;
+          const pdfBase64 = await this.bytesToBase64(bytes);
+          const res = await fetch(this.api("/save-graphic"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: this.state.selectedUserId || null,
+              personName: this.state.name.trim(),
+              graphicsType: target === "card" ? "Business Card" : "Name Tag",
+              pdfBase64,
+              fileName: this.fileBaseName(target) + ".pdf",
+              recordId: this._savedIds[target] || null,
+              // what was actually typed — the Worker compares this against the
+              // User Table record and flags the row for review when they disagree
+              details: {
+                title: this.state.title,
+                email: this.state.email,
+                phone: this.state.phone,
+                cell: this.state.cell,
+              },
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.error) throw new Error(data.error || ("HTTP " + res.status));
+          this._savedIds[target] = data.recordId;
+          this._savedKeys[target] = key;
+          this._savedFor = this.personKey();
+          saved.push(this.labelFor(target));
         }
-        saved.push(this.labelFor(f.target));
+        this.setState({ autosaveState: "saved", autosaveMsg: "Saved the " + this.listOf(saved) + " to Airtable Graphics" });
+      } catch (err) {
+        this.setState({ autosaveState: "err", autosaveMsg: "Couldn't save to Airtable: " + (err.message || err) });
       }
-      this.flash("Saved the " + saved.join(" and the ") + " to Airtable Graphics.", "ok");
-      this.setState({ dirty: false });
-    } catch (err) {
-      this.flash("Save failed: " + (err.message || err), "err");
-    } finally {
-      this.setState({ saving: false });
-    }
+    })();
+    return this._autosaving.finally(() => { this._autosaving = null; });
   };
 
   renderVals() {
@@ -999,8 +1064,15 @@ class Component extends DCLogic {
     const blocked = missing.length > 0;
     const downloadStyle = "display:flex;align-items:center;justify-content:center;gap:9px;font-family:'PBS Sans',Arial,sans-serif;font-weight:800;font-size:15px;border:none;border-radius:999px;padding:14px 20px;" +
       (blocked ? "background:#c7cde0;color:#f4f6fc;cursor:not-allowed" : "background:#0A145A;color:#fff;cursor:pointer");
-    const saveStyle = "display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:14px;border-radius:999px;padding:12px 18px;border:1.5px solid " +
-      (blocked ? "#e4e7f1;color:#aab0c8;cursor:not-allowed" : "#c7cde0;color:#0A145A;cursor:pointer");
+    // the autosave line — the only visible trace of the vanished Save button
+    const AUTOSAVE = {
+      pending: ["#c7cde0", "Saving to Airtable shortly…"],
+      saving: ["#2638C4", "Saving to Airtable Graphics…"],
+      saved: ["#48D3CD", s.autosaveMsg || "Saved to Airtable Graphics"],
+      err: ["#FE704E", s.autosaveMsg || "Couldn't save to Airtable"],
+    };
+    const autosave = AUTOSAVE[s.autosaveState] ||
+      ["#dde1ee", blocked ? "Saves to Airtable Graphics once it's finished" : "Saves to Airtable Graphics automatically"];
     return {
       rootRef: (el) => { this._refs.rootRef = el; },
       scalerRef: (el) => { this._refs.scalerRef = el; },
@@ -1043,23 +1115,15 @@ class Component extends DCLogic {
       downloadPdf: this.downloadPdf,
       // same wording on both tabs — which output it is is already the selected tab
       downloadLabel: s.exporting ? "Rendering…" : "Download PDF",
-      // open on load: the lookup step is the one people skip. A bare `open`
-      // attribute doesn't survive the template parse, so it's a real prop.
-      instructionsOpen: true,
       isBlocked: blocked,
       blockedHint: blocked
         ? "The " + this.labelFor(s.mode) + " still needs " + this.listOf(missing) + " before it can be downloaded or saved."
         : "",
-      downloadStyle, saveStyle,
+      downloadStyle,
       downloadHover: blocked ? "" : "background:#0F1E8C",
-      saveHover: blocked ? "" : "background:#f4f6fc",
       canDoBoth: this.bothReady(),
       downloadBoth: this.downloadBoth,
-      saveToAirtable: this.saveToAirtable,
-      // the label always states exactly what the button will write
-      saveLabel: s.saving ? "Saving…"
-        : this.bothReady() ? "Save card + name tag to Airtable"
-        : isCard ? "Save business card to Airtable" : "Save name tag to Airtable",
+      autosaveDot: autosave[0], autosaveLabel: autosave[1],
       hasStatus: !!s.status, status: s.status, statusStyle,
       hasFitWarning: !!s.fitWarning, fitWarning: s.fitWarning,
     };

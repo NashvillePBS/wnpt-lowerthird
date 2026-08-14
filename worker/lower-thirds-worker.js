@@ -317,12 +317,18 @@ async function saveCollection(api, body) {
 //   pdfBase64: string,
 //   fileName?: string,
 //   details?: { title, email, phone, cell },  // what the operator actually typed
+//   recordId?: string,             // update this row instead of adding another
 // }
 // Creates one Graphics row named "{Person} - {Graphics Type} - {YYYY-MM-DD}" and
-// uploads the print-ready PDF into it. Never updates an existing row: every save
-// is a new record, and the Airtable automation flags the superseded ones.
+// uploads the print-ready PDF into it.
+//
+// `recordId` exists for the page's autosave: a session that keeps editing would
+// otherwise leave a trail of near-identical rows (and a review email for each
+// create). The page passes back the id it got, so one session's card stays one
+// row, rewritten in place. Omit it and this behaves as before — a new row every
+// time — which is what a fresh person or a fresh output does.
 async function saveGraphic(api, body) {
-  const { userId, personName, graphicsType, pdfBase64, fileName } = body;
+  const { userId, personName, graphicsType, pdfBase64, fileName, recordId: existingId } = body;
   if (!personName || !graphicsType || !pdfBase64) {
     throw new Error("personName, graphicsType and pdfBase64 are required");
   }
@@ -346,19 +352,26 @@ async function saveGraphic(api, body) {
   // truth can be reconciled instead of drifting. Set on the create call itself so
   // the review automation sees it on the recordCreated trigger.
   const review = await reviewNotes(api, { userId, personName, graphicsType, details: body.details });
-  if (review) {
-    fields[F_G_REVIEW] = true;
-    fields[F_G_REVIEW_NOTES] = review;
-  }
+  // written either way, so a row that gets corrected doesn't keep a stale flag
+  fields[F_G_REVIEW] = !!review;
+  fields[F_G_REVIEW_NOTES] = review || "";
 
-  const created = await api.create(T_GRAPHICS, [{ fields }]);
-  const recordId = created[0].id;
+  let recordId = existingId || null;
+  if (recordId) {
+    await api.update(T_GRAPHICS, [{ id: recordId, fields }]);
+    // clear-then-upload, same as the Lower Thirds PNG path: a failed upload can
+    // leave the field briefly empty, which the next autosave rewrites
+    await api.clearAttachment(T_GRAPHICS, recordId, F_G_ATTACHMENT);
+  } else {
+    const created = await api.create(T_GRAPHICS, [{ fields }]);
+    recordId = created[0].id;
+  }
   await api.uploadAttachment(
     recordId, F_G_ATTACHMENT, pdfBase64, "application/pdf",
     fileName || slug(recordName) + ".pdf",
   );
 
-  return { ok: true, recordId, name: recordName, needsReview: !!review };
+  return { ok: true, recordId, name: recordName, needsReview: !!review, updated: !!existingId };
 }
 
 /* Does this save disagree with the User Table? Returns the note to file, or "" when
