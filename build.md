@@ -1715,6 +1715,28 @@ measuring real geometry instead of keeping a second copy of the layout, and it i
 right trade. `liveRef()` refuses a ref that is detached or zero-width, so a mis-timed
 capture fails loudly instead of drawing a blank page.
 
+**Wording and field cleanup (2026-08-14).** "Find in User Table" → **Find Employee**,
+"Cell phone" → **Business Cell**, and both download buttons are just **Download PDF** /
+**Download Both** on either tab — the selected tab already says which output it is.
+**Email, office phone and Business Cell are card-only now**: none of them print on the name
+tag, which carries the logo, the name and the title and nothing else. Note the consequence
+for `bothReady()` — the card needs an email, so a name tag started on its own tab won't
+offer "Download Both" until you visit the Business Card tab and add one.
+
+**Phone numbers normalise to `(XXX) XXX-XXXX`** in three places, because a User-table value
+can arrive in any shape: `pickUser()` formats the prefill, the two phone fields tidy
+themselves on blur (`onBlur` → `tidyPhone`/`tidyCell`), and `renderVals` formats the card
+lines again so an untidied field can never reach the PDF. `formatPhone()` only touches a
+plain 10-digit US number (or 11 with a leading 1); an extension, an international number or
+a half-typed one is left exactly as entered rather than mangled. Verified across
+`615.259.9325`, `6152599325`, `1-615-259-9325`, `(615)259-9325`, `615 259 9325 x12`,
+`+44 20 7946 0958`, a partial, and empty.
+
+Worth knowing for anyone testing `onBlur` from a console: the runtime is React-shaped, so it
+listens for **`focusout`**, not `blur` — and `el.focus()` in an unfocused browser pane never
+produces either. A synthetic `new Event('blur')` looks like a broken handler when the
+handler is fine.
+
 **Leave warnings.** `state.dirty` is set by `edit()` — the single funnel every field
 change and slider now goes through, including a user pick from the search — and cleared
 only by a **successful Airtable save**. A download deliberately does not clear it: the
