@@ -1625,6 +1625,11 @@ is written as an array; its only options are `Business Card`, `Name Tag`, `Stati
 and the Worker rejects anything else with a readable error rather than letting Airtable
 422 (there is no `typecast` on the create).
 
+Record names and the `Created` date use the **station-local** date
+(`America/Chicago`), not UTC — a card saved at 8pm in Nashville is still that day's card.
+The first live save proved it: it landed at 03:53 UTC and would have been stamped a day
+ahead.
+
 `Archived` is still not written by the Worker — that stays an Airtable automation on new
 Graphics rows (same `User Table` + same `Graphics Type` → check `Archived` on the older
 ones). Rationale in BUILD-NOTES: doing it here needs a race-safe find-and-update per

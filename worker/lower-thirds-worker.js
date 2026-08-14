@@ -327,7 +327,9 @@ async function saveGraphic(api, body) {
     throw new Error(`Unknown Graphics Type "${graphicsType}" — the base allows: ${GRAPHICS_TYPES.join(", ")}`);
   }
 
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  // Station-local date, not UTC: a card saved at 8pm in Nashville is still
+  // today's card, and the record name carries this date.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" }); // YYYY-MM-DD
   const recordName = `${personName} - ${graphicsType} - ${today}`;
 
   const fields = {
