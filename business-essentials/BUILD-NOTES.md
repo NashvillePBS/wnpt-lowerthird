@@ -49,6 +49,9 @@ is wired into the studio, the Worker, and the CMYK export — is in `build.md` �
   "Graphics — archive superseded cards and name tags", which exists as a **draft that has
   to be switched on in the Airtable UI** (build.md §13.9.1). Rows with no `User Table`
   link are left alone by design.
+- **There is no Save button.** Finished work autosaves to Airtable Graphics ~3 seconds
+  after you stop typing, and the Back link waits for that save before leaving. One row per
+  person per output per session — edits rewrite the same row (build.md §13.9.3).
 - **Download** is always the tab you're on. **Download both (ZIP)** and **Save** cover both
   outputs once both are complete — name + title for the tag, name + title + email for the
   card. The Save button's label always states what it is about to write.

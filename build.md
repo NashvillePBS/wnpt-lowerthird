@@ -1836,5 +1836,49 @@ with the typed details listed; picked-then-edited → flagged with a line per di
 field; picked and matching (email in different case, blank phone) → `needsReview: false`
 and no notes. Test rows deleted afterwards.
 
+### 13.9.3 Autosave, and the Save button's removal (Shane, 2026-08-14)
+
+The Save step was being skipped, and Shane's call was that an unrecorded card is worse
+than an extra row — the rows are also how he sees who is using the tool. So finished work
+files itself and **there is no Save button**.
+
+**What autosave does.** `scheduleAutosave()` arms on every edit (through `edit()`, the
+single funnel) and fires `AUTOSAVE_IDLE_MS` (3s) after the last one, for **the output on
+screen**, once `missingFor()` says it is complete. It deliberately does **not** render the
+face you aren't looking at — that would flip the tab mid-edit (§13.9.1) — with one
+exception: `Download Both` stashes both renders in `_lastRender`, so when those bytes still
+match `contentKey()` both rows get filed with no flip and no re-render. A download also
+flushes immediately, a download being as finished as work gets.
+
+**One row per person per output per session.** The Worker's `/save-graphic` now takes an
+optional `recordId`; the page keeps `_savedIds` and rewrites that row (fields + attachment)
+instead of adding another, so a session of edits leaves one row and **one** review email
+rather than a trail. `_savedKeys` holds the content each row already carries so an idle
+edit that changed nothing re-saves nothing, and `personKey()` changing (different name or
+different User record) starts fresh rows. `Needs Review`/`Review Notes` are written on
+every save, including empty, so a corrected row can't keep a stale flag.
+
+**Leaving.** The Back link holds the navigation, flushes, then goes — the operator sees
+"Saving…" for a moment instead of being asked a question they shouldn't have to answer.
+`visibilitychange` → hidden also flushes; that is the one "on the way out" hook that can
+still complete a save, since the page stays alive for a tab switch or minimise.
+`beforeunload` now warns **only** while a save is genuinely pending or in flight, which
+means closing within a few seconds of typing — rare, and staying lets the save land.
+
+**Consequence for the review email:** its trigger moved from `recordCreated` to
+`recordMatchesConditions` (Needs Review is checked). With rows rewritten in place, a row
+that starts clean and is later edited into a mismatch would never fire a created trigger.
+The body also warns to open the record before acting, since autosave may have corrected
+the row seconds after the mail went out.
+
+Verified live: complete a form → "Saving to Airtable shortly…" → one row with its PDF;
+edit the title → the **same** row rewritten (notes show the new title, no second row); type
+and hit Back inside 3s → navigation waits and the row still lands. Locally the POST fails
+on CORS by design (§11.3) and the line reads "Couldn't save to Airtable: Failed to fetch",
+which is the point — a failure is visible rather than silent.
+
+**"How to use this"** is collapsed by default, opening on click with a chevron that turns;
+step 4 no longer mentions saving.
+
 **Still open:** enabling both automations, and a printer's-eye check of the first real
 job — the file is genuinely separated now, but no vendor has run it yet.
