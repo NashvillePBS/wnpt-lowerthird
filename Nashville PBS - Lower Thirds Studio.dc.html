@@ -1253,7 +1253,7 @@ class Component extends DCLogic {
       const url = await this.renderCreditsPagePng(pages[this.state.creditsPage]);
       const a = document.createElement("a"); a.href = url; a.download = "credits-" + (this.state.creditsPage + 1) + ".png"; a.click();
       this.flash("Downloaded page " + (this.state.creditsPage + 1) + ".", "ok");
-    } catch (err) { this.flash("Render failed: " + (err.message || err), "err"); }
+    } catch (err) { this.flash("Render failed: " + this.errText(err), "err"); }
   };
   downloadCreditsZip = async () => {
     const pages = this.state.creditsPages || [];
@@ -1266,7 +1266,7 @@ class Component extends DCLogic {
       const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = "credits.zip"; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
       this.flash("Downloaded " + pages.length + " page" + (pages.length === 1 ? "" : "s") + ".", "ok");
-    } catch (err) { this.flash("Render failed: " + (err.message || err), "err"); }
+    } catch (err) { this.flash("Render failed: " + this.errText(err), "err"); }
   };
 
   // ---------- bar builders ----------
@@ -1364,6 +1364,15 @@ class Component extends DCLogic {
   buildBar(entry) { const c = this.cfg(); if (c.logoStation) return this.buildStationIdBar(entry); const st = c.style; if (st === "slice") return this.buildSliceBar(entry); if (st === "box") return this.buildBoxBar(entry); return this.buildStationBar(entry); }
 
   toBlob = (dataUrl) => fetch(dataUrl).then(r => r.blob());
+  // Rejections out of html-to-image are often a bare load Event, whose String() is
+  // "[object Event]" — name the element that failed instead.
+  errText = (err) => {
+    if (err && err.message) return err.message;
+    const t = err && err.target;
+    if (t && t.tagName) return "couldn't load " + t.tagName.toLowerCase() + " " + String(t.currentSrc || t.src || t.href || "").slice(0, 80);
+    if (err && err.type) return "resource load error (" + err.type + ")";
+    return String(err);
+  };
   // html-to-image rasterizes the node into an SVG foreignObject at its natural (unscaled) CSS
   // size, then canvas-stretches that fixed-resolution bitmap to pixelRatio×, which blurs text —
   // pixelRatio alone never buys real sharpness. Forcing the SVG's own width/height to the scaled
@@ -1732,7 +1741,12 @@ class Component extends DCLogic {
     const node = this.buildSliceNode(key); host.appendChild(node);
     await this.waitSliceImgs(node);
     const pr = outW ? outW / S.w : 1;
-    const url = await this.captureAtScale(node, pr, { cacheBust: true });
+    // No cacheBust: the bundle serves the slice artwork as blob: URLs, and html-to-image's
+    // cacheBust appends ?<timestamp> to them. A blob URL with a query string is unresolvable
+    // (ERR_FILE_NOT_FOUND), so the embed falls back to an empty src, the cloned <img> fires
+    // onerror, and toPng rejects with a bare Event. The failure is also cached per-URL, so
+    // one busted attempt breaks every later render until the page is reloaded.
+    const url = await this.captureAtScale(node, pr);
     host.removeChild(node); return url;
   };
   renderSlicePreview = () => {
@@ -1748,7 +1762,7 @@ class Component extends DCLogic {
   downloadSliceOne = async () => {
     if (!window.htmlToImage) return; this.setState({ sliceBusy:true, status:"", statusKind:"" });
     try { const z = this.SLICE_SIZES.find(x => x.key === this.state.sliceSel); const url = await this.renderSlicePng(z.key); const a = document.createElement("a"); a.href = url; a.download = this.sliceSlug() + "-" + z.file + ".png"; a.click(); this.flash("Downloaded " + z.label + ".", "ok"); }
-    catch (err) { this.flash("Render failed: " + (err.message || err), "err"); }
+    catch (err) { this.flash("Render failed: " + this.errText(err), "err"); }
     this.setState({ sliceBusy:false });
   };
   downloadSliceAll = async () => {
@@ -1763,7 +1777,7 @@ class Component extends DCLogic {
       const a = document.createElement("a"); a.href = URL.createObjectURL(content); a.download = slug + "-graphics.zip"; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
       this.flash("Downloaded all sizes.", "ok");
-    } catch (err) { this.flash("Render failed: " + (err.message || err), "err"); }
+    } catch (err) { this.flash("Render failed: " + this.errText(err), "err"); }
     this.setState({ sliceBusy:false });
   };
 

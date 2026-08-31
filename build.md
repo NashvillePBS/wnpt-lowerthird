@@ -572,8 +572,16 @@ loads** → **run `fitEl`** → **double `requestAnimationFrame`** → capture �
 - Each output size keeps its **own independent focal point** for the background image,
   seeded from `defaultFocal(key)` — repositioning for Instagram story does not disturb
   Eventbrite.
-- The Newsletter size emits **two** files from one render pass: `1080x1080` and a
-  `400x400` variant (the `also` property).
+- The Newsletter size emits **two** files from one render pass, both rendered at
+  1080×1080: `newsletter-1080x1080.png` and `newsletter-400x400.png` (the `also`
+  property). **The `400x400` file really is 1080×1080, and that is deliberate**
+  (Shane, 2026-08-31). `renderSlicePng` computes `pr = 400/1080 = 0.37` and
+  `captureAtScale` short-circuits any `s <= 1` to a plain full-size `toPng`. The `400`
+  in the name tells the producer what to *display* it at, not what to render it at:
+  they shrink it in the email UI, which gives a crisp result on retina screens, and the
+  full-size file stays available for other uses. **Do not "fix" this** by changing
+  `captureAtScale`'s branch to `s === 1` — that would ship a genuinely 400px file and
+  lose both benefits.
 - Zip contents are named `<slug>-<file>.png` where slug is `slice-<title-slug>`, falling
   back to `slice-graphic` when the title is empty.
 
@@ -1216,6 +1224,38 @@ Episode · Interstitial · Promo · **NPT Brand**
 `NPT Brand` is a legacy type on records created 2021–2024, from before the Nashville PBS
 rename. The picker groups by this field (§2.7) and must render legacy values correctly
 rather than dropping them into an "unknown type" bucket.
+
+### 12.10 "Render failed: [object Event]" — Slice event graphics wouldn't download (2026-08-31)
+
+Reported by a producer: every download in the Slice event-graphics generator failed with
+`Render failed: [object Event]`. Reproduced on the deployed page with no user input at
+all — no title, no uploaded photo — so it was never about anyone's file.
+
+**Cause.** `renderSlicePng` was the only export path in the studio passing
+`{ cacheBust: true }` to html-to-image. In the **bundle** (not the source) the three slice
+assets — `slice-logo.png`, `jerome-headshot.png`, the PBS wordmark — are served as
+`blob:` URLs. html-to-image's cacheBust appends `?<timestamp>` to every non-data URL it
+embeds, and a blob URL with a query string does not resolve: `net::ERR_FILE_NOT_FOUND`.
+The embed then falls back to an empty `src`, the cloned `<img>` fires `onerror`, and
+`toPng` rejects with a bare DOM **Event** — which has no `.message`, so
+`(err.message || err)` stringified to `[object Event]`.
+
+**Why it stayed broken until reload.** html-to-image caches each resource's result keyed
+by the *original* URL, before cacheBust mutates it. The first failed attempt cached an
+empty string, so every later render of those assets failed too — cacheBust or not. That
+is why retrying never helped and a page refresh appeared to change nothing.
+
+**Fix.** Drop the option (`captureAtScale(node, pr)`); the comment at the call site says
+why it must not come back. `errText()` now names the element that failed instead of
+printing `[object Event]`, at all four "Render failed" sites.
+
+**The trap generalises.** Never pass `cacheBust` anywhere in this studio. Source and
+bundle differ exactly here (see `scripts/patch-dist.md` — assets are rewritten during
+bundling), so this class of bug cannot be caught in the `.dc.html` alone; it only shows
+up in a served `dist/`.
+
+**Verified** 2026-08-31 on the patched bundle served from `dist/`: single-size download
+and the 7-file ZIP both succeed, and the exported PNGs contain the logo and headshot.
 
 ## 13. Adding new generators — keep the pattern
 
