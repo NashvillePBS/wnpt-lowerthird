@@ -215,7 +215,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                   </div>
                   <div style="position:absolute;top:130px;left:54px;right:234px;display:flex;flex-direction:column;gap:3px">
                     <div data-fit="name" style="font-weight:800;line-height:1;letter-spacing:-.01em;white-space:nowrap;font-size:24px"><sc-if value="{{ hasName }}" hint-placeholder-val="{{ true }}"><span style="color:#fff">{{ name }}</span></sc-if><sc-if value="{{ noName }}"><span style="color:rgba(255,255,255,.4)">Full Name</span></sc-if></div>
-                    <div data-fit="title" style="font-weight:700;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;font-size:13px"><sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ true }}"><span style="color:#48D3CD">{{ title }}</span></sc-if><sc-if value="{{ noTitle }}"><span style="color:rgba(72,211,205,.5)">Title</span></sc-if></div>
+                    <div data-fit="title" style="font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1.25;font-size:13px"><sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ true }}"><span style="color:#48D3CD">{{ title }}</span></sc-if><sc-if value="{{ noTitle }}"><span style="color:rgba(72,211,205,.5)">Title</span></sc-if></div>
                   </div>
                   <div style="position:absolute;bottom:53px;left:54px;display:flex;flex-direction:column;gap:11px">
                     <div style="font-weight:500;font-size:15px;color:#fff;white-space:nowrap">{{ backEmail }}</div>
@@ -295,6 +295,21 @@ class Component extends DCLogic {
     }
     return el.scrollWidth <= maxW + 1;
   };
+  // Same idea as fitEl, but for a title allowed to wrap onto up to maxLines
+  // lines instead of shrinking to fit on one — only shrinks once wrapping
+  // itself isn't enough (still too tall, or a single word wider than maxW).
+  fitWrappedEl = (el, base, min, maxW, maxLines) => {
+    if (!el) return true;
+    let size = base;
+    el.style.fontSize = size + "px";
+    const over = () => el.scrollHeight > parseFloat(getComputedStyle(el).lineHeight) * maxLines + 1
+      || el.scrollWidth > maxW + 1;
+    while (over() && size > min) {
+      size -= 1;
+      el.style.fontSize = size + "px";
+    }
+    return !over();
+  };
   fitAll = () => {
     const root = this._refs.rootRef;
     if (!root) return;
@@ -307,7 +322,9 @@ class Component extends DCLogic {
     };
     // 252px = the Circle Crop chord on the card; 380px = the name tag's safe width
     check('[data-fit="name"]', this.state.cardNameSize, F.name, 252, "name");
-    check('[data-fit="title"]', this.state.cardTitleSize, F.title, 252, "title");
+    root.querySelectorAll('[data-fit="title"]').forEach((el) => {
+      if (!this.fitWrappedEl(el, this.state.cardTitleSize, F.title, 252, 2)) over.push("title");
+    });
     check('[data-fit="tagname"]', this.state.tagNameSize, F.tagname, 380, "name");
     check('[data-fit="tagtitle"]', this.state.tagTitleSize, F.tagtitle, 380, "title");
     const which = Array.from(new Set(over));
@@ -687,7 +704,11 @@ class Component extends DCLogic {
     return out;
   }
 
-  /* ---- one text run: real text, positioned off the DOM's own box ---- */
+  /* ---- one text run: real text, positioned off the DOM's own box ----
+     Usually one visual line (one rect). A wrapped run (e.g. a two-line
+     title) reports one rect per line from getClientRects(); each word is
+     assigned to whichever line rect it vertically falls in, so every line
+     gets drawn instead of just the first. */
   drawTextNode(node) {
     const el = node.parentElement;
     if (!el) return;
@@ -700,38 +721,70 @@ class Component extends DCLogic {
     range.selectNodeContents(node);
     const rects = range.getClientRects();
     if (!rects.length) return;
-    if (rects.length > 1) console.warn("[business-essentials] wrapped text run — the PDF draws it on one line:", raw);
-    const r = rects[0];
-
-    let text = raw;
-    if (cs.textTransform === "uppercase") text = text.toUpperCase();
-    else if (cs.textTransform === "lowercase") text = text.toLowerCase();
-    else if (cs.textTransform === "capitalize") text = text.replace(/\b\w/g, (c) => c.toUpperCase());
 
     const size = parseFloat(cs.fontSize);
     const font = this.fontFor(cs.fontWeight);
     const ls = cs.letterSpacing === "normal" ? 0 : (parseFloat(cs.letterSpacing) || 0);
-
-    // baseline: the browser's own ascent for this face and size
     const mc = this._mctx || (this._mctx = document.createElement("canvas").getContext("2d"));
     mc.font = `${cs.fontStyle} ${cs.fontWeight} ${size}px ${cs.fontFamily}`;
-    const m = mc.measureText(text);
-    const top = this.pxOf(r.left, r.top);
-    const boxH = r.height / this._vec.domScale;
-    const baseline = top.y + (boxH - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
 
-    const y = this.Y(baseline);
-    const opts = { size: size * this.PT_PER_PX, font, color: paint.color, opacity: paint.opacity };
-    if (!ls) {
-      this._vec.page.drawText(text, { x: this.X(top.x), y, ...opts });
+    const applyTransform = (t) => {
+      if (cs.textTransform === "uppercase") return t.toUpperCase();
+      if (cs.textTransform === "lowercase") return t.toLowerCase();
+      if (cs.textTransform === "capitalize") return t.replace(/\b\w/g, (c) => c.toUpperCase());
+      return t;
+    };
+
+    const drawLine = (text, r) => {
+      if (!text) return;
+      // baseline: the browser's own ascent for this face and size
+      const m = mc.measureText(text);
+      const top = this.pxOf(r.left, r.top);
+      const boxH = r.height / this._vec.domScale;
+      const baseline = top.y + (boxH - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+      const y = this.Y(baseline);
+      const opts = { size: size * this.PT_PER_PX, font, color: paint.color, opacity: paint.opacity };
+      if (!ls) {
+        this._vec.page.drawText(text, { x: this.X(top.x), y, ...opts });
+        return;
+      }
+      // CSS letter-spacing has no pdf-lib equivalent — step the pen per character
+      let pen = top.x;
+      for (const ch of text) {
+        if (ch !== " ") this._vec.page.drawText(ch, { x: this.X(pen), y, ...opts });
+        pen += font.widthOfTextAtSize(ch, size) + ls;
+      }
+    };
+
+    if (rects.length === 1) {
+      drawLine(applyTransform(raw), rects[0]);
       return;
     }
-    // CSS letter-spacing has no pdf-lib equivalent — step the pen per character
-    let pen = top.x;
-    for (const ch of text) {
-      if (ch !== " ") this._vec.page.drawText(ch, { x: this.X(pen), y, ...opts });
-      pen += font.widthOfTextAtSize(ch, size) + ls;
-    }
+
+    // Wrapped run: split into words, assign each to its visual line by
+    // vertical position, then draw one text run per line.
+    const lineRects = Array.from(rects);
+    const words = [];
+    const re = /\S+/g;
+    let wm;
+    while ((wm = re.exec(node.nodeValue))) words.push({ text: wm[0], start: wm.index, end: wm.index + wm[0].length });
+    if (!words.length) { drawLine(applyTransform(raw), lineRects[0]); return; }
+
+    const buckets = lineRects.map(() => []);
+    const wordRange = document.createRange();
+    words.forEach((w) => {
+      wordRange.setStart(node, w.start);
+      wordRange.setEnd(node, w.end);
+      const wr = wordRange.getBoundingClientRect();
+      const cy = wr.top + wr.height / 2;
+      let best = 0, bestD = Infinity;
+      lineRects.forEach((lr, li) => {
+        const d = Math.abs(cy - (lr.top + lr.height / 2));
+        if (d < bestD) { bestD = d; best = li; }
+      });
+      buckets[best].push(w.text);
+    });
+    buckets.forEach((ws, li) => drawLine(applyTransform(ws.join(" ")), lineRects[li]));
   }
 
   /* ---- walk one card face ---- */
