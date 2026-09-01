@@ -26,6 +26,8 @@
  * BUSINESS ESSENTIALS (business-essentials/ — cards + name tags, build.md §13.9)
  *   User Table (tbl7qTD9DIc3itsMj)  read only: "Name","Title","Email",
  *                                   "Business Phone Number","Business Cell Phone"
+ *   /users search is scoped to the "WNPT graphics.wnpt.app" view
+ *   (viwolihwlxfy9S7Z0) — only staff who need a card/tag show up in the picker.
  *   Graphics   (tblZKp11zMShtmjIx)  written: "Name","Graphics Type","Attachments",
  *                                   "Created","User Table" (link → User Table)
  *
@@ -54,6 +56,7 @@ const F_LT_CONTENT = "Content";    // link on Lower Thirds → Content
    is "Attachments" (plural), the link to a person is "User Table", and
    "Graphics Type" is a MULTIPLE-select, so it is written as an array. */
 const T_USERS = "tbl7qTD9DIc3itsMj";    // User Table
+const V_USERS_GRAPHICS = "viwolihwlxfy9S7Z0"; // User Table view "WNPT graphics.wnpt.app" — who needs a card/tag
 const T_GRAPHICS = "tblZKp11zMShtmjIx"; // Graphics
 
 const F_USER_NAME = "Name";
@@ -212,9 +215,11 @@ export default {
       }
 
       // GET /users?search=  → staff lookup for Business Essentials
+      // Locked to the "WNPT graphics.wnpt.app" view so the picker only ever
+      // offers staff who actually need a card/tag, not everyone in the table.
       if (request.method === "GET" && path.endsWith("/users")) {
         const search = (url.searchParams.get("search") || "").trim();
-        const recs = await api.listAll(T_USERS, search ? searchFilter(search, F_USER_NAME) : null);
+        const recs = await api.listAll(T_USERS, search ? searchFilter(search, F_USER_NAME) : null, V_USERS_GRAPHICS);
         return json({
           users: recs.map(r => ({
             id: r.id,
@@ -475,9 +480,10 @@ class Airtable {
     return res.json();
   }
   enc(table) { return encodeURIComponent(table); }
-  async list(table, { filter, sort, pageSize = 100, offset } = {}) {
+  async list(table, { filter, sort, pageSize = 100, offset, view } = {}) {
     const u = new URL(`${this.api}/${this.baseId}/${this.enc(table)}`);
     if (filter) u.searchParams.set("filterByFormula", filter);
+    if (view) u.searchParams.set("view", view);
     if (pageSize) u.searchParams.set("pageSize", String(pageSize));
     if (offset) u.searchParams.set("offset", offset);
     (sort || []).forEach((s, i) => {
@@ -486,10 +492,10 @@ class Airtable {
     });
     return this.req(u.toString());
   }
-  async listAll(table, filter) {
+  async listAll(table, filter, view) {
     let out = [], offset;
     do {
-      const page = await this.list(table, { filter, pageSize: 100, offset });
+      const page = await this.list(table, { filter, view, pageSize: 100, offset });
       out = out.concat(page.records);
       offset = page.offset;
     } while (offset);
