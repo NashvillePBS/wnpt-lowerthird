@@ -1931,3 +1931,31 @@ step 4 no longer mentions saving.
 
 **Still open:** enabling both automations, and a printer's-eye check of the first real
 job — the file is genuinely separated now, but no vendor has run it yet.
+
+### 13.9.4 Four more front styles from design's mockups (Shane, 2026-09-05)
+
+Design exported new business-card-front mockups (`Card Front V2 Mockups.dc.html`) into a
+`business-essentials/v2.1/` scratch folder for integration. Full spec and per-style
+coordinates are in `business-essentials/BUILD-NOTES.md` ("Card V2 / V2.1"); the summary:
+the Front Style toggle grows from the original `classic` to five options (`classic`,
+`vision`, `visionRail`, `visionNavy`, `visionWhite`), each a static front face — statement
+text, logo placement and field colour vary, the back and export pipeline don't.
+
+Two export-pipeline additions came out of this, both generic rather than style-specific:
+- `drawNode` now honors CSS `overflow:hidden`/`clip` on any container by pushing/popping a
+  PDF clip path around its children — needed for `visionRail`'s 150px pattern rail, but it
+  applies to any future clipped container automatically.
+- `drawTextNode` now reads an optional `data-print-color` attribute to pin what the export
+  paints, independent of the on-screen CSS colour — needed because `visionWhite`'s
+  secondary DOWNLOAD line is Slate on screen but Slate has no CMYK build in
+  `print-colors.json`, so the export forces Navy instead.
+
+Note the `v2.1/` scratch folder was **behind** root at integration time (it had the
+`vision` front but not the two most recent commits — title wrapping, Find Employee
+scoping) — it was read for its diff and new assets (`Community_Pattern_RGB_1920x1920.svg`,
+`Community_Pattern_CMYK_15x15.svg`), not copied over wholesale. It's left in place,
+now redundant; safe to delete.
+
+Verified live (localhost, `repo-root` launch config): all five fronts render correctly on
+screen and each produces a PDF with no console errors — including `visionRail` (clip) and
+`visionWhite` (print-color override). Autosave's CORS failure locally is expected (§11.3).

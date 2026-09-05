@@ -6,6 +6,63 @@ is wired into the studio, the Worker, and the CMYK export — is in `build.md` �
 
 ---
 
+## Card V2 / V2.1 — four more front styles (added 2026-09-05)
+
+The Front Style toggle grows from 1 to 5 options. `state.cardFront`:
+`"classic" | "vision" | "visionRail" | "visionNavy" | "visionWhite"`. The back, the
+export pipeline, autosave (`contentKey("card")` now includes `cardFront`) and the
+existing `classic` front are unchanged. Approved mockups (`Card Front V2 Mockups.dc.html`):
+1b = `vision`, 1c = `visionRail`, 2a = `visionNavy`, 2b = `visionWhite`.
+
+All coordinates below are on the 540×324 authoring canvas (2px per point), same as the
+existing front. The statement is verbatim and identical in every new style:
+*"We believe the right story, told honestly, can change everything."* PBS Sans Black
+(800), `text-wrap:pretty`. The DOWNLOAD / THE APP + QR callout is the existing one
+(bottom-right 44/44, width 111, QR 40px) unless noted below.
+
+### `vision` (mockup 1b) — statement over the pattern art, Navy overlay
+- Field: the existing `card-front-pattern.svg`, under a **62% Navy overlay** — the
+  brand's text-over-pattern rule (Navy ≥50%). The overlay is why the Circle Crop
+  clearances don't govern this face — the curve is texture, not structure, here.
+- Logo: white lockup top-left, `top:44 left:54`, height 19px.
+- Statement: 30px, line-height 1.18, letter-spacing −.015em, box `top:104 left:54 width:340`.
+
+### `visionRail` (mockup 1c) — Community pattern left rail on Navy
+- Field: solid Navy `#0A145A` full bleed. **No P-head pattern art.**
+- Left rail: 150px wide, full height, `overflow:hidden`, filled with the station's
+  vector Community pattern drawn at **600×600px anchored top-left** — 50px cells, so
+  the rail shows exactly 3 pattern columns. Asset: `assets/Community_Pattern_RGB_1920x1920.svg`
+  (fills `#0f1e8c` Medium Blue field / `#0a145a` Navy / `#2638c4` PBS Blue shapes — all
+  three are in the CMYK map already, so the export needs no special-casing).
+  `assets/Community_Pattern_CMYK_15x15.svg` is kept alongside as the CMYK print reference,
+  not loaded by the app.
+- Logo: white horizontal lockup **top-right**, `top:44 right:44`, height 19px.
+- Statement: 26px, line-height 1.2, letter-spacing −.01em, box `top:104 left:186 right:44`.
+- Export: the rail's `overflow:hidden` clip is now honored generically — `drawNode`
+  pushes a clip path for any node with computed `overflow:hidden`/`clip` before walking
+  its children, then pops it. This isn't visionRail-specific; any future clipped
+  container gets the same treatment automatically.
+
+### `visionNavy` (mockup 2a) — statement only, solid Navy
+- Field: solid Navy `#0A145A`, no artwork at all.
+- Logo: white lockup top-left, `top:44 left:54`, height 19px.
+- Statement: **31px**, line-height 1.18, letter-spacing −.015em, box `top:104 left:54 width:380`.
+
+### `visionWhite` (mockup 2b) — statement only, white field
+- Field: white. All-vector, CMYK-clean.
+- Logo: **color** lockup (`assets/NashvillePBS_Logo_Horizontal_Color.svg`) top-left,
+  `top:44 left:54`, height 19px.
+- Statement: 31px Navy `#0A145A`, same box as `visionNavy`.
+- Callout: DOWNLOAD reads Slate `#5C6E85` on screen, but print has no Slate CMYK build
+  in `print-colors.json` — the DOWNLOAD line carries `data-print-color="#0A145A"` so the
+  export paints solid Navy instead while the screen preview keeps the lighter tone.
+  `drawTextNode` reads this attribute (screen colour still wins the on-screen render).
+  QR: the normal-polarity PBS Blue-on-white QR straight on the white field — no chip
+  behind it; the mockup's navy chip was a preview convenience only.
+- Trim guide on the preview flips to a dark dash (`rgba(10,20,90,.35)`) for this style only.
+
+---
+
 ## Hard rules — do not "improve" these
 
 (From the handoff's own CLAUDE.md. Every one of these was learned the expensive way.)

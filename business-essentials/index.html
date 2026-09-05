@@ -64,6 +64,20 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         <button onClick="{{ setModeTag }}" style="{{ tagTabStyle }}">Name Tag</button>
       </div>
 
+      <!-- Front Style is card-only: the name tag has no front/back distinction. -->
+      <sc-if value="{{ isCard }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:12px 22px 0;display:flex;flex-direction:column;gap:8px">
+          <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Front Style</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button onClick="{{ setFrontClassic }}" style="{{ classicBtnStyle }}">Standard</button>
+            <button onClick="{{ setFrontVision }}" style="{{ visionBtnStyle }}">Vision Statement</button>
+            <button onClick="{{ setFrontVisionRail }}" style="{{ visionRailBtnStyle }}">Vision Rail</button>
+            <button onClick="{{ setFrontVisionNavy }}" style="{{ visionNavyBtnStyle }}">Vision Navy</button>
+            <button onClick="{{ setFrontVisionWhite }}" style="{{ visionWhiteBtnStyle }}">Vision White</button>
+          </div>
+        </div>
+      </sc-if>
+
       <!-- Instructions, open by default. People were skipping the lookup and typing
            details by hand, which quietly drifts from the User Table. -->
       <details id="be-howto" style="margin:4px 22px 0;border:1px solid #dde1ee;border-radius:10px;background:#f6f7fb">
@@ -183,18 +197,82 @@ a:hover{color:#0F1E8C;text-decoration:underline}
             <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
               <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8890ad">Front</div>
               <div style="position:relative;width:540px;height:324px;box-shadow:0 8px 24px rgba(10,20,90,.22)">
-                <div ref="{{ frontRef }}" style="position:absolute;inset:0;overflow:hidden;background:#2638C4">
-                  <img src="assets/card-front-pattern.svg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
-                  <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:57px;right:44px;height:19px">
-                  <div style="position:absolute;bottom:52px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
-                    <div style="text-align:right;line-height:1.15;white-space:nowrap">
-                      <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
-                      <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                <div ref="{{ frontRef }}" style="position:absolute;inset:0;overflow:hidden;background:{{ frontBg }}">
+                  <sc-if value="{{ isClassicFront }}" hint-placeholder-val="{{ true }}">
+                    <img src="assets/card-front-pattern.svg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:57px;right:44px;height:19px">
+                    <div style="position:absolute;bottom:52px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                      <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                        <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
+                        <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                      </div>
+                      <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
                     </div>
-                    <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
-                  </div>
+                  </sc-if>
+                  <sc-if value="{{ isVisionFront }}">
+                    <!-- Card V2: the CEO's vision statement over the pattern art, under a
+                         62% Navy overlay (the brand's text-over-pattern rule). The overlay
+                         is why the Circle Crop clearances don't govern this face — the
+                         curve is texture, not structure, here. -->
+                    <img src="assets/card-front-pattern.svg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">
+                    <div style="position:absolute;inset:0;background:rgba(10,20,90,.62)"></div>
+                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:44px;left:54px;height:19px">
+                    <div style="position:absolute;top:104px;left:54px;width:340px;font-weight:800;font-size:30px;line-height:1.18;letter-spacing:-.015em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                      <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                        <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
+                        <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                      </div>
+                      <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ isVisionRailFront }}">
+                    <!-- Card V2.1: solid Navy field, no P-head pattern art. A 150px-wide
+                         rail clips the station's Community pattern (drawn at 600x600,
+                         anchored top-left) down to exactly 3 columns. -->
+                    <div style="position:absolute;top:0;left:0;width:150px;height:324px;overflow:hidden">
+                      <img src="assets/Community_Pattern_RGB_1920x1920.svg" style="position:absolute;top:0;left:0;width:600px;height:600px;display:block">
+                    </div>
+                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:44px;right:44px;height:19px">
+                    <div style="position:absolute;top:104px;left:186px;right:44px;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                      <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                        <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
+                        <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                      </div>
+                      <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ isVisionNavyFront }}">
+                    <!-- Card V2.1: statement only, no artwork at all. -->
+                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:44px;left:54px;height:19px">
+                    <div style="position:absolute;top:104px;left:54px;width:380px;font-weight:800;font-size:31px;line-height:1.18;letter-spacing:-.015em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                      <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                        <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
+                        <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#fff;white-space:nowrap">THE APP</div>
+                      </div>
+                      <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ isVisionWhiteFront }}">
+                    <!-- Card V2.1: white field, all-vector. DOWNLOAD reads Slate on screen,
+                         but print-colors.json has no Slate CMYK build, so data-print-color
+                         pins the export to solid Navy instead — see drawTextNode. The QR
+                         is the normal-polarity PBS Blue-on-white mark straight on the white
+                         field; the mockup's navy chip behind it was preview-only. -->
+                    <img src="assets/NashvillePBS_Logo_Horizontal_Color.svg" style="position:absolute;top:44px;left:54px;height:19px">
+                    <div style="position:absolute;top:104px;left:54px;width:380px;font-weight:800;font-size:31px;line-height:1.18;letter-spacing:-.015em;color:#0A145A;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
+                      <div style="text-align:right;line-height:1.15;white-space:nowrap">
+                        <div data-print-color="#0A145A" style="font-weight:600;font-size:10px;letter-spacing:.06em;color:#5C6E85;white-space:nowrap">DOWNLOAD</div>
+                        <div style="font-weight:800;font-size:14px;letter-spacing:.02em;color:#0A145A;white-space:nowrap">THE APP</div>
+                      </div>
+                      <img src="assets/app-qr.svg" style="width:40px;height:40px;flex:none;display:block">
+                    </div>
+                  </sc-if>
                 </div>
-                <div style="position:absolute;inset:18px;border:1px dashed rgba(255,255,255,.45);pointer-events:none"></div>
+                <div style="position:absolute;inset:18px;border:1px dashed {{ frontTrimDash }};pointer-events:none"></div>
               </div>
             </div>
 
@@ -261,6 +339,8 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 class Component extends DCLogic {
   state = {
     mode: "card",
+    // "classic" | "vision" | "visionRail" | "visionNavy" | "visionWhite" — front face style
+    cardFront: "classic",
     name: "", title: "", email: "", phone: "", cell: "",
     cardNameSize: 24, tagNameSize: 35,
     cardTitleSize: 13, tagTitleSize: 15,
@@ -409,6 +489,11 @@ class Component extends DCLogic {
   // switching tabs changes which output autosave is watching
   setModeCard = () => this.setState({ mode: "card" }, this.scheduleAutosave);
   setModeTag = () => this.setState({ mode: "tag" }, this.scheduleAutosave);
+  setFrontClassic = () => this.edit({ cardFront: "classic" });
+  setFrontVision = () => this.edit({ cardFront: "vision" });
+  setFrontVisionRail = () => this.edit({ cardFront: "visionRail" });
+  setFrontVisionNavy = () => this.edit({ cardFront: "visionNavy" });
+  setFrontVisionWhite = () => this.edit({ cardFront: "visionWhite" });
   onName = (e) => this.edit({ name: e.target.value });
   onTitle = (e) => this.edit({ title: e.target.value });
   onEmail = (e) => this.edit({ email: e.target.value });
@@ -715,7 +800,12 @@ class Component extends DCLogic {
     const raw = node.nodeValue.replace(/\s+/g, " ");
     if (!raw.trim()) return;
     const cs = getComputedStyle(el);
-    const paint = this.cmykOf(cs.color);
+    // A handful of print-only colour corrections: a screen colour with no CMYK
+    // build in print-colors.json (e.g. visionWhite's Slate secondary line) can
+    // pin what the export paints instead via data-print-color, without the
+    // screen preview losing its own de-emphasised colour.
+    const printColor = el.dataset && el.dataset.printColor;
+    const paint = this.cmykOf(printColor ? this.toRgb(printColor) : cs.color);
     if (!paint) return;
     const range = document.createRange();
     range.selectNodeContents(node);
@@ -817,7 +907,22 @@ class Component extends DCLogic {
       this.drawSvgRoot(node, box, (node.getAttribute("preserveAspectRatio") || "").includes("slice") ? "slice" : "meet");
       return; // its children are shapes, not DOM boxes
     }
+
+    // A container that clips its children on screen (e.g. visionRail's pattern
+    // rail) gets the same clip in the PDF: push a path for its own box, walk
+    // the children, pop. Everything else in the template ignores this.
+    const clips = (cs.overflow === "hidden" || cs.overflow === "clip") && box.w && box.h;
+    if (clips) {
+      const PDFLib = window.PDFLib;
+      const x0 = this.X(box.x), x1 = this.X(box.x + box.w), y0 = this.Y(box.y + box.h), y1 = this.Y(box.y);
+      this._vec.page.pushOperators(
+        PDFLib.pushGraphicsState(),
+        PDFLib.moveTo(x0, y0), PDFLib.lineTo(x1, y0), PDFLib.lineTo(x1, y1), PDFLib.lineTo(x0, y1),
+        PDFLib.closePath(), PDFLib.clip(), PDFLib.endPath(),
+      );
+    }
     for (const child of Array.from(node.childNodes)) await this.drawNode(child);
+    if (clips) this._vec.page.pushOperators(window.PDFLib.popGraphicsState());
   };
 
   addVectorPage = async (doc, node, trimW, trimH, bleed, gap, mark, fonts) => {
@@ -1024,7 +1129,7 @@ class Component extends DCLogic {
   contentKey(target) {
     const s = this.state;
     return JSON.stringify(target === "card"
-      ? ["card", s.name.trim(), s.title.trim(), s.email.trim(), this.formatPhone(s.phone), this.formatPhone(s.cell), s.cardNameSize, s.cardTitleSize]
+      ? ["card", s.cardFront, s.name.trim(), s.title.trim(), s.email.trim(), this.formatPhone(s.phone), this.formatPhone(s.cell), s.cardNameSize, s.cardTitleSize]
       : ["tag", s.name.trim(), s.title.trim(), s.tagNameSize, s.tagTitleSize]);
   }
   personKey() { return (this.state.selectedUserId || "manual") + "|" + this.state.name.trim().toLowerCase(); }
@@ -1111,6 +1216,8 @@ class Component extends DCLogic {
     const statusStyle = "font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;" +
       (s.statusKind === "err" ? "background:#fdece8;color:#c23a1a" : s.statusKind === "busy" ? "background:#eef1fb;color:#2638C4" : "background:#e8f7f5;color:#0f8a82");
     const tabBase = "flex:1;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13.5px;border-radius:999px;padding:10px 14px;cursor:pointer;border:1.5px solid ";
+    const frontBtnBase = "font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:11.5px;border-radius:999px;padding:7px 11px;cursor:pointer;border:1.5px solid ";
+    const frontBtnStyle = (val) => frontBtnBase + (s.cardFront === val ? "#0A145A;background:#0A145A;color:#fff" : "#c7cde0;background:#fff;color:#0A145A");
     // Nothing incomplete leaves the tool: while the selected output is missing a
     // line it prints, Download and Save are dead and the sidebar says what's missing.
     const missing = this.missingFor(s.mode);
@@ -1139,6 +1246,18 @@ class Component extends DCLogic {
       cardTabStyle: tabBase + (isCard ? "#0A145A;background:#0A145A;color:#fff" : "#c7cde0;background:#fff;color:#0A145A"),
       tagTabStyle: tabBase + (!isCard ? "#0A145A;background:#0A145A;color:#fff" : "#c7cde0;background:#fff;color:#0A145A"),
       setModeCard: this.setModeCard, setModeTag: this.setModeTag,
+      // front style (card only)
+      isClassicFront: s.cardFront === "classic",
+      isVisionFront: s.cardFront === "vision",
+      isVisionRailFront: s.cardFront === "visionRail",
+      isVisionNavyFront: s.cardFront === "visionNavy",
+      isVisionWhiteFront: s.cardFront === "visionWhite",
+      frontBg: s.cardFront === "visionRail" || s.cardFront === "visionNavy" ? "#0A145A" : s.cardFront === "visionWhite" ? "#fff" : "#2638C4",
+      frontTrimDash: s.cardFront === "visionWhite" ? "rgba(10,20,90,.35)" : "rgba(255,255,255,.45)",
+      setFrontClassic: this.setFrontClassic, setFrontVision: this.setFrontVision,
+      setFrontVisionRail: this.setFrontVisionRail, setFrontVisionNavy: this.setFrontVisionNavy, setFrontVisionWhite: this.setFrontVisionWhite,
+      classicBtnStyle: frontBtnStyle("classic"), visionBtnStyle: frontBtnStyle("vision"),
+      visionRailBtnStyle: frontBtnStyle("visionRail"), visionNavyBtnStyle: frontBtnStyle("visionNavy"), visionWhiteBtnStyle: frontBtnStyle("visionWhite"),
       // fields
       name: s.name, title: s.title, email: s.email, phone: s.phone, cell: s.cell,
       nameSize: isCard ? s.cardNameSize : s.tagNameSize,
