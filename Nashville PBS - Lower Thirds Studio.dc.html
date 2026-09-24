@@ -597,7 +597,7 @@ a:hover{color:#0F1E8C;text-decoration:underline}
               <button onClick="{{ o.onPick }}" style="{{ o.style }}">{{ o.label }}</button>
             </sc-for>
           </div>
-          <div style="font-size:12px;color:#8890ad;line-height:1.45">Clear exports white type on a transparent PNG. Blue adds a light navy tint (10% opacity).</div>
+          <div style="font-size:12px;color:#8890ad;line-height:1.45">Clear exports white type on a transparent PNG. Blue adds a navy tint (30% opacity).</div>
         </div>
 
         <div style="padding:12px 22px 8px;display:flex;flex-direction:column;gap:9px">
@@ -1165,7 +1165,7 @@ class Component extends DCLogic {
   };
   buildCreditsPage(pageRows, cols, colW) {
     const page = document.createElement("div");
-    page.style.cssText = "position:relative;width:1920px;height:1080px;background:" + (this.state.creditsBg === "blue" ? "rgba(10,20,90,.1)" : "transparent") + ";font-family:'PBS Sans',Arial,sans-serif;color:#fff;box-sizing:border-box;overflow:hidden";
+    page.style.cssText = "position:relative;width:1920px;height:1080px;background:" + (this.state.creditsBg === "blue" ? "rgba(10,20,90,.3)" : "transparent") + ";font-family:'PBS Sans',Arial,sans-serif;color:#fff;box-sizing:border-box;overflow:hidden";
     const band = document.createElement("div");
     band.style.cssText = "position:absolute;left:" + this.CREDITS.safeX + "px;right:" + this.CREDITS.safeX + "px;top:" + this.CREDITS.bandTop + "px;height:" + (this.CREDITS.bandBottom - this.CREDITS.bandTop) + "px;display:flex;align-items:center";
     const grid = document.createElement("div");
@@ -1204,7 +1204,7 @@ class Component extends DCLogic {
     host.innerHTML = "";
     const pages = this.state.creditsPages || [];
     const inner = document.createElement("div");
-    // dark checkerboard so transparency reads; in Blue mode the page's own 10% navy tint sits on top of it, as it will over video
+    // dark checkerboard so transparency reads; in Blue mode the page's own 30% navy tint sits on top of it, as it will over video
     const previewBg = "#1b2150 repeating-conic-gradient(#262d63 0% 25%, #1b2150 0% 50%) 0 0 / 64px 64px";
     inner.style.cssText = "width:1920px;height:1080px;transform-origin:top left;background:" + previewBg;
     if (pages.length) {
