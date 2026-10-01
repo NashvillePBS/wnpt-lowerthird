@@ -6,31 +6,34 @@ is wired into the studio, the Worker, and the CMYK export — is in `build.md` �
 
 ---
 
-## Vision Rail only, with the stacked logo (2026-10-01)
+## Vision Rail only; stacked logo on the back (2026-10-01)
 
 The CEO chose **Vision Rail** as the business card front. The other four fronts are
 **parked, not deleted**: their buttons are commented out in the Front Style row (one
 HTML comment, right under the Vision Rail button), and their markup, setters, state
 values and export support are all untouched. To bring one back, move its `<button>` out
 of the comment. `state.cardFront` now defaults to `"visionRail"` (it isn't persisted, so
-every visit starts there).
+every visit starts there). The Vision Rail face itself is unchanged.
 
-She also asked for a larger logo. The front now uses the **stacked (vertical) white
-lockup**, `assets/NashvillePBS_Logo_Vertical_White.svg` — from the official brand package
-(`NPT Brand/Nashville PBS/Nashville PBS Logo Brand Package/Digital/Vertical/SVG/`),
-converted from its `<style>` classes to inline `fill`s per the rule below (13 white
-paths, 2 PBS Blue for the head inside the circle — same structure as the horizontal file).
+She also asked for a larger logo on the **back** (the name/contact side — the station
+calls it the front; this tool labels it Back). The back now uses the **stacked
+(vertical) color lockup**, `assets/NashvillePBS_Logo_Vertical_Color.svg` — from the
+official brand package (`NPT Brand/Nashville PBS/Nashville PBS Logo Brand Package/
+Digital/Vertical/SVG/`), converted from its `<style>` classes to inline `fill`s per the
+rule below (13 PBS Blue paths, 2 white for the head inside the circle — same structure
+as the horizontal file). Its artwork starts at the top of its viewBox (no inset).
 
-- Logo: `bottom:44 left:186`, **height 72px** → 114px wide, the same width the
-  horizontal lockup had, with the PBS mark ~2× taller (41px vs 19px) and "Nashville" ~1.8×.
-- Statement: moved up to `top:44` (same box otherwise, still 3 lines, ends at y≈138).
-- Why bottom-left, not the mockup's top-right: stacked at a useful size it's 3–4× taller
-  than the horizontal lockup, and top-right left no room between it and the statement
-  (tested at 56px: logo bottom 100, statement had to drop to 118, crowding both). Bottom-
-  left puts it on the QR callout's bottom line (both end at y=280), which also lets it be
-  the largest of the options tried.
-- Verified: on-screen render, and the card PDF — page 1 rasterised shows the stacked logo
-  with the blue head; content stream is `k`/`K` only, 0 image XObjects, nothing
+- Logo: `top:58.5 left:392`, **height 70px** → 111px wide; PBS mark ~2.1× (40px vs
+  19px), "Nashville" ~1.7×. 70px is the largest that keeps the Circle Crop clearance
+  (table below); 72px would cross it.
+- **Left edge 392 is shared with the address**, which moved from `left:385` to
+  `left:392` so the two line up. The logo couldn't go to 385 instead: at that x the
+  curve rule caps it at ~35px tall, i.e. no bigger than before. Address right edge is
+  now 504 (18px inside trim, the old logo's right margin).
+- **Top 58.5 = the ascender top of the `@nashvillepbs` line** (measured off the DOM —
+  the row box starts at 55, the glyph ink at 58.5).
+- Verified: on-screen render, and the card PDF — page 2 rasterised shows the stacked
+  logo aligned with the address; both pages `k`/`K` only, 0 image XObjects, nothing
   off-palette.
 
 ## Card V2 / V2.1 — four more front styles (added 2026-09-05)
@@ -63,10 +66,8 @@ existing front. The statement is verbatim and identical in every new style:
   three are in the CMYK map already, so the export needs no special-casing).
   `assets/Community_Pattern_CMYK_15x15.svg` is kept alongside as the CMYK print reference,
   not loaded by the app.
-- Logo (as mocked up): white horizontal lockup top-right, `top:44 right:44`, height 19px.
-  **Changed 2026-10-01** — see "Vision Rail only" below.
-- Statement (as mocked up): 26px, line-height 1.2, letter-spacing −.01em, box
-  `top:104 left:186 right:44`. Now `top:44` — see below.
+- Logo: white horizontal lockup **top-right**, `top:44 right:44`, height 19px.
+- Statement: 26px, line-height 1.2, letter-spacing −.01em, box `top:104 left:186 right:44`.
 - Export: the rail's `overflow:hidden` clip is now honored generically — `drawNode`
   pushes a clip path for any node with computed `overflow:hidden`/`clip` before walking
   its children, then pops it. This isn't visionRail-specific; any future clipped
@@ -329,8 +330,8 @@ back only; the front logo and app callout were sitting 18.5px and 2.4px off the 
 
   | Face | Element | Curve x over its band | Placement | Clearance |
   |---|---|---|---|---|
-  | Back | Logo | 351.5 | `right:36px` (left 381) | 29.5px |
-  | Back | Address | 355.7 | `left:385px` | 29.3px |
+  | Back | Logo (stacked, 70px, from 2026-10-01) | 362.6 | `left:392px`, `top:58.5px` | 29.4px |
+  | Back | Address (from 2026-10-01) | 355.6 | `left:392px` | 36.4px |
   | Front | Logo | 351.5 | `right:44px` (left 381) | 29.5px |
   | Front | App callout | 355.9 | `right:44px`, `width:111px` (left 385) | 29.1px |
 

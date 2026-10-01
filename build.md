@@ -1960,12 +1960,17 @@ Verified live (localhost, `repo-root` launch config): all five fronts render cor
 screen and each produces a PDF with no console errors — including `visionRail` (clip) and
 `visionWhite` (print-color override). Autosave's CORS failure locally is expected (§11.3).
 
-### 13.9.5 Vision Rail chosen; stacked logo (Shane, 2026-10-01)
+### 13.9.5 Vision Rail chosen; stacked logo on the back (Shane, 2026-10-01)
 
 The CEO picked `visionRail`. The other four fronts' buttons are commented out — **parked,
 not deleted**, in case they need to come back — and `cardFront` defaults to `visionRail`.
-At her request for a larger logo, the Vision Rail front swaps the 19px horizontal lockup
-for the 72px **stacked** white lockup (new asset `NashvillePBS_Logo_Vertical_White.svg`,
-official brand-package artwork with inline fills), moved to bottom-left on the QR
-callout's line, statement moved up to `top:44`. Details and the placement reasoning are in
-`business-essentials/BUILD-NOTES.md` ("Vision Rail only").
+At her request for a larger logo, the card **back** (the name/contact side, which the
+station calls the front) swaps the 19px horizontal color lockup for the 70px **stacked**
+color lockup (new asset `NashvillePBS_Logo_Vertical_Color.svg`, official brand-package
+artwork with inline fills) — the largest that keeps the Circle Crop clearance. It is
+top-aligned with the `@nashvillepbs` line and left-aligned with the address, which moved
+7px right to meet it. Numbers and reasoning in `business-essentials/BUILD-NOTES.md`
+("Vision Rail only; stacked logo on the back").
+
+An earlier push the same day (`77d48b0`) put the stacked logo on the Vision Rail face by
+mistake (the front/back naming mix-up above); that face is restored byte-for-byte.

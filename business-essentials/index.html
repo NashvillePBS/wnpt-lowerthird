@@ -233,17 +233,12 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                   <sc-if value="{{ isVisionRailFront }}">
                     <!-- Card V2.1: solid Navy field, no P-head pattern art. A 150px-wide
                          rail clips the station's Community pattern (drawn at 600x600,
-                         anchored top-left) down to exactly 3 columns.
-                         2026-10-01: the CEO asked for a larger logo, so the horizontal
-                         lockup (top-right, 19px) became the stacked lockup at 72px —
-                         the same width as before, PBS mark ~2x. It can't fit top-right
-                         without crowding the statement, so it sits bottom-left on the
-                         QR callout's bottom line and the statement moved up to top:44. -->
+                         anchored top-left) down to exactly 3 columns. -->
                     <div style="position:absolute;top:0;left:0;width:150px;height:324px;overflow:hidden">
                       <img src="assets/Community_Pattern_RGB_1920x1920.svg" style="position:absolute;top:0;left:0;width:600px;height:600px;display:block">
                     </div>
-                    <img src="assets/NashvillePBS_Logo_Vertical_White.svg" style="position:absolute;bottom:44px;left:186px;height:72px">
-                    <div style="position:absolute;top:44px;left:186px;right:44px;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:44px;right:44px;height:19px">
+                    <div style="position:absolute;top:104px;left:186px;right:44px;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
                     <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
                       <div style="text-align:right;line-height:1.15;white-space:nowrap">
                         <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
@@ -311,8 +306,15 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                       <sc-if value="{{ hasCell }}"><div style="font-weight:500;font-size:14px;color:#fff;white-space:nowrap">{{ backCellLine }}</div></sc-if>
                     </div>
                   </div>
-                  <img src="assets/NashvillePBS_Logo_Horizontal_Color.svg" style="position:absolute;top:57px;right:36px;height:19px">
-                  <div style="position:absolute;bottom:53px;left:385px;font-weight:600;font-size:12.5px;line-height:1.5;color:#0A145A;white-space:nowrap;display:flex;flex-direction:column">
+                  <!-- 2026-10-01: the CEO asked for a larger logo — the 19px horizontal
+                       lockup became the stacked lockup at 70px, the largest that keeps the
+                       Circle Crop clearance (curve x over its band 362.6; left 392 = 29.4px,
+                       rule 28.8). Logo and address share left edge 392: the logo can't move
+                       left to the address's old 385 at this size, so the address came over.
+                       top:58.5 puts the logo's ink top on the @nashvillepbs line's ascender
+                       top (measured: 58.5; the artwork has no top inset). -->
+                  <img src="assets/NashvillePBS_Logo_Vertical_Color.svg" style="position:absolute;top:58.5px;left:392px;height:70px">
+                  <div style="position:absolute;bottom:53px;left:392px;font-weight:600;font-size:12.5px;line-height:1.5;color:#0A145A;white-space:nowrap;display:flex;flex-direction:column">
                     <div>161 Rains Ave.</div>
                     <div>Nashville, TN 37203</div>
                   </div>
