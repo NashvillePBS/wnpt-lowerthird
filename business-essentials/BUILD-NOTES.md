@@ -6,6 +6,33 @@ is wired into the studio, the Worker, and the CMYK export — is in `build.md` �
 
 ---
 
+## Vision Rail only, with the stacked logo (2026-10-01)
+
+The CEO chose **Vision Rail** as the business card front. The other four fronts are
+**parked, not deleted**: their buttons are commented out in the Front Style row (one
+HTML comment, right under the Vision Rail button), and their markup, setters, state
+values and export support are all untouched. To bring one back, move its `<button>` out
+of the comment. `state.cardFront` now defaults to `"visionRail"` (it isn't persisted, so
+every visit starts there).
+
+She also asked for a larger logo. The front now uses the **stacked (vertical) white
+lockup**, `assets/NashvillePBS_Logo_Vertical_White.svg` — from the official brand package
+(`NPT Brand/Nashville PBS/Nashville PBS Logo Brand Package/Digital/Vertical/SVG/`),
+converted from its `<style>` classes to inline `fill`s per the rule below (13 white
+paths, 2 PBS Blue for the head inside the circle — same structure as the horizontal file).
+
+- Logo: `bottom:44 left:186`, **height 72px** → 114px wide, the same width the
+  horizontal lockup had, with the PBS mark ~2× taller (41px vs 19px) and "Nashville" ~1.8×.
+- Statement: moved up to `top:44` (same box otherwise, still 3 lines, ends at y≈138).
+- Why bottom-left, not the mockup's top-right: stacked at a useful size it's 3–4× taller
+  than the horizontal lockup, and top-right left no room between it and the statement
+  (tested at 56px: logo bottom 100, statement had to drop to 118, crowding both). Bottom-
+  left puts it on the QR callout's bottom line (both end at y=280), which also lets it be
+  the largest of the options tried.
+- Verified: on-screen render, and the card PDF — page 1 rasterised shows the stacked logo
+  with the blue head; content stream is `k`/`K` only, 0 image XObjects, nothing
+  off-palette.
+
 ## Card V2 / V2.1 — four more front styles (added 2026-09-05)
 
 The Front Style toggle grows from 1 to 5 options. `state.cardFront`:
@@ -36,8 +63,10 @@ existing front. The statement is verbatim and identical in every new style:
   three are in the CMYK map already, so the export needs no special-casing).
   `assets/Community_Pattern_CMYK_15x15.svg` is kept alongside as the CMYK print reference,
   not loaded by the app.
-- Logo: white horizontal lockup **top-right**, `top:44 right:44`, height 19px.
-- Statement: 26px, line-height 1.2, letter-spacing −.01em, box `top:104 left:186 right:44`.
+- Logo (as mocked up): white horizontal lockup top-right, `top:44 right:44`, height 19px.
+  **Changed 2026-10-01** — see "Vision Rail only" below.
+- Statement (as mocked up): 26px, line-height 1.2, letter-spacing −.01em, box
+  `top:104 left:186 right:44`. Now `top:44` — see below.
 - Export: the rail's `overflow:hidden` clip is now honored generically — `drawNode`
   pushes a clip path for any node with computed `overflow:hidden`/`clip` before walking
   its children, then pops it. This isn't visionRail-specific; any future clipped

@@ -69,11 +69,15 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         <div style="padding:12px 22px 0;display:flex;flex-direction:column;gap:8px">
           <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Front Style</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button onClick="{{ setFrontVisionRail }}" style="{{ visionRailBtnStyle }}">Vision Rail</button>
+            <!-- Parked 2026-10-01: the CEO chose Vision Rail. The other four fronts are
+                 still fully built (markup, setters, export) — move a button back above
+                 to bring its style back.
             <button onClick="{{ setFrontClassic }}" style="{{ classicBtnStyle }}">Standard</button>
             <button onClick="{{ setFrontVision }}" style="{{ visionBtnStyle }}">Vision Statement</button>
-            <button onClick="{{ setFrontVisionRail }}" style="{{ visionRailBtnStyle }}">Vision Rail</button>
             <button onClick="{{ setFrontVisionNavy }}" style="{{ visionNavyBtnStyle }}">Vision Navy</button>
             <button onClick="{{ setFrontVisionWhite }}" style="{{ visionWhiteBtnStyle }}">Vision White</button>
+            -->
           </div>
         </div>
       </sc-if>
@@ -229,12 +233,17 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                   <sc-if value="{{ isVisionRailFront }}">
                     <!-- Card V2.1: solid Navy field, no P-head pattern art. A 150px-wide
                          rail clips the station's Community pattern (drawn at 600x600,
-                         anchored top-left) down to exactly 3 columns. -->
+                         anchored top-left) down to exactly 3 columns.
+                         2026-10-01: the CEO asked for a larger logo, so the horizontal
+                         lockup (top-right, 19px) became the stacked lockup at 72px —
+                         the same width as before, PBS mark ~2x. It can't fit top-right
+                         without crowding the statement, so it sits bottom-left on the
+                         QR callout's bottom line and the statement moved up to top:44. -->
                     <div style="position:absolute;top:0;left:0;width:150px;height:324px;overflow:hidden">
                       <img src="assets/Community_Pattern_RGB_1920x1920.svg" style="position:absolute;top:0;left:0;width:600px;height:600px;display:block">
                     </div>
-                    <img src="assets/NashvillePBS_Logo_Horizontal_White.svg" style="position:absolute;top:44px;right:44px;height:19px">
-                    <div style="position:absolute;top:104px;left:186px;right:44px;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
+                    <img src="assets/NashvillePBS_Logo_Vertical_White.svg" style="position:absolute;bottom:44px;left:186px;height:72px">
+                    <div style="position:absolute;top:44px;left:186px;right:44px;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em;color:#fff;text-wrap:pretty">We believe the right story, told honestly, can change everything.</div>
                     <div style="position:absolute;bottom:44px;right:44px;width:111px;display:flex;align-items:center;justify-content:flex-end;gap:8px">
                       <div style="text-align:right;line-height:1.15;white-space:nowrap">
                         <div style="font-weight:600;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.85);white-space:nowrap">DOWNLOAD</div>
@@ -340,7 +349,7 @@ class Component extends DCLogic {
   state = {
     mode: "card",
     // "classic" | "vision" | "visionRail" | "visionNavy" | "visionWhite" — front face style
-    cardFront: "classic",
+    cardFront: "visionRail",
     name: "", title: "", email: "", phone: "", cell: "",
     cardNameSize: 24, tagNameSize: 35,
     cardTitleSize: 13, tagTitleSize: 15,

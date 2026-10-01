@@ -1959,3 +1959,13 @@ now redundant; safe to delete.
 Verified live (localhost, `repo-root` launch config): all five fronts render correctly on
 screen and each produces a PDF with no console errors — including `visionRail` (clip) and
 `visionWhite` (print-color override). Autosave's CORS failure locally is expected (§11.3).
+
+### 13.9.5 Vision Rail chosen; stacked logo (Shane, 2026-10-01)
+
+The CEO picked `visionRail`. The other four fronts' buttons are commented out — **parked,
+not deleted**, in case they need to come back — and `cardFront` defaults to `visionRail`.
+At her request for a larger logo, the Vision Rail front swaps the 19px horizontal lockup
+for the 72px **stacked** white lockup (new asset `NashvillePBS_Logo_Vertical_White.svg`,
+official brand-package artwork with inline fills), moved to bottom-left on the QR
+callout's line, statement moved up to `top:44`. Details and the placement reasoning are in
+`business-essentials/BUILD-NOTES.md` ("Vision Rail only").
