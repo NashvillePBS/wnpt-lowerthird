@@ -1880,6 +1880,12 @@ card needs review" (https://airtable.com/appmpL4OjEpPoYmcD/wflgnNNLVCvMfmEl5): t
 sburkeen@wnpt.org, body = Review Notes + the record URL. Like the archive automation it is
 saved **off** and has to be switched on in the UI.
 
+**Fix, 2026-10-06:** the page sent the card's email/phone/cell with **name tag** saves
+too, so a tag got flagged for a phone number it doesn't print (Dara Bacon's tag:
+"Business Phone Number — on the name tag: …"). `details` is now per output: the card
+sends title/email/phone/cell, the tag sends title only (name goes as `personName`). The
+Worker is unchanged — it already skips fields that weren't sent.
+
 Verified end to end against the deployed Worker with three saves: manual entry → flagged
 with the typed details listed; picked-then-edited → flagged with a line per differing
 field; picked and matching (email in different case, blank phone) → `needsReview: false`
