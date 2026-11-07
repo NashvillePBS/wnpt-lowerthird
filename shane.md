@@ -31,10 +31,26 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
 7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
    at another session's request, not yours.
-8. ✅ **Short.io key set on the graphics Worker** (you, 2026-11-07). One thing to know, your call:
-   wnpt.tv is set up in Short.io as a meta-refresh redirect with Google Analytics (wnpt-web-sync
-   PROGRESS §8.6), which adds a short hop to every QR scan before the phone lands on the page; if you
-   would rather the sign links jump straight through, that is a Short.io domain setting, not this repo.
+8. ⬜ **The Short.io key needs setting again, and rotating.** The first attempt saved the key under
+   the wrong name: the secret's *name* came out as `SHORTIO_API_KEY` followed by the key itself (the
+   key was typed on the command line instead of at the prompt), so the Worker cannot find it, and the
+   key now sits in a non-secret field that anyone with access to the Cloudflare account can list.
+   Claude is not allowed to delete secrets. Three steps, in order:
+   1. In Short.io, make a new key (a **public** key, `pk_…`, is enough for this Worker) and retire the
+      old one, since the old one has been exposed.
+   2. Remove the mis-named secret: in Cloudflare → Workers & Pages → wnpt-graphics → Settings →
+      Variables and Secrets, delete the one whose name starts with `SHORTIO_API_KEYsk_`.
+   3. Add the new key under the right name. Run this and paste the key **only when the prompt asks
+      for it**, not on the command line:
+      ```bash
+      cd "/Users/sburkeen/Projects/wnpt-lowerthird" && npx wrangler secret put SHORTIO_API_KEY
+      ```
+      You should see "Success! Uploaded secret SHORTIO_API_KEY". Then tell Claude, who makes one test
+      link (`wnpt.tv/graphics-test`) and checks it.
+   One thing to know, your call: wnpt.tv is set up in Short.io as a meta-refresh redirect with Google
+   Analytics (wnpt-web-sync PROGRESS §8.6), which adds a short hop to every QR scan before the phone
+   lands on the page; if you would rather the sign links jump straight through, that is a Short.io
+   domain setting, not this repo.
 9. ✅ **Tracked QR codes in place** (your three Short.io exports, 2026-11-07): the Donate sign scans to
    wnpt.tv/support, the PBS app block to wnpt.tv/wnptpbs-app (your landing page that picks the store and
    can carry the Nashville PBS app later), the PBS KIDS block to wnpt.tv/pbskidsapps. For launch day the
