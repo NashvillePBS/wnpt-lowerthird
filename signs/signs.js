@@ -109,9 +109,14 @@
     photo:        { label: 'Photography Notice',   blurb: 'The station\'s approved notice that the event is photographed or recorded.',  defaults: { headline: 'Attention', subline: PHOTO_SUB, body: PHOTO_BODY, arrow: 'none', partnerLabel: '', partners: [] } },
     custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines, with a QR code if you give it a link.', defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [], url: '', shortPath: '', shortURL: '' }, fields: FIELDS.concat(QR_FIELDS) },
     donate:       { label: 'Donate',               blurb: 'wnpt.org/donate with the Passport amounts and the tracked QR code.', defaults: { headline: 'Donate', monthly: '5', yearly: '60', body: '', partnerLabel: '', partners: [] }, fields: DONATE_FIELDS },
-    apps:         { label: 'Our Apps',             blurb: 'Download the PBS app, the Nashville PBS app or the PBS KIDS app, each with its tracked QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: true, station: false, kids: true }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
+    apps:         { label: 'Our Apps',             blurb: 'Download the PBS app or the PBS KIDS app, each with its tracked QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: true, station: false, kids: true }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
   };
   function fieldsFor(sign) { return (SIGNS[sign] && SIGNS[sign].fields) || FIELDS; }
+  // The Our Apps card names only the apps that are switched on, so a hidden app is not mentioned either.
+  (function () {
+    const names = Object.values(CONFIG.apps).filter(a => a.enabled).map(a => 'the ' + a.label);
+    if (names.length) SIGNS.apps.blurb = 'Download ' + (names.length > 1 ? names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1] : names[0]) + ', each with its tracked QR code.';
+  })();
 
   function dims(state) {
     const sz = SIZES[state.size] || SIZES.letter;
