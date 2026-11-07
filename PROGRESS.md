@@ -78,7 +78,10 @@ Evidence
 Next
 1. Shane's art-direction defaults (shane.md 6), if any should change; the Nashville PBS app's launch
    (shane.md 9).
-2. The custom sign's short links: tested live with the key (see the commit after this line).
+2. Done 2026-11-07: with the key under the right name, the custom sign made `wnpt.tv/graphics-test`
+   from Shane's Chrome through `POST /api/shortlink`; from outside the link answers 200 with a
+   meta-refresh to https://wnpt.org/ (the domain's Short.io setting). The mis-named secret from the
+   first attempt is still listed and is Shane's to delete (shane.md 8).
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).
