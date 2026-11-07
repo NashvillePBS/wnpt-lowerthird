@@ -70,7 +70,8 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
 15. **Signs never depend on the paper's edge** (Shane, 2026-11-07: staff print on ordinary office printers
    that leave an unprinted margin and cannot bleed). A white border of 0.58 in (`CONFIG.frame`) surrounds
    everything; the accent band, and the Navy option as a panel with 12 px corners, sit inside it. Band
-   color (Yellow, Teal, Coral) and thickness (Thin 10, Standard 28, Thick 56 px at Letter) are options.
+   color (Yellow default, Teal, Coral) and thickness (Thin 10, Standard 28, Thick 56 px at Letter; Thick is the default) are options; the copy's top position does not move with the band. The generator has a Printer view checkbox that shades the 0.25 in unprintable edge in the preview.
+18. **End-card defaults picked by Shane (2026-11-07):** slate rail 2 columns, pattern field 5 rows, PBS KIDS shown as the reverse circle beside the station logo (supplied pairing with the station-derived reverse circle).
    `scripts/verify-graphics.py` fails any sign with a printed pixel inside 0.58 in of an edge. On the Navy
    option the apps' white logo versions and the white Passport lockup are used.
 16. **Everything readable on a broadcast end card sits inside title-safe** (Shane, 2026-11-07), fine print

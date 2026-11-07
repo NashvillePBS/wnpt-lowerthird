@@ -22,6 +22,7 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
   const CASES = {
     'endpage':         { strand: 'ALL NEW', title: 'Tennessee Crossroads', qualifier: '', text: '', tunein: 'TONIGHT AT 8' },
     'endpage-funding': { strand: '', title: 'Thank You', qualifier: '', text: 'This program was made possible by contributions to your Nashville PBS station from viewers like you.', tunein: '' },
+    'endpage-kids':    { strand: 'ALL NEW', title: 'Wild Kratts', qualifier: '', text: '', tunein: 'WEEKDAYS 4PM' },
     'slate':           { message: 'We now join the following program already in progress.' },
     'slate-caps':      { top: 'WE ARE EXPERIENCING', main: 'TECHNICAL DIFFICULTIES', sub: 'WE WILL BE BACK MOMENTARILY' },
     'support':         {}
@@ -35,6 +36,7 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
       if (only && only !== name) continue;
       const style = name.replace(/-funding$/, '');
       const state = EndCards.defaultState(style);
+      if (name === 'endpage-kids') state.channel = 'kids';
       Object.assign(state.fields, fields);
       const r = { style, fileName: EndCards.fileName(state, 1) };
       for (const scale of [1, 2]) {

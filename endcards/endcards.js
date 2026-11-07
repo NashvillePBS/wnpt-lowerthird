@@ -32,7 +32,7 @@
     },
     fieldRows: 5,      // whole rows of cells across the 1080 frame height (brand book: 3 to 6)
     railWidth: 270,    // the slate rail, 14% of the frame width (BroadcastSlates preview)
-    railColumns: 3,    // whole columns of cells inside the rail (brand book: at least 3)
+    railColumns: 2,    // whole columns of cells inside the rail (Shane picked 2 of 2/3/4, 2026-11-07; the brand book's 3 to 6 applies to areas, the rail is a 270px strip)
     overlay: 0.5,      // Navy overlay over a full pattern field that carries text (brand book: 50% or more)
     // Co-brand lockups for the endpage. `shield` is the share of the file's height that is the station
     // shield, so every channel renders with the shield at the same height as the plain station logo.
@@ -43,7 +43,9 @@
       world:    { label: 'WORLD',                  file: 'NashvillePBSWORLD_Inverse_Horizontal.svg',           shield: 1 },
       create:   { label: 'Create TV',              file: 'NashvillePBS_Create_Pipe_White.svg',                 shield: 1 },
       allarts:  { label: 'ALL ARTS',               file: 'PBSNashville_AllArts_WHITE_RGB-HEX.svg',             shield: 0.94 },
-      kids:     { label: 'PBS KIDS',               file: 'PBSKids_NashvillePBS_Horizontal_Digital_OnDark.svg', shield: 100 / 210 },
+      // Shane picked the reverse circle (white, PBS Blue letters) beside the white station logo, 2026-11-07; the file is
+      // the supplied paired OnDark file with its circle swapped for the station-derived reverse digital circle.
+      kids:     { label: 'PBS KIDS',               file: 'PBSKids_NashvillePBS_Horizontal_Digital_OnDark_Reverse.svg', shield: 100 / 210 },
       passport: { label: 'Nashville PBS Passport', file: 'Passport_Horizontal_White.svg',                      shield: 1 }
     },
     stationColor: 'NashvillePBS_Logo_Horizontal_Color.svg',

@@ -63,7 +63,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 <script src="../vendor/html-to-image.js?v=20261107c"></script>
 <script src="../vendor/qrcode.js?v=20261107c"></script>
 <script src="../shared/studio-core.js?v=20261107d"></script>
-<script src="signs.js?v=20261107g"></script>
+<script src="signs.js?v=20261107h"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -99,6 +99,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
         <button class="ec-btn" id="ec-dl-pdf" type="button">Download print PDF</button>
         <button class="ec-btn secondary" id="ec-dl-png" type="button">Download PNG (300 dpi)</button>
         <label class="ec-hint" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="ec-guides" checked style="margin:2px 0 0;accent-color:#2638C4"><span>Show the 0.5 in print margin in the preview. It is never in the download.</span></label>
+        <label class="ec-hint" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="ec-printer" style="margin:2px 0 0;accent-color:#2638C4"><span>Printer view: shade the edge an office printer cannot print (about 0.25 in). Anything in the shaded strip would be cut off. It is never in the download.</span></label>
         <div id="ec-status"></div>
       </section>
 
@@ -130,7 +131,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 (function () {
   'use strict';
   const S = window.EventSigns;
-  const KEY = 'es_state_v2'; // v2: the field defaults to white (2026-11-07); v1 states carried Navy
+  const KEY = 'es_state_v3'; // v3: band defaults to Thick (2026-11-07); v2 states carried Standard, v1 Navy
   const $ = (sel) => document.querySelector(sel);
 
   let state = load() || fresh('welcome');
@@ -150,7 +151,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     if (!state.fieldsBySign[state.sign]) state.fieldsBySign[state.sign] = Object.assign({}, S.SIGNS[state.sign].defaults);
     return state.fieldsBySign[state.sign];
   }
-  function renderState() { return { sign: state.sign, colorway: state.colorway, accent: state.accent, band: state.band || 'standard', size: state.size, orientation: state.orientation, fields: fields() }; }
+  function renderState() { return { sign: state.sign, colorway: state.colorway, accent: state.accent, band: state.band || S.CONFIG.defaultBand, size: state.size, orientation: state.orientation, fields: fields() }; }
 
   function seg(host, options, current, onPick) {
     host.innerHTML = '';
@@ -291,7 +292,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     seg($('#ec-size'), Object.entries(S.SIZES).map(([k, v]) => [k, v.label + ' · ' + v.detail]), state.size, k => { state.size = k; });
     seg($('#ec-orient'), [['portrait', 'Portrait'], ['landscape', 'Landscape']], state.orientation, k => { state.orientation = k; });
     seg($('#ec-colorway'), [['white', 'White (office printer)'], ['navy', 'Navy (print shop)']], state.colorway, k => { state.colorway = k; });
-    seg($('#ec-band'), [['thin', 'Thin'], ['standard', 'Standard'], ['thick', 'Thick']], state.band || 'standard', k => { state.band = k; });
+    seg($('#ec-band'), [['thin', 'Thin'], ['standard', 'Standard'], ['thick', 'Thick']], state.band || S.CONFIG.defaultBand, k => { state.band = k; });
     const acc = $('#ec-accents'); acc.innerHTML = '';
     Object.entries(S.ACCENTS).forEach(([key, hex]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-swatch'; b.title = key[0].toUpperCase() + key.slice(1);
@@ -323,6 +324,13 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
       const g = document.createElement('div');
       g.style.cssText = 'position:absolute;left:' + S.MARGIN + 'px;top:' + S.MARGIN + 'px;width:' + (d.W - 2 * S.MARGIN) + 'px;height:' + (d.H - 2 * S.MARGIN) + 'px;border:2px dashed rgba(255,70,70,.85);box-sizing:border-box;pointer-events:none';
       scaler.appendChild(g);
+    }
+    if ($('#ec-printer').checked) {
+      const u = 24; // 0.25 in at 96 dpi: the strip a typical office printer leaves blank
+      const shade = 'position:absolute;background:rgba(96,102,125,.55);pointer-events:none;';
+      [['left:0;top:0;width:100%;height:' + u + 'px'], ['left:0;bottom:0;width:100%;height:' + u + 'px'], ['left:0;top:0;height:100%;width:' + u + 'px'], ['right:0;top:0;height:100%;width:' + u + 'px']].forEach(([c]) => {
+        const e = document.createElement('div'); e.style.cssText = shade + c; scaler.appendChild(e);
+      });
     }
     scaleToFit(d);
     await Promise.all(Array.from(stage.querySelectorAll('img')).map(im => im.complete ? null : new Promise(res => { im.onload = res; im.onerror = res; })));
@@ -367,6 +375,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
   $('#ec-dl-pdf').addEventListener('click', downloadPdf);
   $('#ec-dl-png').addEventListener('click', downloadPng);
   $('#ec-guides').addEventListener('change', schedule);
+  $('#ec-printer').addEventListener('change', schedule);
   window.addEventListener('resize', () => { if (lastDims) scaleToFit(lastDims); });
 
   buildAll();

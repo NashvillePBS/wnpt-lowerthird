@@ -287,7 +287,7 @@ layout scaled by 11/8.5 with the extra height given to the copy. Values at Lette
 | Element | Value |
 |---|---|
 | Printer-safe frame | a white border of 56px (0.58 in) on every side, absolute on both papers: **nothing, band and Navy panel included, reaches the paper edge** (Shane, 2026-11-07: office printers leave an unprinted edge and cannot bleed) |
-| Accent band | inside the frame, full frame width, a fill never type: Thin 10px, Standard 28px (default), Thick 56px; Yellow (default), Teal or Coral (one accent per sign). On the Navy option it is the top of a Navy panel with 12px corners |
+| Accent band | inside the frame, full frame width, a fill never type: Thin 10px, Standard 28px, Thick 56px (default, Shane's pick); Yellow (default), Teal or Coral (one accent per sign). On the Navy option it is the top of a Navy panel with 12px corners |
 | Text block | on white aligned with the band's left edge (frame), inside the Navy panel 44px in; 64px below the band, at the frame's bottom; vertically centred between band and logo; left-aligned, never justified |
 | Headline | 132px (99pt at Letter) PBS Sans Black, −.02em, line-height 1.02; wraps; shrinks only when a single word is wider than the column, to a floor of 56px (42pt) |
 | Second line | 40px (30pt) Medium |
@@ -454,6 +454,10 @@ evidence in `PROGRESS.md`. Live since 2026-11-07 17:53 UTC; the old address redi
 ---
 
 # Part E. Options Shane compares (docs/options/)
+
+Shane's picks (2026-11-07): slate rail 2 columns, pattern rows 5, PBS KIDS reverse circle, band Thick in Yellow,
+Navy option kept, printer view in the generator (a checkbox that shades the 0.25 in edge in the preview, never
+in the download).
 
 Rendered by `python3 scripts/render-options.py` through the real export, with the checks in
 `docs/options/REPORT.md`: slate rail columns 2, 3 (default) and 4; announcement-slate pattern rows 4,

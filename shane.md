@@ -20,11 +20,11 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    ("Attention" / "This event is being photographed and/or video recorded." / the two paragraphs and
    "Thank you!") in the tool, and the support end card's address, number and terms line stand as
    shipped.
-6. ⬜ **Pick from the rendered options** (you asked for options, 2026-11-07; renders in `docs/options/`):
-   slate rail columns 2/3/4, announcement-slate pattern rows 4/5/6, the PBS KIDS pairing (color,
-   reverse, stacked), and the signs' band thickness, color and Navy option. Current defaults stay until
-   you pick: rail 3, rows 5, KIDS color pair, band Standard in Yellow. The support card's fine print
-   stays at 40px (settled: everything on a broadcast end card sits inside the title-safe area).
+6. ✅ **Options picked** (you, 2026-11-07, `docs/options/`): slate rail 2 columns; pattern field 5 rows;
+   PBS KIDS reverse circle beside the station logo; sign band Thick, Yellow by default with Teal and Coral
+   and Thin and Standard selectable; the Navy print-shop option kept as reworked (white logos, inside the
+   border); a printer view in the signs generator that staff switch on to see the unprinted edge. The
+   support card's fine print stays at 40px inside title-safe.
 7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
    at another session's request, not yours.
 8. ✅ **Short.io key rotated and set under the right name** (you, 2026-11-07): the exposed first key

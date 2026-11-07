@@ -58,12 +58,12 @@ def main():
         imgs[name] = full
         report.append('| %s | %s | %s |' % (name, bbox, 'inside title-safe' if ok else 'FAIL ' + '; '.join(r['x1_warnings'])))
     groups = [
-        ('endcards-slate-rail-columns.png', 'Slate: how many pattern columns in the left rail', 'Rail is 14% of the frame wide; more columns = smaller shapes. Current default: 3.',
-         [('rail-2-columns', '2 columns'), ('rail-3-columns', '3 columns (current)'), ('rail-4-columns', '4 columns')]),
-        ('endcards-pattern-rows.png', 'Announcement slate: how many pattern rows across the frame', 'More rows = smaller shapes behind the text. Brand book: 3 to 6 whole rows. Current default: 5.',
-         [('rows-4', '4 rows'), ('rows-5', '5 rows (current)'), ('rows-6', '6 rows')]),
+        ('endcards-slate-rail-columns.png', 'Slate: how many pattern columns in the left rail', 'Rail is 14% of the frame wide; more columns = smaller shapes. Shane chose 2 (2026-11-07).',
+         [('rail-2-columns', '2 columns (chosen)'), ('rail-3-columns', '3 columns'), ('rail-4-columns', '4 columns')]),
+        ('endcards-pattern-rows.png', 'Announcement slate: how many pattern rows across the frame', 'More rows = smaller shapes behind the text. Brand book: 3 to 6 whole rows. Shane kept 5.',
+         [('rows-4', '4 rows'), ('rows-5', '5 rows (chosen)'), ('rows-6', '6 rows')]),
         ('endcards-pbs-kids-treatments.png', 'Endpage: PBS KIDS pairing on the gradient', 'KIDS is never alone and never a lockup. Reverse circle uses the station-derived digital file (design-system shane.md 5); stacked is larger because it is taller.',
-         [('kids-color-pair', 'Color circle beside station logo (current)'), ('kids-reverse-pair', 'Reverse circle (white, blue letters)'), ('kids-stacked-pair', 'Stacked: KIDS above station logo')]),
+         [('kids-color-pair', 'Color circle beside station logo'), ('kids-reverse-pair', 'Reverse circle (chosen)'), ('kids-stacked-pair', 'Stacked: KIDS above station logo')]),
     ]
     for fname, title, note, cells in groups:
         strip([(imgs[k], l) for k, l in cells], title, note, 620).save(os.path.join(OUT, fname), optimize=True)
@@ -78,8 +78,8 @@ def main():
         ok = vg.inside(printed, (174, 174, im.size[0] - 174, im.size[1] - 174)) and not r['warnings']
         frame_ok_all = frame_ok_all and ok
     sg = [
-        ('signs-band-thickness.png', 'Signs: band thickness (the band sits inside a white border)', 'Thin, Standard (default), Thick. All three keep the same white border all round.',
-         [('welcome-thin-letter-portrait', 'Thin'), ('welcome-letter-portrait', 'Standard (default)'), ('welcome-thick-teal-letter-portrait', 'Thick (shown in Teal)')]),
+        ('signs-band-thickness.png', 'Signs: band thickness (the band sits inside a white border)', 'Thin, Standard, Thick (chosen). All three keep the same white border all round.',
+         [('welcome-thin-letter-portrait', 'Thin'), ('welcome-standard-letter-portrait', 'Standard'), ('welcome-letter-portrait', 'Thick (chosen)')]),
         ('signs-band-colors.png', 'Signs: band color, one accent per sign', 'Yellow (default), Teal, Coral.',
          [('welcome-letter-portrait', 'Yellow (default)'), ('welcome-teal-letter-portrait', 'Teal'), ('welcome-coral-letter-portrait', 'Coral')]),
         ('signs-navy-option.png', 'Signs: the Navy option is a panel inside the same white border', 'For a print shop or sign holder; it uses far more ink. White logo versions are used on Navy.',

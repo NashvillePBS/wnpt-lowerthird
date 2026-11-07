@@ -34,7 +34,8 @@
     // Navy panel sit inside a white border of `frame` px (0.58 in, absolute: the printer's margin does not grow
     // with the paper). Everything readable stays inside the 0.5 in check (MARGIN) as before.
     frame: 56,
-    bands: { thin: 10, standard: 28, thick: 56 }, // band thickness at Letter; the default is standard
+    bands: { thin: 10, standard: 28, thick: 56 }, // band thickness at Letter
+    defaultBand: 'thick',                          // Shane's pick, 2026-11-07
     panelRadius: 12, panelPad: 44,                // Navy panel corner radius and inner side padding (Letter px)
     padTop: 64, padBottom: 56,
     headline: 132, subline: 40, body: 26, floor: 56,  // floor: the headline never shrinks below (42 pt at Letter)
@@ -291,7 +292,7 @@
 
   function defaultState(sign) {
     const sg = SIGNS[sign] || SIGNS.welcome;
-    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', band: 'standard', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
+    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', band: CONFIG.defaultBand, size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
   }
 
   // The sign's DOM at 96 dpi. opts.hideReadable hides text, arrow and logo but keeps the layout (self-test).
@@ -309,10 +310,10 @@
     const F = CONFIG.frame;
     const frame = SC.el('div', 'position:absolute;left:' + F + 'px;right:' + F + 'px;top:' + F + 'px;bottom:' + F + 'px;overflow:hidden;' + (navy ? 'background:' + C.navy + ';border-radius:' + CONFIG.panelRadius + 'px' : ''));
     stage.appendChild(frame);
-    const band = r((CONFIG.bands[state.band] || CONFIG.bands.standard) * k);
+    const band = r((CONFIG.bands[state.band] || CONFIG.bands[CONFIG.defaultBand]) * k);
     frame.appendChild(SC.el('div', 'position:absolute;left:0;top:0;width:100%;height:' + band + 'px;background:' + accent));
     const side = navy ? r(CONFIG.panelPad * k) : 0;
-    const box = SC.el('div', 'position:absolute;left:' + side + 'px;right:' + side + 'px;top:' + (band + r(CONFIG.padTop * k)) + 'px;bottom:' + (navy ? r(CONFIG.panelPad * k) : 0) + 'px;display:flex;flex-direction:column');
+    const box = SC.el('div', 'position:absolute;left:' + side + 'px;right:' + side + 'px;top:' + Math.max(band + r(28 * k), r((CONFIG.bands.standard + CONFIG.padTop) * k)) + 'px;bottom:' + (navy ? r(CONFIG.panelPad * k) : 0) + 'px;display:flex;flex-direction:column');
     const content = SC.el('div', 'flex:1;min-height:0;display:flex;' + (d.land ? 'flex-direction:row;align-items:center;gap:' + r(56 * k) + 'px' : 'flex-direction:column;justify-content:center;gap:' + r(40 * k) + 'px'));
     content.dataset.box = 'copy';
     const text = SC.el('div', 'display:flex;flex-direction:column;min-width:0;' + (d.land ? 'flex:1' : ''));
