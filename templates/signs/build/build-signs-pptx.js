@@ -16,7 +16,9 @@ const THEME = {
   name: 'Nashville PBS Event Signs', headFontFace: 'Arial', bodyFontFace: 'Arial',
   colors: { dk1: '000000', lt1: 'FFFFFF', dk2: '0A145A', lt2: 'EEF0F5', accent1: '2638C4', accent2: 'FE704E', accent3: '087B45', accent4: '486CD8', accent5: 'D6383A', accent6: 'FFCF00', hlink: '2638C4', folHlink: '0F1E8C' }
 };
-const PHOTO_DRAFT = 'By attending this event, you may be photographed or recorded by Nashville PBS. Images may appear in station programming, promotion and publications.';
+// The station's approved photography notice (Shane Burkeen, 2026-11-07).
+const PHOTO_SUB = 'This event is being photographed and/or video recorded.';
+const PHOTO_BODY = 'Please be advised that by entering this space, you are agreeing to being filmed and/or photographed, and the resulting assets may be used for marketing or promotional purposes.\n\nIf you do not wish to be photographed or recorded, please notify one of our staff members.\n\nThank you!';
 const SIGNS = [
   { title: 'Welcome', sub: 'Event name', small: '', arrow: false, partners: true, notes: 'Welcome sign. Put the event name on the second line; delete it if you do not need it. The dashed boxes are where partner logos go: Insert, Pictures, then delete the box. Delete the row if there are no partners.' },
   { title: 'Registration', sub: '', small: '', arrow: true, notes: 'Directional sign. Drag the arrow’s rotate handle to point it; copy the arrow from this slide onto any other sign.' },
@@ -24,7 +26,7 @@ const SIGNS = [
   { title: 'Check-In', sub: 'Please have your name ready', small: '', arrow: false, notes: 'Registration or check-in table.' },
   { title: 'Restrooms', sub: '', small: '', arrow: true, notes: 'Restrooms, with the arrow pointing the way.' },
   { title: 'Quiet Please', sub: 'Recording in progress', small: '', arrow: false, notes: 'Quiet please: a recording or a program in progress.' },
-  { title: 'Photography Notice', sub: '', small: PHOTO_DRAFT, arrow: false, notes: 'Photography notice. The small text is DRAFT wording: replace it with the notice approved by Communications before printing.' },
+  { title: 'Attention', sub: PHOTO_SUB, small: PHOTO_BODY, arrow: false, notes: 'Photography notice, the station\'s approved wording (2026-11-07). Change nothing but the headline\'s case if a sign needs ATTENTION in capitals.' },
   { title: 'Your Headline', sub: 'Second line', small: 'Small text, a sentence or two.', arrow: false, notes: 'Custom sign: replace the three lines; delete the ones you do not need.' }
 ];
 

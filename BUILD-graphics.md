@@ -268,7 +268,7 @@ Eight signs share one layout and six fields: **headline** (one or two typed line
 | Registration | Check-In | no |
 | Restrooms | Restrooms | right |
 | Quiet Please | Quiet Please / Recording in progress | no |
-| Photography Notice | Photography Notice / small text: a **draft** consent line, flagged in the tool and in shane.md | no |
+| Photography Notice | Attention / This event is being photographed and/or video recorded. / the station's approved paragraphs and "Thank you!" (Shane, 2026-11-07) | no |
 | Custom | empty | optional |
 
 Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: **White by default** (Navy
@@ -400,13 +400,12 @@ session (shane.md asks for that one open).
 3. **Sponsor or underwriter logos on signs.** Built (Shane, 2026-11-07: "they could need partner
    logos", as a flex row that adapts as logos are added): the partner row in §B3, with a plain label
    and the logos smaller than the station lockup, which keeps the sign noncommercial.
-4. **Support-card facts** (shane.md): wnpt.org/support lands on the pledge cart; the text-to-give
-   number and keyword and the terms line appear nowhere on wnpt.org and stay unverified until you
-   confirm them.
+4. **Support-card facts**: confirmed by Shane on 2026-11-07 ("the support card is correct with the
+   number and link").
 5. **Art direction defaults** (§A5, §B7): fine print at 40px, rail at 3 columns, field at 5 rows, the
    PBS KIDS file, the sign band at 28px with Yellow. Silence keeps them.
-6. **The photography notice's wording** (shane.md): the tool ships a draft; the approved notice from
-   Communications replaces it.
+6. **The photography notice's wording**: the station's approved text, supplied by Shane on
+   2026-11-07, is in the tool and the template.
 
 ---
 

@@ -170,7 +170,6 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     const host = $('#ec-fields'); host.innerHTML = '';
     const sg = S.SIGNS[state.sign], f = fields();
     const head = document.createElement('div'); head.className = 'ec-label'; head.textContent = sg.label; host.appendChild(head);
-    if (sg.draftBody) { const d = document.createElement('div'); d.className = 'ec-draft'; d.textContent = 'The small text is draft wording. Use the notice approved by Communications before printing.'; host.appendChild(d); }
     S.FIELDS.forEach(spec => {
       const wrap = document.createElement('div'); wrap.className = 'ec-field';
       const id = 'es-f-' + spec.key;

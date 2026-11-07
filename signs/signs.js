@@ -52,7 +52,9 @@
     { key: 'partnerLabel', label: 'Partner label', type: 'text', placeholder: 'Supported by', hint: 'Sits above the partner logos. Keep it plain: "Supported by", "Made possible by". Optional.' },
     { key: 'partners', label: 'Partner logos', type: 'images', hint: 'Add one or more logo files (PNG, JPG or SVG). They sit in a row above the station logo, each at its own shape; add more and the row wraps and the logos get smaller. On the white field use color or dark logos; on Navy, white ones. Not remembered after a reload.' }
   ];
-  const PHOTO_DRAFT = 'By attending this event, you may be photographed or recorded by Nashville PBS. Images may appear in station programming, promotion and publications.';
+  // The station's approved photography notice (Shane Burkeen, 2026-11-07), verbatim apart from the headline's case.
+  const PHOTO_SUB = 'This event is being photographed and/or video recorded.';
+  const PHOTO_BODY = 'Please be advised that by entering this space, you are agreeing to being filmed and/or photographed, and the resulting assets may be used for marketing or promotional purposes.\n\nIf you do not wish to be photographed or recorded, please notify one of our staff members.\n\nThank you!';
   const SIGNS = {
     welcome:      { label: 'Welcome',              blurb: 'Welcome with the event name.',                       defaults: { headline: 'Welcome', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
     directional:  { label: 'Directional',          blurb: 'A destination and an arrow.',                         defaults: { headline: 'Registration', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
@@ -60,7 +62,7 @@
     registration: { label: 'Registration',         blurb: 'Registration or check-in table.',                     defaults: { headline: 'Check-In', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
     restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
     quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
-    photo:        { label: 'Photography Notice',   blurb: 'Notice that the event is photographed or recorded.',  defaults: { headline: 'Photography Notice', subline: '', body: PHOTO_DRAFT, arrow: 'none', partnerLabel: '', partners: [] }, draftBody: true },
+    photo:        { label: 'Photography Notice',   blurb: 'The station\'s approved notice that the event is photographed or recorded.',  defaults: { headline: 'Attention', subline: PHOTO_SUB, body: PHOTO_BODY, arrow: 'none', partnerLabel: '', partners: [] } },
     custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines.',         defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } }
   };
 

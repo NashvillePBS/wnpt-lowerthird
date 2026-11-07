@@ -55,9 +55,13 @@ Evidence
   (BUILD-graphics.md §B3, DECISIONS 8 and 9). Verifier: 14 sign cases ALL OK, including three
   mixed-shape logos and seven logos wrapping (readouts in BUILD-graphics.md §B8).
 
+- Shane confirmed the support card's number and link and supplied the station's photography notice
+  wording (2026-11-07); both are in the tool and the PowerPoint template. Live partner-logo check on
+  graphics.wnpt.app: two logo files uploaded through the page, the row rendered with its label, the PDF
+  downloaded and its image carries the row (see the commit message).
+
 Next
-1. Shane's remaining answers (shane.md 5 to 6): the support card's phone and terms line, the
-   photography notice wording.
+1. Shane's remaining answer (shane.md 6): the art-direction defaults, if any should change.
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).

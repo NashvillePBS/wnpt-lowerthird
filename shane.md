@@ -21,13 +21,10 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    and eight signs). ✅ Partner logos: built as a wrapping flex row above the station logo (your call
    the same day). ✅ Signs print on white by default now (your call the same day; the first release
    defaulted to Navy, which would have eaten the office printer's ink).
-5. ⬜ **Approve two pieces of copy before anyone prints or airs them:** the photography notice's
-   small text (the tool ships a draft: "By attending this event, you may be photographed or recorded by
-   Nashville PBS. Images may appear in station programming, promotion and publications.") and the
-   support end card's facts: `wnpt.org/support` (lands on the pledge cart, fine), the text-to-give
-   keyword "GIVE" and number `1 (844) 213-5345`, and "Msg & Data rates may apply. Terms: wnpt.org/terms.
-   Text STOP to cancel." The last three appear nowhere on wnpt.org and came from the October On-Air
-   template. Reply with corrections or "they stand".
+5. ✅ **Copy approved** (you, 2026-11-07): the photography notice now carries the station's wording
+   ("Attention" / "This event is being photographed and/or video recorded." / the two paragraphs and
+   "Thank you!") in the tool and in the PowerPoint template, and the support end card's address, number
+   and terms line stand as shipped.
 6. ⬜ **Art direction defaults** (silence keeps them): the support card's fine print at the 40px
    on-air minimum (the template had 29px); the slate rail at 3 pattern columns; the full pattern field
    at 5 rows; PBS KIDS on screen as the paired color digital file (design-system shane.md 5); the sign
