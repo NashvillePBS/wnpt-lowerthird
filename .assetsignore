@@ -8,7 +8,6 @@
 node_modules
 worker
 scripts
-templates/signs/build
 docs
 *.md
 *.dc.html

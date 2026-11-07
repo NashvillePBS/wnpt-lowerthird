@@ -12,7 +12,7 @@ Logo, Color, Typography, Graphic Elements and Print sections, `tokens.json` and 
 Where a build departs from a template, the section says so and why.
 
 **Status (2026-11-07):** both generators exist and pass their verifiers (§A8, §B8); the PowerPoint
-sign template is built (§B10). The studio's picker links both generators (Shane, 2026-11-07: one
+PowerPoint templates were removed at Shane's direction (§B10). The studio's picker links both generators (Shane, 2026-11-07: one
 card each; the pages keep their own pickers). Waiting on Shane: whether sponsor logos belong on signs,
 the support card's facts and the photography notice wording (Part C). The hosting move
 (Part D) is live: https://graphics.wnpt.app/ since 2026-11-07, evidence in `PROGRESS.md`.
@@ -252,7 +252,6 @@ capture core, download only.
 | `signs/assets/` | The two station lockups. |
 | `signs/selftest.html` | The headless harness's cases (§B8). |
 | `signs/samples/` | Quarter-size renders of the PDF image for each case (§B9). |
-| `templates/signs/` | The PowerPoint templates for custom signs (§B10) and the script that builds them. |
 
 ## B2. The set
 
@@ -372,24 +371,12 @@ ALL OK
 | Directional, Tabloid<br>![Directional Tabloid](signs/samples/directional-tabloid-portrait.png) | Directional, Tabloid landscape<br>![Directional Tabloid landscape](signs/samples/directional-tabloid-landscape.png) | Directional, landscape<br>![Directional landscape](signs/samples/directional-letter-landscape.png) |
 | Partner logos, three shapes<br>![Partner logos](signs/samples/partners-letter-portrait.png) | Partner logos, seven, landscape<br>![Seven partner logos](signs/samples/partners-seven-letter-landscape.png) | Welcome on Navy (print shop)<br>![Welcome on Navy](signs/samples/welcome-navy-letter-landscape.png) |
 
-## B10. The PowerPoint template (custom signs without the tool)
+## B10. No Word or PowerPoint template
 
-`templates/signs/NashvillePBS-EventSigns-Letter-Portrait.pptx` and `-Landscape.pptx`: Arial
-throughout (the sanctioned stand-in; PBS Sans cannot ship in an Office file), one "Sign" layout with
-the band, three text placeholders and the white logo on Navy, eight sample signs (the same eight as the
-tool, the arrow as a rotatable picture on the two directional ones), a closing how-to slide, and
-speaker notes on every slide. They are the 2026-11-07 morning build; a white rebuild with a
-partner-logo row and the approved notice text was made the same day without being asked for and
-reverted at Shane's direction ("do not rebuild the powerpoint templates in white"). Whether the
-template's notice slide should carry the approved wording is Shane's call (shane.md 7). Theme colors are the station palette (Dark 2 Navy, Accent 1 PBS Blue, Accent 6
-Yellow), written by the pptx skill's theme writer (`build/apply_theme.js`). Built by
-`templates/signs/build/build-signs-pptx.js` with pptxgenjs (`build/build.sh`). Print at 100% on
-Letter; Tabloid by Scale to fit paper.
-
-Checked: both files build and QuickLook renders their first slide as designed. Not checked: the pptx
-skill's OOXML validator needs Python 3.10, which this Mac does not have, and PowerPoint's own render
-needs a person at the Mac to grant file access, so the files were not opened in PowerPoint by this
-session (shane.md asks for that one open).
+Arial PowerPoint sign templates were built on 2026-11-07 at another session's request and removed the
+same day: Shane, "having the generator now I don't see a reason to build a separate set of Word or
+PowerPoint templates since they can go here and build it and get what they need." The generator is the
+one way to make a sign; the brand page links it, not a file.
 
 ---
 

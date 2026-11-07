@@ -42,7 +42,9 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    eats its ink; the first release shipped Navy as the default and was corrected the same day. Navy
    stays as the option for a print shop or a sign holder. The PowerPoint sign templates were not part
    of this call and stay as built (Shane: "do not rebuild the powerpoint templates in white").
-10. **Changes beyond the ask are checked with Shane first** (Shane, 2026-11-07, after the template
+10. **No Word or PowerPoint sign templates** (Shane, 2026-11-07): the generator is the one way to make a
+   sign; a template was another session's idea, not his, and was removed.
+11. **Changes beyond the ask are checked with Shane first** (Shane, 2026-11-07, after the template
    rebuild). A request to change one thing is not a request to change its neighbours; propose, then do.
 9. **Partner logos on signs are a flex row** (Shane, 2026-11-07): any number of logo files, each at
    its own shape, in a wrapping row above the station logo that steps its size tiers down as logos are

@@ -24,7 +24,6 @@ https://nashvillepbs.github.io/wnpt-lowerthird/ is a redirect page (branch
 | `endcards/` | End Cards — on-air endpage, slates and support end card at HD and UHD, sibling page, plain JS (BUILD-graphics.md Part A) |
 | `signs/` | Event Signs — printed event signs as 300 dpi PDFs, Letter and Tabloid, sibling page, plain JS (BUILD-graphics.md Part B) |
 | `shared/`, `vendor/` | The capture core the two plain-JS generators share, and the vendored libraries with their hashes |
-| `templates/signs/` | Arial PowerPoint templates for custom event signs, and their build script |
 | `worker/` | Cloudflare Worker, the Airtable proxy |
 | `wrangler.toml`, `.assetsignore` | The static-assets Worker that serves this repo at graphics.wnpt.app |
 | `_ds/`, `assets/`, `fonts/` | Design system, artwork, PBS Sans |

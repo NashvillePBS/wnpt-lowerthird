@@ -18,8 +18,8 @@ Done
   identical verifier numbers; `vendor/` moved to the repo root.
 - `scripts/verify-graphics.py` (was verify-endcards.py): end cards and signs, 22 exports, ALL OK
   (readouts in BUILD-graphics.md §A8 and §B8; samples under `endcards/samples/`, `signs/samples/`).
-- `templates/signs/`: the Arial PowerPoint sign templates, Letter portrait and landscape, with the
-  build script; QuickLook renders the first slide as designed (not opened in PowerPoint: human click).
+- Arial PowerPoint sign templates were built at the design-system session's request and removed the
+  same day at Shane's: the generator is the one way to make a sign.
 - The move (docs/DECISIONS.md 1 to 3), in order: Access application created by wnpt-events
   `access.yml` (run 42398381658: "created graphics.wnpt.app (allow)"); site Worker `wnpt-graphics`
   deployed on the custom domain (version 40d3553a, then 647a1b5e with `.wrangler` ignored); proxy

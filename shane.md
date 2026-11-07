@@ -29,12 +29,8 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    on-air minimum (the template had 29px); the slate rail at 3 pattern columns; the full pattern field
    at 5 rows; PBS KIDS on screen as the paired color digital file (design-system shane.md 5); the sign
    band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
-7. ⬜ **The PowerPoint sign templates:** back to the morning build (Navy) at your direction. Two
-   things only you decide: whether their Photography Notice slide should carry the approved wording
-   (today it holds the flagged draft line), and opening them once in PowerPoint (`templates/signs/*.pptx`, also at
-   https://graphics.wnpt.app/templates/signs/NashvillePBS-EventSigns-Letter-Portrait.pptx): this session could only check them with
-   QuickLook, because PowerPoint's file-access dialog needs a person at the Mac. If PowerPoint offers to
-   repair a file, tell Claude.
+7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
+   at another session's request, not yours.
 8. ⏸ **Outside editors on graphics.wnpt.app:** not added by hand. The brand-page session is building
    the self-service agency tool on brand.wnpt.app that edits Access policies; the studio's policy should
    be the one that tool manages. When it takes over, delete the graphics.wnpt.app entry from wnpt-events
