@@ -49,14 +49,16 @@ Evidence
   clicked through on graphics.wnpt.app (see the commit message of the commit that adds this line).
 
 - Same day, Shane's corrections: signs print on a **white field by default** (the office color
-  printer; Navy stays as the print-shop option), the PowerPoint templates rebuilt on white with the
-  color logo and a dashed partner-logo row, the picker thumbnail redrawn white; **partner logos** added
+  printer; Navy stays as the print-shop option), the picker thumbnail redrawn white; **partner logos** added
   as a wrapping flex row above the station logo with a plain label and three size tiers
   (BUILD-graphics.md §B3, DECISIONS 8 and 9). Verifier: 14 sign cases ALL OK, including three
   mixed-shape logos and seven logos wrapping (readouts in BUILD-graphics.md §B8).
 
 - Shane confirmed the support card's number and link and supplied the station's photography notice
-  wording (2026-11-07); both are in the tool and the PowerPoint template. Live partner-logo check on
+  wording (2026-11-07); both are in the tool. The PowerPoint templates were rebuilt on white with a
+  partner-logo row and the notice text without being asked, and reverted the same hour to the morning
+  build at Shane's direction (DECISIONS 10); whether the notice text goes into the template is his
+  call (shane.md 7). Live partner-logo check on
   graphics.wnpt.app: two logo files uploaded through the page, the row rendered with its label, the PDF
   downloaded and its image carries the row (see the commit message).
 

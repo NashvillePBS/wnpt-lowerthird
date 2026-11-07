@@ -23,13 +23,15 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    defaulted to Navy, which would have eaten the office printer's ink).
 5. ✅ **Copy approved** (you, 2026-11-07): the photography notice now carries the station's wording
    ("Attention" / "This event is being photographed and/or video recorded." / the two paragraphs and
-   "Thank you!") in the tool and in the PowerPoint template, and the support end card's address, number
-   and terms line stand as shipped.
+   "Thank you!") in the tool, and the support end card's address, number and terms line stand as
+   shipped.
 6. ⬜ **Art direction defaults** (silence keeps them): the support card's fine print at the 40px
    on-air minimum (the template had 29px); the slate rail at 3 pattern columns; the full pattern field
    at 5 rows; PBS KIDS on screen as the paired color digital file (design-system shane.md 5); the sign
    band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
-7. ⬜ **Open the PowerPoint sign templates once in PowerPoint** (`templates/signs/*.pptx`, also at
+7. ⬜ **The PowerPoint sign templates:** back to the morning build (Navy) at your direction. Two
+   things only you decide: whether their Photography Notice slide should carry the approved wording
+   (today it holds the flagged draft line), and opening them once in PowerPoint (`templates/signs/*.pptx`, also at
    https://graphics.wnpt.app/templates/signs/NashvillePBS-EventSigns-Letter-Portrait.pptx): this session could only check them with
    QuickLook, because PowerPoint's file-access dialog needs a person at the Mac. If PowerPoint offers to
    repair a file, tell Claude.

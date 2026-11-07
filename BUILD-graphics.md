@@ -375,11 +375,13 @@ ALL OK
 ## B10. The PowerPoint template (custom signs without the tool)
 
 `templates/signs/NashvillePBS-EventSigns-Letter-Portrait.pptx` and `-Landscape.pptx`: Arial
-throughout (the sanctioned stand-in; PBS Sans cannot ship in an Office file), a white field, one
-"Sign" layout with the band, three Navy text placeholders and the color logo, eight sample signs (the
-same eight as the tool, the arrow as a rotatable Navy picture on the two directional ones, a row of
-dashed partner-logo boxes on the Welcome sign), a closing how-to slide, and speaker notes on every
-slide. Theme colors are the station palette (Dark 2 Navy, Accent 1 PBS Blue, Accent 6
+throughout (the sanctioned stand-in; PBS Sans cannot ship in an Office file), one "Sign" layout with
+the band, three text placeholders and the white logo on Navy, eight sample signs (the same eight as the
+tool, the arrow as a rotatable picture on the two directional ones), a closing how-to slide, and
+speaker notes on every slide. They are the 2026-11-07 morning build; a white rebuild with a
+partner-logo row and the approved notice text was made the same day without being asked for and
+reverted at Shane's direction ("do not rebuild the powerpoint templates in white"). Whether the
+template's notice slide should carry the approved wording is Shane's call (shane.md 7). Theme colors are the station palette (Dark 2 Navy, Accent 1 PBS Blue, Accent 6
 Yellow), written by the pptx skill's theme writer (`build/apply_theme.js`). Built by
 `templates/signs/build/build-signs-pptx.js` with pptxgenjs (`build/build.sh`). Print at 100% on
 Letter; Tabloid by Scale to fit paper.
