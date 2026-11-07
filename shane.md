@@ -8,14 +8,9 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    origin, the hub's Graphics tile points there, and the old GitHub Pages address is a redirect page.
    Verified from outside (302 to the Access login) and from your signed-in Chrome (picker, Series picker
    listing series, an end card downloaded at 1920×1080, a sign PDF downloaded at Letter 300 dpi).
-2. ⬜ **Optional, one click: make the repository private.** GitHub → NashvillePBS/wnpt-lowerthird →
-   Settings → General → Danger Zone → Change visibility → Private. It takes the PBS Sans files off
-   github.com (the Pages site no longer serves them, the repository still does). The redirect page at the
-   old address stops working then, since Pages needs a public repository on the org's plan; by that time
-   the hub, the brand page and bookmarks point at graphics.wnpt.app anyway.
-3. ⬜ **Rename the hostname if you want to** (it is a default): change `graphics.wnpt.app` in
-   `wrangler.toml`, in wnpt-events `scripts/setup-access.mjs`, in wnpt-hub `src/apps.ts` and on the
-   `gh-pages` branch's redirect page, and tell Claude to redeploy the four.
+2. ✅ **Repository stays public, PBS Sans stays where it is** (you, 2026-11-07: "I own it"). Standing
+   decision; not raised again.
+3. ✅ **Hostname stays graphics.wnpt.app** (you, 2026-11-07): it is the studio's own address.
 4. ✅ **The picker links both generators** (your call, 2026-11-07: "two cards on the studio page",
    one for End Cards and one for Event Signs, each page keeping its own internal picker of four styles
    and eight signs). ✅ Partner logos: built as a wrapping flex row above the station logo (your call
@@ -25,10 +20,11 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    ("Attention" / "This event is being photographed and/or video recorded." / the two paragraphs and
    "Thank you!") in the tool, and the support end card's address, number and terms line stand as
    shipped.
-6. ⬜ **Art direction defaults** (silence keeps them): the support card's fine print at the 40px
-   on-air minimum (the template had 29px); the slate rail at 3 pattern columns; the full pattern field
-   at 5 rows; PBS KIDS on screen as the paired color digital file (design-system shane.md 5); the sign
-   band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
+6. ⬜ **Pick from the rendered options** (you asked for options, 2026-11-07; renders in `docs/options/`):
+   slate rail columns 2/3/4, announcement-slate pattern rows 4/5/6, the PBS KIDS pairing (color,
+   reverse, stacked), and the signs' band thickness, color and Navy option. Current defaults stay until
+   you pick: rail 3, rows 5, KIDS color pair, band Standard in Yellow. The support card's fine print
+   stays at 40px (settled: everything on a broadcast end card sits inside the title-safe area).
 7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
    at another session's request, not yours.
 8. ✅ **Short.io key rotated and set under the right name** (you, 2026-11-07): the exposed first key
@@ -43,7 +39,8 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    wnpt.tv/support, the PBS app block to wnpt.tv/wnptpbs-app (your landing page that picks the store and
    can carry the Nashville PBS app later), the PBS KIDS block to wnpt.tv/pbskidsapps. For launch day the
    Nashville PBS app needs its flag flipped (`CONFIG.apps.station.enabled`) and a link or file in
-   `CONFIG.tracked.apps.station`; say the word.
+   `CONFIG.tracked.apps.station`. It stays hidden until you say it has launched (your words: "Stay
+   hidden, don't ask again").
 10. ✅ **Wording and addresses settled** (you, 2026-11-07): GET THE FREE PBS APP with the fine print;
    GET THE FREE PBS KIDS APP without it; the support end card stays on wnpt.org/support (tracked from
    air); the signs use wnpt.org/donate.

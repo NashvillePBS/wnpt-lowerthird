@@ -63,7 +63,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 <script src="../vendor/html-to-image.js?v=20261107c"></script>
 <script src="../vendor/qrcode.js?v=20261107c"></script>
 <script src="../shared/studio-core.js?v=20261107d"></script>
-<script src="signs.js?v=20261107f"></script>
+<script src="signs.js?v=20261107g"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -90,6 +90,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
         <div class="ec-field"><label>Orientation</label><div id="ec-orient" class="ec-seg"></div></div>
         <div class="ec-field"><label>Field</label><div id="ec-colorway" class="ec-seg"></div></div>
         <div class="ec-field"><label>Accent (one per sign)</label><div id="ec-accents" class="ec-swatches"></div></div>
+        <div class="ec-field"><label>Band thickness</label><div id="ec-band" class="ec-seg"></div></div>
       </section>
 
       <section style="padding:14px 22px 22px;display:flex;flex-direction:column;gap:10px">
@@ -107,7 +108,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
           <li>Pick a sign and fill in the lines. The preview is exactly what prints.</li>
           <li>Letter fits an 8.5 × 11 sign holder; Tabloid is 11 × 17 for easels and doors. Switch orientation for wide spaces.</li>
           <li>Everything readable stays inside the dashed 0.5 in print margin; the headline shrinks only when a single word is too wide, and the tool tells you when to shorten the copy.</li>
-          <li>Signs are white so the office color printer can run them quickly: Navy type, the color logo and one thin accent band. Navy is there for a print shop or a sign holder; it covers the page in ink and office printers leave a thin white edge on it.</li>
+          <li>Signs are white with a clear border all round, because office printers leave an unprinted edge and cannot print to the paper's edge: the accent band, and the Navy panel on the print-shop option, sit inside that border. Pick the band's color and thickness; Navy covers a lot of the page in ink.</li>
           <li>Partner logos: add the files under Partner logos and they line up above the station logo, each at its own shape; add more and the row wraps and the logos shrink. Keep the label plain: "Supported by".</li>
           <li>QR codes: the Donate and Our Apps signs carry the station's fixed, tracked codes, so every scan counts in Google Analytics. The custom sign makes a new wnpt.tv short link for whatever address you give it.</li>
           <li>The PDF is one page at the exact paper size, 300 dpi, no bleed or crop marks: print at 100% scale, never "fit to page".</li>
@@ -133,7 +134,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
   const $ = (sel) => document.querySelector(sel);
 
   let state = load() || fresh('welcome');
-  function fresh(sign) { const d = S.defaultState(sign); return { sign: d.sign, colorway: d.colorway, accent: d.accent, size: d.size, orientation: d.orientation, fieldsBySign: { [d.sign]: d.fields } }; }
+  function fresh(sign) { const d = S.defaultState(sign); return { sign: d.sign, colorway: d.colorway, accent: d.accent, band: d.band, size: d.size, orientation: d.orientation, fieldsBySign: { [d.sign]: d.fields } }; }
   function load() {
     try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && S.SIGNS[s.sign] && s.fieldsBySign) return s; } catch (e) { /* no storage */ }
     return null;
@@ -149,7 +150,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     if (!state.fieldsBySign[state.sign]) state.fieldsBySign[state.sign] = Object.assign({}, S.SIGNS[state.sign].defaults);
     return state.fieldsBySign[state.sign];
   }
-  function renderState() { return { sign: state.sign, colorway: state.colorway, accent: state.accent, size: state.size, orientation: state.orientation, fields: fields() }; }
+  function renderState() { return { sign: state.sign, colorway: state.colorway, accent: state.accent, band: state.band || 'standard', size: state.size, orientation: state.orientation, fields: fields() }; }
 
   function seg(host, options, current, onPick) {
     host.innerHTML = '';
@@ -290,6 +291,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     seg($('#ec-size'), Object.entries(S.SIZES).map(([k, v]) => [k, v.label + ' · ' + v.detail]), state.size, k => { state.size = k; });
     seg($('#ec-orient'), [['portrait', 'Portrait'], ['landscape', 'Landscape']], state.orientation, k => { state.orientation = k; });
     seg($('#ec-colorway'), [['white', 'White (office printer)'], ['navy', 'Navy (print shop)']], state.colorway, k => { state.colorway = k; });
+    seg($('#ec-band'), [['thin', 'Thin'], ['standard', 'Standard'], ['thick', 'Thick']], state.band || 'standard', k => { state.band = k; });
     const acc = $('#ec-accents'); acc.innerHTML = '';
     Object.entries(S.ACCENTS).forEach(([key, hex]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-swatch'; b.title = key[0].toUpperCase() + key.slice(1);

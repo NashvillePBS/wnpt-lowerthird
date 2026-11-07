@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>End Cards options renderer</title>
+<style>
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal}
+body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
+</style>
+<script src="../vendor/html-to-image.js"></script>
+<script src="../vendor/qrcode.js"></script>
+<script src="../shared/studio-core.js"></script>
+<script src="endcards.js"></script>
+</head><body>
+<!-- Headless harness (scripts/render-options.py): renders the alternatives Shane compares (slate rail columns,
+     pattern rows, PBS KIDS treatments) through the real export, each twice (full and readable-hidden) so the
+     title-safe check can read the ink. Same protocol as selftest.html. Not linked from the tool. -->
+<pre id="out"></pre>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const only = q.get('style');
+  const base = JSON.parse(JSON.stringify(EndCards.CONFIG));
+  const K = base.channels.kids;
+  const CASES = {
+    'rail-2-columns':   { style: 'slate', cfg: { railColumns: 2 } },
+    'rail-3-columns':   { style: 'slate', cfg: { railColumns: 3 } },
+    'rail-4-columns':   { style: 'slate', cfg: { railColumns: 4 } },
+    'rows-4':           { style: 'slate-caps', cfg: { fieldRows: 4 } },
+    'rows-5':           { style: 'slate-caps', cfg: { fieldRows: 5 } },
+    'rows-6':           { style: 'slate-caps', cfg: { fieldRows: 6 } },
+    'kids-color-pair':  { style: 'endpage', channel: 'kids', fields: { strand: 'ALL NEW', title: 'Wild Kratts', tunein: 'WEEKDAYS 4PM' }, kids: { file: 'PBSKids_NashvillePBS_Horizontal_Digital_OnDark.svg', shield: K.shield } },
+    'kids-reverse-pair':{ style: 'endpage', channel: 'kids', fields: { strand: 'ALL NEW', title: 'Wild Kratts', tunein: 'WEEKDAYS 4PM' }, kids: { file: 'PBSKids_NashvillePBS_Horizontal_Digital_OnDark_Reverse.svg', shield: K.shield } },
+    'kids-stacked-pair':{ style: 'endpage', channel: 'kids', fields: { strand: 'ALL NEW', title: 'Wild Kratts', tunein: 'WEEKDAYS 4PM' }, kids: { file: 'PBSKids_NashvillePBS_Stacked_Digital_OnDark.svg', shield: 0.2 } }
+  };
+  if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
+  const out = { fontsOk: false, results: {} };
+  try {
+    await document.fonts.load('800 112px "PBS Sans"');
+    out.fontsOk = document.fonts.check('800 112px "PBS Sans"');
+    for (const [name, c] of Object.entries(CASES)) {
+      if (only && only !== name) continue;
+      Object.assign(EndCards.CONFIG, JSON.parse(JSON.stringify(base)));
+      EndCards.CONFIG.channels = JSON.parse(JSON.stringify(base.channels));
+      Object.assign(EndCards.CONFIG, c.cfg || {});
+      if (c.kids) EndCards.CONFIG.channels.kids = Object.assign({}, base.channels.kids, c.kids);
+      const state = EndCards.defaultState(c.style);
+      if (c.channel) state.channel = c.channel;
+      Object.assign(state.fields, c.fields || {});
+      const full = await EndCards.exportPng(state, 1);
+      const bg = await EndCards.exportPng(state, 1, { hideReadable: true });
+      out.results[name] = { x1: full.url, x1_bg: bg.url, x1_warnings: full.warnings, x1_sizes: full.sizes };
+    }
+  } catch (e) { out.error = String(e && e.stack || e); }
+  document.getElementById('out').textContent = JSON.stringify(out);
+  document.title = 'DONE';
+})();
+</script>
+</body></html>

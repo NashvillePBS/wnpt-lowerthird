@@ -29,7 +29,14 @@
     logoWhite: 'NashvillePBS_Logo_Horizontal_White.svg',
     logoColor: 'NashvillePBS_Logo_Horizontal_Color.svg',
     band: 28,                 // the full-width accent band at the top (a fill, never type)
-    padX: 64, padTop: 64, padBottom: 56,
+    // Printer-safe frame (Shane, 2026-11-07: staff print on ordinary office printers, which leave an unprinted
+    // white edge and cannot bleed): NOTHING reaches the paper edge. The accent band and, on the Navy option, the
+    // Navy panel sit inside a white border of `frame` px (0.58 in, absolute: the printer's margin does not grow
+    // with the paper). Everything readable stays inside the 0.5 in check (MARGIN) as before.
+    frame: 56,
+    bands: { thin: 10, standard: 28, thick: 56 }, // band thickness at Letter; the default is standard
+    panelRadius: 12, panelPad: 44,                // Navy panel corner radius and inner side padding (Letter px)
+    padTop: 64, padBottom: 56,
     headline: 132, subline: 40, body: 26, floor: 56,  // floor: the headline never shrinks below (42 pt at Letter)
     logo: 40,                 // the station shield's height (print minimum 0.2 in = 19 px)
     arrow: { portrait: 260, landscape: 300 },
@@ -43,7 +50,7 @@
     qr: { size: 192, dark: '#0A145A', level: 'M', caption: 22 },
     // The donate sign (Shane, 2026-11-07): "Donate at least $5 per month or $60 per year and enjoy Nashville PBS
     // Passport", with the amounts as fields because the Passport price may change; wnpt.org/donate, not /support.
-    donate: { sentence: 'Donate at least ${monthly} per month or ${yearly} per year and enjoy Nashville PBS Passport', url: 'wnpt.org/donate', passportFile: 'Passport_Horizontal_Color.svg', passportH: 54 },
+    donate: { sentence: 'Donate at least ${monthly} per month or ${yearly} per year and enjoy Nashville PBS Passport', url: 'wnpt.org/donate', passportFile: 'Passport_Horizontal_Color.svg', passportFileNavy: 'Passport_Horizontal_White.svg', passportH: 54 },
     // Locked QR targets (Shane, 2026-11-07): the donate and app signs always encode these tracked wnpt.tv
     // links, so every scan shows up in Google Analytics and nobody prints an untracked variant. Shane
     // supplies them (shane.md); until a link is set, the donate QR falls back to the printed address and an
@@ -68,9 +75,9 @@
     // `enabled: false` hides it from the page and the sign; flip it to true, set its tracked link, done.
     // Logo heights put the three marks at a similar visual weight.
     apps: {
-      pbs:     { label: 'PBS app',           enabled: true,  file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP', finePrint: true },
-      station: { label: 'Nashville PBS app', enabled: false, file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP', finePrint: false },
-      kids:    { label: 'PBS KIDS app',      enabled: true,  file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS APP', finePrint: false }
+      pbs:     { label: 'PBS app',           enabled: true,  file: 'PBS_Logo_Color_RGB.svg', fileNavy: 'PBS_Logo_White_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP', finePrint: true },
+      station: { label: 'Nashville PBS app', enabled: false, file: 'NashvillePBS_Logo_Horizontal_Color.svg', fileNavy: 'NashvillePBS_Logo_Horizontal_White.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP', finePrint: false },
+      kids:    { label: 'PBS KIDS app',      enabled: true,  file: 'PBS_KIDS_Color_RGB_Digital.svg', fileNavy: 'PBS_KIDS_Reverse_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS APP', finePrint: false }
     },
     // The PBS app's fine print (the PBS App Marketing Guide's "free" claim). Shane, 2026-11-07: the line is
     // for the PBS app only, so `finePrint` on the app decides, not the word FREE.
@@ -201,7 +208,7 @@
     s1.className = 'ec-readable'; s1.dataset.fitwrap = '1'; s1.dataset.base = r(CONFIG.subline * k); s1.dataset.floor = r(24 * k);
     text.appendChild(s1);
     const pp = document.createElement('img');
-    pp.src = CONFIG.assets + CONFIG.donate.passportFile; pp.alt = 'Nashville PBS Passport';
+    pp.src = CONFIG.assets + (navy ? CONFIG.donate.passportFileNavy : CONFIG.donate.passportFile); pp.alt = 'Nashville PBS Passport';
     pp.style.cssText = 'display:block;height:' + r(CONFIG.donate.passportH * k) + 'px;width:auto;margin-top:' + r(26 * k) + 'px;align-self:flex-start';
     pp.className = 'ec-readable';
     text.appendChild(pp);
@@ -247,7 +254,7 @@
         const block = SC.el('div', 'display:flex;flex-direction:row;align-items:center;gap:' + r(A.gap * k) + 'px;flex:none');
         const col = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(12 * k) + 'px;width:' + colW + 'px;flex:none');
         const logo = document.createElement('img');
-        logo.src = CONFIG.assets + a.file; logo.alt = a.label;
+        logo.src = CONFIG.assets + ((navy && a.fileNavy) || a.file); logo.alt = a.label;
         logo.style.cssText = 'display:block;max-height:' + r(a.logoH * k) + 'px;max-width:100%;width:auto;height:auto;object-fit:contain';
         logo.className = 'ec-readable';
         col.appendChild(logo);
@@ -284,7 +291,7 @@
 
   function defaultState(sign) {
     const sg = SIGNS[sign] || SIGNS.welcome;
-    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
+    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', band: 'standard', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
   }
 
   // The sign's DOM at 96 dpi. opts.hideReadable hides text, arrow and logo but keeps the layout (self-test).
@@ -295,11 +302,17 @@
     const navy = (state.colorway || 'white') === 'navy';
     const accent = ACCENTS[state.accent] || ACCENTS.yellow;
     const fg = navy ? '#fff' : C.navy;
-    const stage = SC.el('div', 'position:relative;width:' + d.W + 'px;height:' + d.H + 'px;overflow:hidden;background:' + (navy ? C.navy : '#fff') + ';font-family:' + FONT + ';color:' + fg + ';box-sizing:border-box');
+    const stage = SC.el('div', 'position:relative;width:' + d.W + 'px;height:' + d.H + 'px;overflow:hidden;background:#fff;font-family:' + FONT + ';color:' + fg + ';box-sizing:border-box');
     stage.className = 'ec-stage';
-    const band = r(CONFIG.band * k);
-    stage.appendChild(SC.el('div', 'position:absolute;left:0;top:0;width:100%;height:' + band + 'px;background:' + accent));
-    const box = SC.el('div', 'position:absolute;left:' + r(CONFIG.padX * k) + 'px;right:' + r(CONFIG.padX * k) + 'px;top:' + (band + r(CONFIG.padTop * k)) + 'px;bottom:' + r(CONFIG.padBottom * k) + 'px;display:flex;flex-direction:column');
+    // The frame: inset from every paper edge. White field: a bare area, the band its top edge. Navy field: a
+    // Navy panel with quiet corners (a content block, not a full-bleed band, so the radius is allowed).
+    const F = CONFIG.frame;
+    const frame = SC.el('div', 'position:absolute;left:' + F + 'px;right:' + F + 'px;top:' + F + 'px;bottom:' + F + 'px;overflow:hidden;' + (navy ? 'background:' + C.navy + ';border-radius:' + CONFIG.panelRadius + 'px' : ''));
+    stage.appendChild(frame);
+    const band = r((CONFIG.bands[state.band] || CONFIG.bands.standard) * k);
+    frame.appendChild(SC.el('div', 'position:absolute;left:0;top:0;width:100%;height:' + band + 'px;background:' + accent));
+    const side = navy ? r(CONFIG.panelPad * k) : 0;
+    const box = SC.el('div', 'position:absolute;left:' + side + 'px;right:' + side + 'px;top:' + (band + r(CONFIG.padTop * k)) + 'px;bottom:' + (navy ? r(CONFIG.panelPad * k) : 0) + 'px;display:flex;flex-direction:column');
     const content = SC.el('div', 'flex:1;min-height:0;display:flex;' + (d.land ? 'flex-direction:row;align-items:center;gap:' + r(56 * k) + 'px' : 'flex-direction:column;justify-content:center;gap:' + r(40 * k) + 'px'));
     content.dataset.box = 'copy';
     const text = SC.el('div', 'display:flex;flex-direction:column;min-width:0;' + (d.land ? 'flex:1' : ''));
@@ -364,7 +377,7 @@
     logo.style.cssText = 'display:block;height:' + r(CONFIG.logo * k) + 'px;width:auto;margin-top:' + r(32 * k) + 'px;align-self:flex-start;flex:none';
     logo.className = 'ec-readable';
     box.appendChild(logo);
-    stage.appendChild(box);
+    frame.appendChild(box);
     if (opts && opts.hideReadable) stage.querySelectorAll('.ec-readable').forEach(e => { e.style.visibility = 'hidden'; });
     return stage;
   }

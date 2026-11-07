@@ -134,9 +134,16 @@ def check_signs(samples, keep):
         size_ok = full.size == want_px and bg.size == want_px
         bbox = ink_bbox(full, bg)
         margin = (150, 150, full.size[0] - 150, full.size[1] - 150)
+        # Printer-safe border (Shane, 2026-11-07: office printers cannot print to the paper's edge): no printed
+        # pixel of any kind, band and Navy panel included, within 0.58 in (175 px at 300 dpi) of an edge.
+        printed = ImageChops.invert(full.convert('L')).point(lambda v: 255 if v > 12 else 0).getbbox()
+        frame = (174, 174, full.size[0] - 174, full.size[1] - 174)
+        frame_ok = inside(printed, frame)
         min_pt = min([s['pt'] for s in r['sizes']], default=None)
         warnings = r['warnings']
-        row_ok = page_ok and size_ok and inside(bbox, margin) and not warnings
+        row_ok = page_ok and size_ok and inside(bbox, margin) and frame_ok and not warnings
+        if not frame_ok:
+            warnings = warnings + ['A printed pixel reaches the paper edge zone: printed bbox %s' % (printed,)]
         ok = ok and row_ok
         rows.append((name, '%gx%g pt, %dx%d px' % (page[0], page[1], full.size[0], full.size[1]), bbox, margin, min_pt, 'ok' if row_ok else 'FAIL', warnings))
         if keep:
@@ -146,6 +153,7 @@ def check_signs(samples, keep):
         if samples:
             dd = os.path.join(ROOT, 'signs', 'samples'); os.makedirs(dd, exist_ok=True)
             full.resize((full.size[0] // 4, full.size[1] // 4), Image.LANCZOS).save(os.path.join(dd, name + '.png'), optimize=True)
+    print('(every row also requires the whole printed area, band and panel included, inside 0.58 in of the edges)')
     print('%-32s %-26s %-28s %-26s %-7s %s' % ('sign', 'page, image', 'ink bbox (l,t,r,b)', '0.5 in margin', 'min pt', 'result'))
     for name, sz, bbox, margin, min_pt, res, warnings in rows:
         print('%-32s %-26s %-28s %-26s %-7s %s' % (name, sz, bbox, margin, min_pt, res))

@@ -67,6 +67,17 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
 14. **The support end card stays on wnpt.org/support** (Shane, 2026-11-07: "I'm tracking those from
    air"); the signs use wnpt.org/donate.
 
+15. **Signs never depend on the paper's edge** (Shane, 2026-11-07: staff print on ordinary office printers
+   that leave an unprinted margin and cannot bleed). A white border of 0.58 in (`CONFIG.frame`) surrounds
+   everything; the accent band, and the Navy option as a panel with 12 px corners, sit inside it. Band
+   color (Yellow, Teal, Coral) and thickness (Thin 10, Standard 28, Thick 56 px at Letter) are options.
+   `scripts/verify-graphics.py` fails any sign with a printed pixel inside 0.58 in of an edge. On the Navy
+   option the apps' white logo versions and the white Passport lockup are used.
+16. **Everything readable on a broadcast end card sits inside title-safe** (Shane, 2026-11-07), fine print
+   included (it stays at the 40 px minimum). The verifier checks every end card and every option.
+17. **PBS Sans stays public with the repository** (Shane, 2026-11-07: he owns the license). Not raised again.
+   Answered items in shane.md are not re-asked.
+
 ## External contracts
 
 - `endcards/` and `signs/` are linked by path from the studio's picker and from brand.wnpt.app; the

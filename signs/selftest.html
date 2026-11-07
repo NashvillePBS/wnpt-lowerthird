@@ -27,7 +27,15 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
   ];
   const CASES = {
     'welcome-letter-portrait':         { sign: 'welcome', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-teal-letter-portrait':    { sign: 'welcome', accent: 'teal', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-coral-letter-portrait':   { sign: 'welcome', accent: 'coral', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-navy-letter-portrait':    { sign: 'welcome', colorway: 'navy', fields: { subline: 'Community Screening and Conversation' } },
+    'donate-navy-letter-portrait':     { sign: 'donate', colorway: 'navy' },
     'welcome-navy-letter-landscape':   { sign: 'welcome', colorway: 'navy', orientation: 'landscape', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-thin-letter-portrait':    { sign: 'welcome', band: 'thin', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-thick-teal-letter-portrait': { sign: 'welcome', band: 'thick', accent: 'teal', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-navy-thick-letter-portrait': { sign: 'welcome', colorway: 'navy', band: 'thick', accent: 'coral', fields: { subline: 'Community Screening and Conversation' } },
+    'apps-navy-letter-portrait':       { sign: 'apps', colorway: 'navy' },
     'directional-letter-portrait':     { sign: 'directional' },
     'directional-letter-landscape':    { sign: 'directional', orientation: 'landscape', fields: { headline: 'Auditorium', arrow: 'up-right' } },
     'directional-tabloid-portrait':    { sign: 'directional', size: 'tabloid', fields: { headline: 'Registration', arrow: 'left' } },
@@ -43,6 +51,7 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
     'donate-letter-portrait':          { sign: 'donate' },
     'donate-letter-landscape':         { sign: 'donate', orientation: 'landscape', tracked: { donate: 'https://wnpt.tv/donate-sign' } },
     'apps-letter-portrait':            { sign: 'apps', tracked: { apps: { station: 'https://wnpt.tv/wnptpbs-app' } }, fields: { apps: { pbs: true, station: true, kids: true } }, enableStation: true },
+    'apps-default-letter-portrait':    { sign: 'apps' },
     'apps-two-tabloid-landscape':      { sign: 'apps', size: 'tabloid', orientation: 'landscape', fields: { apps: { pbs: true, station: false, kids: true } } },
     'apps-kids-only-letter-portrait':  { sign: 'apps', fields: { apps: { pbs: false, station: false, kids: true } } },
     'custom-qr-letter-portrait':       { sign: 'custom', fields: { headline: 'Tonight\'s Program', subline: 'Scan for the program notes', url: 'wnpt.org/events', shortURL: 'https://wnpt.tv/notes' } },
@@ -66,6 +75,7 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
       if (c.tracked && c.tracked.apps) Object.keys(c.tracked.apps).forEach(k => { EventSigns.CONFIG.tracked.apps[k] = { url: c.tracked.apps[k], file: '' }; });
       if (c.colorway) state.colorway = c.colorway;
       if (c.accent) state.accent = c.accent;
+      if (c.band) state.band = c.band;
       if (c.size) state.size = c.size;
       if (c.orientation) state.orientation = c.orientation;
       Object.assign(state.fields, c.fields || {});

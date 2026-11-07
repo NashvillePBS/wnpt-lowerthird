@@ -286,8 +286,9 @@ layout scaled by 11/8.5 with the extra height given to the copy. Values at Lette
 
 | Element | Value |
 |---|---|
-| Accent band | full width, 28px (0.29 in) at the top: a fill, never type (one accent per sign) |
-| Text block | 64px (0.67 in) from the sides, 64px below the band, 56px above the bottom; vertically centred between band and logo; left-aligned, never justified |
+| Printer-safe frame | a white border of 56px (0.58 in) on every side, absolute on both papers: **nothing, band and Navy panel included, reaches the paper edge** (Shane, 2026-11-07: office printers leave an unprinted edge and cannot bleed) |
+| Accent band | inside the frame, full frame width, a fill never type: Thin 10px, Standard 28px (default), Thick 56px; Yellow (default), Teal or Coral (one accent per sign). On the Navy option it is the top of a Navy panel with 12px corners |
+| Text block | on white aligned with the band's left edge (frame), inside the Navy panel 44px in; 64px below the band, at the frame's bottom; vertically centred between band and logo; left-aligned, never justified |
 | Headline | 132px (99pt at Letter) PBS Sans Black, −.02em, line-height 1.02; wraps; shrinks only when a single word is wider than the column, to a floor of 56px (42pt) |
 | Second line | 40px (30pt) Medium |
 | Small text | 26px (19.5pt) Regular, line-height 1.45, 560px wide at most |
@@ -449,3 +450,14 @@ evidence in `PROGRESS.md`. Live since 2026-11-07 17:53 UTC; the old address redi
   same generator), so the Pages site no longer serves the tool or the PBS Sans files. The repo itself
   stays public until Shane makes it private, the one click that takes the font files off github.com
   too; Pages cannot then serve the redirect on the org's plan, which is why it is his call.
+
+---
+
+# Part E. Options Shane compares (docs/options/)
+
+Rendered by `python3 scripts/render-options.py` through the real export, with the checks in
+`docs/options/REPORT.md`: slate rail columns 2, 3 (default) and 4; announcement-slate pattern rows 4,
+5 (default) and 6; PBS KIDS color pair (default), reverse pair and stacked; sign band thickness, band
+color, the Navy panel option, and a printer view shading the 0.25 in strip an office printer cannot
+print. Every end-card option's ink sits inside title-safe (192,108)-(1728,972); every sign has no printed
+pixel inside 0.58 in of an edge.
