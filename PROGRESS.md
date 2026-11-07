@@ -80,8 +80,9 @@ Next
    (shane.md 9).
 2. Done 2026-11-07: with the key under the right name, the custom sign made `wnpt.tv/graphics-test`
    from Shane's Chrome through `POST /api/shortlink`; from outside the link answers 200 with a
-   meta-refresh to https://wnpt.org/ (the domain's Short.io setting). The mis-named secret from the
-   first attempt is still listed and is Shane's to delete (shane.md 8).
+   meta-refresh to https://wnpt.org/ (the domain's Short.io setting). Shane then rotated the key and
+   deleted the mis-named secret; `wnpt.tv/graphics-test-2` was made with the new key and answers the
+   same way (shane.md 8 closed).
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).
