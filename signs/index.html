@@ -60,9 +60,9 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
   #ec-main{position:static;height:auto;min-height:0;padding:24px 16px}
 }
 </style>
-<script src="../vendor/html-to-image.js"></script>
-<script src="../shared/studio-core.js"></script>
-<script src="signs.js"></script>
+<script src="../vendor/html-to-image.js?v=20261107b"></script>
+<script src="../shared/studio-core.js?v=20261107b"></script>
+<script src="signs.js?v=20261107b"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -106,7 +106,8 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
           <li>Pick a sign and fill in the lines. The preview is exactly what prints.</li>
           <li>Letter fits an 8.5 × 11 sign holder; Tabloid is 11 × 17 for easels and doors. Switch orientation for wide spaces.</li>
           <li>Everything readable stays inside the dashed 0.5 in print margin; the headline shrinks only when a single word is too wide, and the tool tells you when to shorten the copy.</li>
-          <li>Navy signs print the station's dark field edge to edge (office printers leave a thin white edge; sign holders hide it). White signs save toner.</li>
+          <li>Signs are white so the office color printer can run them quickly: Navy type, the color logo and one thin accent band. Navy is there for a print shop or a sign holder; it covers the page in ink and office printers leave a thin white edge on it.</li>
+          <li>Partner logos: add the files under Partner logos and they line up above the station logo, each at its own shape; add more and the row wraps and the logos shrink. Keep the label plain: "Supported by".</li>
           <li>The PDF is one page at the exact paper size, 300 dpi, no bleed or crop marks: print at 100% scale, never "fit to page".</li>
           <li>Your last sign is remembered in this browser.</li>
         </ol>
@@ -126,7 +127,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 (function () {
   'use strict';
   const S = window.EventSigns;
-  const KEY = 'es_state_v1';
+  const KEY = 'es_state_v2'; // v2: the field defaults to white (2026-11-07); v1 states carried Navy
   const $ = (sel) => document.querySelector(sel);
 
   let state = load() || fresh('welcome');
@@ -135,7 +136,13 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && S.SIGNS[s.sign] && s.fieldsBySign) return s; } catch (e) { /* no storage */ }
     return null;
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function save() {
+    try {
+      const copy = JSON.parse(JSON.stringify(state));
+      Object.values(copy.fieldsBySign).forEach(f => { f.partners = []; }); // logo files are too big for storage; re-add after a reload
+      localStorage.setItem(KEY, JSON.stringify(copy));
+    } catch (e) { /* ignore */ }
+  }
   function fields() {
     if (!state.fieldsBySign[state.sign]) state.fieldsBySign[state.sign] = Object.assign({}, S.SIGNS[state.sign].defaults);
     return state.fieldsBySign[state.sign];
@@ -169,7 +176,30 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
       const id = 'es-f-' + spec.key;
       const label = document.createElement('label'); label.htmlFor = id; label.textContent = spec.label; wrap.appendChild(label);
       let input;
-      if (spec.type === 'select') {
+      if (spec.type === 'images') {
+        const list = Array.isArray(f[spec.key]) ? f[spec.key] : (f[spec.key] = []);
+        const rows = document.createElement('div'); rows.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+        list.forEach((pl, i) => {
+          const row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid #e4e7f1;border-radius:8px;background:#f6f7fb';
+          const th = document.createElement('img'); th.src = pl.src; th.alt = ''; th.style.cssText = 'height:28px;width:auto;max-width:90px;object-fit:contain;display:block;background:#fff;padding:2px;border-radius:4px';
+          const nm = document.createElement('div'); nm.className = 'ec-hint'; nm.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; nm.textContent = pl.name || ('Logo ' + (i + 1));
+          const rm = document.createElement('button'); rm.type = 'button'; rm.className = 'ec-btn secondary'; rm.style.cssText = 'width:auto;padding:5px 10px;font-size:12px'; rm.textContent = 'Remove';
+          rm.addEventListener('click', () => { list.splice(i, 1); buildFields(); schedule(); });
+          row.appendChild(th); row.appendChild(nm); row.appendChild(rm); rows.appendChild(row);
+        });
+        wrap.appendChild(rows);
+        input = document.createElement('input'); input.type = 'file'; input.multiple = true; input.accept = 'image/png,image/jpeg,image/svg+xml'; input.className = 'ec-hint'; input.style.marginTop = '6px';
+        input.addEventListener('change', () => {
+          const files = Array.from(input.files || []); if (!files.length) return;
+          let pending = files.length;
+          files.forEach(file => {
+            const rd = new FileReader();
+            rd.onload = () => { list.push({ name: file.name, src: String(rd.result) }); if (--pending === 0) { buildFields(); schedule(); } };
+            rd.onerror = () => { if (--pending === 0) { buildFields(); schedule(); } };
+            rd.readAsDataURL(file);
+          });
+        });
+      } else if (spec.type === 'select') {
         input = document.createElement('select'); input.className = 'ec-input';
         Object.entries(spec.options).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = (f[spec.key] || 'none') === v; input.appendChild(o); });
         input.addEventListener('change', () => { f[spec.key] = input.value; schedule(); });
@@ -187,7 +217,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
   function buildLook() {
     seg($('#ec-size'), Object.entries(S.SIZES).map(([k, v]) => [k, v.label + ' · ' + v.detail]), state.size, k => { state.size = k; });
     seg($('#ec-orient'), [['portrait', 'Portrait'], ['landscape', 'Landscape']], state.orientation, k => { state.orientation = k; });
-    seg($('#ec-colorway'), [['navy', 'Navy'], ['white', 'White']], state.colorway, k => { state.colorway = k; });
+    seg($('#ec-colorway'), [['white', 'White (office printer)'], ['navy', 'Navy (print shop)']], state.colorway, k => { state.colorway = k; });
     const acc = $('#ec-accents'); acc.innerHTML = '';
     Object.entries(S.ACCENTS).forEach(([key, hex]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-swatch'; b.title = key[0].toUpperCase() + key.slice(1);

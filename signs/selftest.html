@@ -18,9 +18,15 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
 (async () => {
   const q = new URLSearchParams(location.search);
   const only = q.get('style');
+  const LOGO = (w, h, fill, text) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '"><rect width="' + w + '" height="' + h + '" rx="' + Math.min(w, h) / 8 + '" fill="' + fill + '"/><text x="50%" y="55%" font-family="Arial" font-size="' + Math.min(w, h) / 3 + '" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="middle">' + text + '</text></svg>');
+  const LOGOS = [
+    { name: 'wide.svg', src: LOGO(320, 90, '#5C6E85', 'WIDE PARTNER') },
+    { name: 'square.svg', src: LOGO(120, 120, '#2638C4', 'SQ') },
+    { name: 'tall.svg', src: LOGO(80, 160, '#0A145A', 'T') }
+  ];
   const CASES = {
     'welcome-letter-portrait':         { sign: 'welcome', fields: { subline: 'Community Screening and Conversation' } },
-    'welcome-white-letter-landscape':  { sign: 'welcome', colorway: 'white', orientation: 'landscape', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-navy-letter-landscape':   { sign: 'welcome', colorway: 'navy', orientation: 'landscape', fields: { subline: 'Community Screening and Conversation' } },
     'directional-letter-portrait':     { sign: 'directional' },
     'directional-letter-landscape':    { sign: 'directional', orientation: 'landscape', fields: { headline: 'Auditorium', arrow: 'up-right' } },
     'directional-tabloid-portrait':    { sign: 'directional', size: 'tabloid', fields: { headline: 'Registration', arrow: 'left' } },
@@ -30,7 +36,9 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
     'restrooms-letter-portrait':       { sign: 'restrooms' },
     'quiet-letter-portrait':           { sign: 'quiet' },
     'photo-letter-portrait':           { sign: 'photo' },
-    'custom-letter-landscape':         { sign: 'custom', orientation: 'landscape', accent: 'teal', fields: { headline: 'Green Room', subline: 'Guests and crew only', arrow: 'none' } }
+    'custom-letter-landscape':         { sign: 'custom', orientation: 'landscape', accent: 'teal', fields: { headline: 'Green Room', subline: 'Guests and crew only', arrow: 'none' } },
+    'partners-letter-portrait':        { sign: 'welcome', fields: { subline: 'Community Screening and Conversation', partnerLabel: 'Supported by', partners: LOGOS } },
+    'partners-seven-letter-landscape': { sign: 'welcome', orientation: 'landscape', fields: { subline: 'Community Screening', partnerLabel: 'Supported by', partners: LOGOS.concat(LOGOS, [LOGOS[0]]) } }
   };
   if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
   const toDataUrl = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });

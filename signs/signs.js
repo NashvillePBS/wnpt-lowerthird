@@ -5,6 +5,9 @@
  * 3300 x 5100). Tabloid is the Letter layout scaled by 11/8.5 with the extra height given to the copy.
  * Rules: Logo, Color, Typography, Graphic Elements and Print in the Design System's brand book. Taste
  * lives in CONFIG; the sign types in SIGNS. Loads after vendor/html-to-image.js and shared/studio-core.js.
+ *
+ * The field is white by default (Shane, 2026-11-07): these signs are printed in-house on the office
+ * color printer, and a Navy page eats its ink. Navy stays as the option for a print shop.
  */
 (function (global) {
   'use strict';
@@ -31,7 +34,11 @@
     logo: 40,                 // the station shield's height (print minimum 0.2 in = 19 px)
     arrow: { portrait: 260, landscape: 300 },
     arrowUsesAccent: true,    // on Navy the arrow takes the accent (12:1 on Navy for Yellow); on white it is Navy
-    bodyMax: 560
+    bodyMax: 560,
+    // Partner (sponsor, underwriter) logos: a flex row above the station logo that wraps as logos are
+    // added. Each logo keeps its own shape inside a box no taller than maxH and no wider than maxW for
+    // the row's count (1 to 3, 4 to 6, 7 or more), so a wide mark and a square mark sit together.
+    partners: { label: 'Supported by', labelSize: 20, maxH: [64, 52, 44], maxW: [220, 170, 130], gap: 28, rowGap: 18, above: 36 }
   };
 
   const ARROWS = { none: 'None', up: 'Up', 'up-right': 'Up right', right: 'Right', 'down-right': 'Down right', down: 'Down', 'down-left': 'Down left', left: 'Left', 'up-left': 'Up left' };
@@ -41,18 +48,20 @@
     { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Welcome', hint: 'Big and short. Press Enter to force a line break.' },
     { key: 'subline', label: 'Second line', type: 'text', placeholder: 'Community Screening', hint: 'Event name, room or detail. Optional.' },
     { key: 'body', label: 'Small text', type: 'textarea', rows: 3, placeholder: '', hint: 'A sentence or two. Optional.' },
-    { key: 'arrow', label: 'Arrow', type: 'select', options: ARROWS }
+    { key: 'arrow', label: 'Arrow', type: 'select', options: ARROWS },
+    { key: 'partnerLabel', label: 'Partner label', type: 'text', placeholder: 'Supported by', hint: 'Sits above the partner logos. Keep it plain: "Supported by", "Made possible by". Optional.' },
+    { key: 'partners', label: 'Partner logos', type: 'images', hint: 'Add one or more logo files (PNG, JPG or SVG). They sit in a row above the station logo, each at its own shape; add more and the row wraps and the logos get smaller. On the white field use color or dark logos; on Navy, white ones. Not remembered after a reload.' }
   ];
   const PHOTO_DRAFT = 'By attending this event, you may be photographed or recorded by Nashville PBS. Images may appear in station programming, promotion and publications.';
   const SIGNS = {
-    welcome:      { label: 'Welcome',              blurb: 'Welcome with the event name.',                       defaults: { headline: 'Welcome', subline: '', body: '', arrow: 'none' } },
-    directional:  { label: 'Directional',          blurb: 'A destination and an arrow.',                         defaults: { headline: 'Registration', subline: '', body: '', arrow: 'right' } },
-    reserved:     { label: 'Reserved',             blurb: 'Reserved seating or a reserved space.',               defaults: { headline: 'Reserved', subline: '', body: '', arrow: 'none' } },
-    registration: { label: 'Registration',         blurb: 'Registration or check-in table.',                     defaults: { headline: 'Check-In', subline: '', body: '', arrow: 'none' } },
-    restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right' } },
-    quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none' } },
-    photo:        { label: 'Photography Notice',   blurb: 'Notice that the event is photographed or recorded.',  defaults: { headline: 'Photography Notice', subline: '', body: PHOTO_DRAFT, arrow: 'none' }, draftBody: true },
-    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines.',         defaults: { headline: '', subline: '', body: '', arrow: 'none' } }
+    welcome:      { label: 'Welcome',              blurb: 'Welcome with the event name.',                       defaults: { headline: 'Welcome', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
+    directional:  { label: 'Directional',          blurb: 'A destination and an arrow.',                         defaults: { headline: 'Registration', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
+    reserved:     { label: 'Reserved',             blurb: 'Reserved seating or a reserved space.',               defaults: { headline: 'Reserved', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
+    registration: { label: 'Registration',         blurb: 'Registration or check-in table.',                     defaults: { headline: 'Check-In', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
+    restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
+    quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
+    photo:        { label: 'Photography Notice',   blurb: 'Notice that the event is photographed or recorded.',  defaults: { headline: 'Photography Notice', subline: '', body: PHOTO_DRAFT, arrow: 'none', partnerLabel: '', partners: [] }, draftBody: true },
+    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines.',         defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } }
   };
 
   function dims(state) {
@@ -84,7 +93,7 @@
 
   function defaultState(sign) {
     const sg = SIGNS[sign] || SIGNS.welcome;
-    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'navy', accent: 'yellow', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults) };
+    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
   }
 
   // The sign's DOM at 96 dpi. opts.hideReadable hides text, arrow and logo but keeps the layout (self-test).
@@ -92,7 +101,7 @@
     const d = dims(state), k = d.k;
     const sg = SIGNS[state.sign] || SIGNS.welcome;
     const f = Object.assign({}, sg.defaults, state.fields || {});
-    const navy = (state.colorway || 'navy') === 'navy';
+    const navy = (state.colorway || 'white') === 'navy';
     const accent = ACCENTS[state.accent] || ACCENTS.yellow;
     const fg = navy ? '#fff' : C.navy;
     const stage = SC.el('div', 'position:relative;width:' + d.W + 'px;height:' + d.H + 'px;overflow:hidden;background:' + (navy ? C.navy : '#fff') + ';font-family:' + FONT + ';color:' + fg + ';box-sizing:border-box');
@@ -128,6 +137,27 @@
       content.appendChild(a);
     }
     box.appendChild(content);
+    const partners = Array.isArray(f.partners) ? f.partners.filter(x => x && x.src) : [];
+    if (partners.length) {
+      const P = CONFIG.partners, tier = partners.length <= 3 ? 0 : partners.length <= 6 ? 1 : 2;
+      const wrap = SC.el('div', 'flex:none;display:flex;flex-direction:column;gap:' + r(P.rowGap * k) + 'px;margin-top:' + r(P.above * k) + 'px');
+      const label = (f.partnerLabel || '').trim();
+      if (label) {
+        const l = SC.el('div', 'font-size:' + r(P.labelSize * k) + 'px;font-weight:500;line-height:1.2;color:' + fg, label);
+        l.className = 'ec-readable';
+        wrap.appendChild(l);
+      }
+      const row = SC.el('div', 'display:flex;flex-wrap:wrap;align-items:center;gap:' + r(P.rowGap * k) + 'px ' + r(P.gap * k) + 'px');
+      partners.forEach((pl, i) => {
+        const img = document.createElement('img');
+        img.src = pl.src; img.alt = pl.name || ('Partner logo ' + (i + 1));
+        img.style.cssText = 'display:block;width:auto;height:auto;max-height:' + r(P.maxH[tier] * k) + 'px;max-width:' + r(P.maxW[tier] * k) + 'px;object-fit:contain;flex:none';
+        img.className = 'ec-readable';
+        row.appendChild(img);
+      });
+      wrap.appendChild(row);
+      box.appendChild(wrap);
+    }
     const logo = document.createElement('img');
     logo.src = CONFIG.assets + (navy ? CONFIG.logoWhite : CONFIG.logoColor); logo.alt = 'Nashville PBS';
     logo.style.cssText = 'display:block;height:' + r(CONFIG.logo * k) + 'px;width:auto;margin-top:' + r(32 * k) + 'px;align-self:flex-start;flex:none';
@@ -151,7 +181,7 @@
       sizes.push({ text: e.textContent, px: s, pt: Math.round(s * 72 / DPI) });
     });
     const copy = stage.querySelector('[data-box]');
-    if (copy && copy.scrollHeight > copy.clientHeight + 1) warnings.push('The copy is taller than the sign. Shorten it or remove a line.');
+    if (copy && copy.scrollHeight > copy.clientHeight + 1) warnings.push('The copy is taller than the sign. Shorten it, remove a line or remove a partner logo.');
     const out = SC.readableOutside(stage, d.W, { x: MARGIN, y: MARGIN, w: d.W - 2 * MARGIN, h: d.H - 2 * MARGIN });
     if (out.length) warnings.push('Inside the 0.5 in print margin: ' + out.map(SC.describe).join(', ') + '. Shorten the copy.');
     warnings.push(...SC.brokenImages(stage));

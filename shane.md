@@ -18,8 +18,9 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    `gh-pages` branch's redirect page, and tell Claude to redeploy the four.
 4. ✅ **The picker links both generators** (your call, 2026-11-07: "two cards on the studio page",
    one for End Cards and one for Event Signs, each page keeping its own internal picker of four styles
-   and eight signs). Still yours: should a sign ever carry a sponsor or underwriter logo?
-   (BUILD-graphics.md Part C, 3.)
+   and eight signs). ✅ Partner logos: built as a wrapping flex row above the station logo (your call
+   the same day). ✅ Signs print on white by default now (your call the same day; the first release
+   defaulted to Navy, which would have eaten the office printer's ink).
 5. ⬜ **Approve two pieces of copy before anyone prints or airs them:** the photography notice's
    small text (the tool ships a draft: "By attending this event, you may be photographed or recorded by
    Nashville PBS. Images may appear in station programming, promotion and publications.") and the

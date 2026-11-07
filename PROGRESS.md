@@ -48,9 +48,16 @@ Evidence
   patched bundle booted locally with both cards and their chevrons rendering, and the cards were
   clicked through on graphics.wnpt.app (see the commit message of the commit that adds this line).
 
+- Same day, Shane's corrections: signs print on a **white field by default** (the office color
+  printer; Navy stays as the print-shop option), the PowerPoint templates rebuilt on white with the
+  color logo and a dashed partner-logo row, the picker thumbnail redrawn white; **partner logos** added
+  as a wrapping flex row above the station logo with a plain label and three size tiers
+  (BUILD-graphics.md §B3, DECISIONS 8 and 9). Verifier: 14 sign cases ALL OK, including three
+  mixed-shape logos and seven logos wrapping (readouts in BUILD-graphics.md §B8).
+
 Next
-1. Shane's remaining answers (shane.md 4 to 6): sponsor logos on signs, the support card's phone and
-   terms line, the photography notice wording.
+1. Shane's remaining answers (shane.md 5 to 6): the support card's phone and terms line, the
+   photography notice wording.
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).

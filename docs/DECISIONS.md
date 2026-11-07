@@ -37,6 +37,15 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    FlateDecode RGB image, written by `signs/signs.js` itself. Vector text with embedded PBS Sans (the
    Business Essentials path) is a later upgrade if a press job needs it.
 
+8. **Signs print on a white field by default** (Shane, 2026-11-07: "the background needs to be mostly
+   white"). The signs exist so staff can print one quickly on the office color printer, and a Navy page
+   eats its ink; the first release shipped Navy as the default and was corrected the same day. Navy
+   stays as the option for a print shop or a sign holder. The same rule holds for the PowerPoint sign
+   templates.
+9. **Partner logos on signs are a flex row** (Shane, 2026-11-07): any number of logo files, each at
+   its own shape, in a wrapping row above the station logo that steps its size tiers down as logos are
+   added, under a plain label ("Supported by"). Never larger than the station lockup, never ad copy.
+
 ## External contracts
 
 - `endcards/` and `signs/` are linked by path from the studio's picker and from brand.wnpt.app; the

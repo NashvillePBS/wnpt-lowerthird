@@ -256,8 +256,9 @@ capture core, download only.
 
 ## B2. The set
 
-Eight signs share one layout and four fields: **headline** (one or two typed lines), **second line**,
-**small text**, **arrow** (none, or one of eight directions). Every sign is one entry in `SIGNS`.
+Eight signs share one layout and six fields: **headline** (one or two typed lines), **second line**,
+**small text**, **arrow** (none, or one of eight directions), **partner label** and **partner logos**
+(any number of logo files; see the partner row in §B3). Every sign is one entry in `SIGNS`.
 
 | Sign | Default lines | Arrow |
 |---|---|---|
@@ -270,8 +271,10 @@ Eight signs share one layout and four fields: **headline** (one or two typed lin
 | Photography Notice | Photography Notice / small text: a **draft** consent line, flagged in the tool and in shane.md | no |
 | Custom | empty | optional |
 
-Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: Navy (white type, white
-logo) or White (Navy type, color logo). Accent: Yellow (the print register's accent), Teal or Coral.
+Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: **White by default** (Navy
+type, color logo), because these signs are printed in-house on the office color printer and a Navy
+page eats its ink (Shane, 2026-11-07); Navy (white type, white logo) stays as the option for a print
+shop or a sign holder. Accent: Yellow (the print register's accent), Teal or Coral, on the band only.
 
 ## B3. Geometry
 
@@ -286,6 +289,7 @@ layout scaled by 11/8.5 with the extra height given to the copy. Values at Lette
 | Second line | 40px (30pt) Medium |
 | Small text | 26px (19.5pt) Regular, line-height 1.45, 560px wide at most |
 | Arrow | 260px portrait (below the text), 300px landscape (beside it); the accent on Navy, Navy on white; a rounded line arrow in the Lucide stroke the brand book names for icons |
+| Partner logos | a flex row above the station logo, wrapping as logos are added: label (20px Medium, "Supported by"), then each logo at its own shape inside a box no taller than 64px and no wider than 220px for 1 to 3 logos, 52/170px for 4 to 6, 44/130px for 7 or more; gaps 28px across, 18px between rows; 36px above the row. Sponsor and underwriter marks stay smaller than the station lockup and carry a plain label, nothing that reads as an advertisement |
 | Logo | white or color horizontal lockup, shield 40px (0.42 in; the print minimum is 0.2 in), bottom-left |
 | Print margin | 0.5 in (48px): nothing readable crosses it. Office printers cannot print the outer 0.2 in; the Navy field bleeds to the edge and prints with a thin white edge that a sign holder hides |
 
@@ -325,14 +329,15 @@ in the Documents register.
 ## B7. Config, not rewrites
 
 Everything that is taste sits at the top of `signs/signs.js`: `CONFIG.band`, `padX`, `padTop`,
-`padBottom`, `headline`, `subline`, `body`, `floor`, `logo`, `arrow`, `arrowUsesAccent`, `bodyMax`;
-the set in `SIGNS`; the papers in `SIZES`; the accents in `ACCENTS`. A sponsor or underwriter logo
-slot, if Shane wants one (Part C), would be one more element in `createStage` and one field.
+`padBottom`, `headline`, `subline`, `body`, `floor`, `logo`, `arrow`, `arrowUsesAccent`, `bodyMax`,
+and the partner row's `CONFIG.partners` (label, label size, the three size tiers, gaps); the set in
+`SIGNS`; the papers in `SIZES`; the accents in `ACCENTS`; the default field in `defaultState`.
 
 ## B8. Verification
 
 The same verifier (`python3 scripts/verify-graphics.py --only signs`) drives `signs/selftest.html`:
-twelve cases across every sign, both papers, both orientations and both fields. For each it takes the
+fourteen cases across every sign, both papers, both orientations, both fields and the partner row
+(three logos of different shapes; seven logos, wrapping tier). For each it takes the
 real PDF, parses its one image back out of the FlateDecode stream, checks the page size against the
 paper and the image size against 300 dpi, diffs the image against a render of the same frame with the
 readable elements hidden, and requires the ink's bounding box to sit inside the 0.5 in margin (150px
@@ -363,16 +368,18 @@ ALL OK
 |---|---|---|
 | Welcome<br>![Welcome](signs/samples/welcome-letter-portrait.png) | Directional<br>![Directional](signs/samples/directional-letter-portrait.png) | Reserved<br>![Reserved](signs/samples/reserved-letter-portrait.png) |
 | Registration<br>![Registration](signs/samples/registration-letter-portrait.png) | Restrooms<br>![Restrooms](signs/samples/restrooms-letter-portrait.png) | Quiet Please<br>![Quiet Please](signs/samples/quiet-letter-portrait.png) |
-| Photography Notice<br>![Photography Notice](signs/samples/photo-letter-portrait.png) | Custom, landscape, Teal<br>![Custom](signs/samples/custom-letter-landscape.png) | Welcome on white, landscape<br>![Welcome on white](signs/samples/welcome-white-letter-landscape.png) |
+| Photography Notice<br>![Photography Notice](signs/samples/photo-letter-portrait.png) | Custom, landscape, Teal<br>![Custom](signs/samples/custom-letter-landscape.png) | Welcome, landscape<br>![Welcome landscape](signs/samples/welcome-navy-letter-landscape.png) |
 | Directional, Tabloid<br>![Directional Tabloid](signs/samples/directional-tabloid-portrait.png) | Directional, Tabloid landscape<br>![Directional Tabloid landscape](signs/samples/directional-tabloid-landscape.png) | Directional, landscape<br>![Directional landscape](signs/samples/directional-letter-landscape.png) |
+| Partner logos, three shapes<br>![Partner logos](signs/samples/partners-letter-portrait.png) | Partner logos, seven, landscape<br>![Seven partner logos](signs/samples/partners-seven-letter-landscape.png) | Welcome on Navy (print shop)<br>![Welcome on Navy](signs/samples/welcome-navy-letter-landscape.png) |
 
 ## B10. The PowerPoint template (custom signs without the tool)
 
 `templates/signs/NashvillePBS-EventSigns-Letter-Portrait.pptx` and `-Landscape.pptx`: Arial
-throughout (the sanctioned stand-in; PBS Sans cannot ship in an Office file), one "Sign" layout with
-the band, three text placeholders and the white logo, eight sample signs (the same eight as the tool,
-the arrow as a rotatable picture on the two directional ones), a closing how-to slide, and speaker
-notes on every slide. Theme colors are the station palette (Dark 2 Navy, Accent 1 PBS Blue, Accent 6
+throughout (the sanctioned stand-in; PBS Sans cannot ship in an Office file), a white field, one
+"Sign" layout with the band, three Navy text placeholders and the color logo, eight sample signs (the
+same eight as the tool, the arrow as a rotatable Navy picture on the two directional ones, a row of
+dashed partner-logo boxes on the Welcome sign), a closing how-to slide, and speaker notes on every
+slide. Theme colors are the station palette (Dark 2 Navy, Accent 1 PBS Blue, Accent 6
 Yellow), written by the pptx skill's theme writer (`build/apply_theme.js`). Built by
 `templates/signs/build/build-signs-pptx.js` with pptxgenjs (`build/build.sh`). Print at 100% on
 Letter; Tabloid by Scale to fit paper.
@@ -390,11 +397,9 @@ session (shane.md asks for that one open).
    §A2.5 are not. Say which of the four go live now and whether any of the three should follow.
 2. **Which signs ship first.** All eight in Part B are built and verified. Say which go live now
    (the custom sign alone covers most needs; the named ones save typing).
-3. **Sponsor or underwriter logos on signs.** Not built. If a sign ever carries a funder's mark (a
-   welcome sign for an underwritten event), it should be a single logo slot at the foot opposite the
-   station logo, at most the station shield's height, with "Supported by" or "Made possible by" in the
-   small text and nothing that reads as an advertisement; that keeps the sign noncommercial under the
-   station's underwriting practice. Say yes or no; yes is one field and one element.
+3. **Sponsor or underwriter logos on signs.** Built (Shane, 2026-11-07: "they could need partner
+   logos", as a flex row that adapts as logos are added): the partner row in §B3, with a plain label
+   and the logos smaller than the station lockup, which keeps the sign noncommercial.
 4. **Support-card facts** (shane.md): wnpt.org/support lands on the pledge cart; the text-to-give
    number and keyword and the terms line appear nowhere on wnpt.org and stay unverified until you
    confirm them.
