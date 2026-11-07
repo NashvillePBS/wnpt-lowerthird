@@ -40,6 +40,10 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    ```
    Paste the key at the prompt and press Return. You should see "Success! Uploaded secret
    SHORTIO_API_KEY". Then tell Claude, who makes one test link (`wnpt.tv/graphics-test`) and checks it.
+   One thing to know, your call: wnpt.tv is set up in Short.io as a meta-refresh redirect with Google
+   Analytics (wnpt-web-sync PROGRESS §8.6), which adds a short hop to every QR scan before the phone
+   lands on the page. That is how your other wnpt.tv links behave today; if you would rather the sign
+   links jump straight through, that is a Short.io domain setting, not something in this repo.
 9. ⬜ **Three answers for the app sign** (BUILD-graphics.md §B2): the links each QR code should point at
    (the PBS app, the Nashville PBS app, the PBS KIDS app: an app-store page, a landing page, or a
    wnpt.tv link you already use); whether the Nashville PBS app may be shown at all (the October brand
