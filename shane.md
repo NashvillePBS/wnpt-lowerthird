@@ -31,30 +31,18 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
 7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
    at another session's request, not yours.
-8. ⬜ **Set the Short.io key on the graphics Worker** so the custom sign can make wnpt.tv short links
-   for its QR codes. In Short.io, a **public key** (starts with `pk_`) is enough and safer: it can only
-   create links, which is all the Worker does; the secret key works too. The web-sync Worker holds its
-   own copy; secrets cannot be copied between Workers, so paste once more here (it stays in Cloudflare,
-   never in this repo or in chat):
-   ```bash
-   cd "/Users/sburkeen/Projects/wnpt-lowerthird" && npx wrangler secret put SHORTIO_API_KEY
-   ```
-   Paste the key at the prompt and press Return. You should see "Success! Uploaded secret
-   SHORTIO_API_KEY". Then tell Claude, who makes one test link (`wnpt.tv/graphics-test`) and checks it.
-   One thing to know, your call: wnpt.tv is set up in Short.io as a meta-refresh redirect with Google
-   Analytics (wnpt-web-sync PROGRESS §8.6), which adds a short hop to every QR scan before the phone
-   lands on the page. That is how your other wnpt.tv links behave today; if you would rather the sign
-   links jump straight through, that is a Short.io domain setting, not something in this repo.
-9. ⬜ **The tracked links for the locked QR codes.** The Donate and Our Apps signs encode fixed wnpt.tv
-   links so scans count in your Google Analytics. Make them in Short.io (with whatever tracking you
-   want on each) and send Claude the three short links: the donate page, the PBS app, the PBS KIDS app.
-   Claude puts them in `signs/signs.js` `CONFIG.tracked`. Until then the Donate QR points at
-   wnpt.org/donate itself and the Our Apps sign cannot be downloaded. Keep a fourth, for the Nashville
-   PBS app, for launch day: it is wired in and hidden (`CONFIG.apps.station.enabled`).
-10. ⬜ **Two wordings to confirm** (editable only in config, on purpose): GET THE FREE PBS APP and GET
-   THE FREE PBS KIDS VIDEO APP, with the fine print "*Local PBS station membership required to access some
-   content." Also: the support end card (`endcards/`) still reads wnpt.org/support; say "change it" and
-   it becomes wnpt.org/donate like the signs.
+8. ✅ **Short.io key set on the graphics Worker** (you, 2026-11-07). One thing to know, your call:
+   wnpt.tv is set up in Short.io as a meta-refresh redirect with Google Analytics (wnpt-web-sync
+   PROGRESS §8.6), which adds a short hop to every QR scan before the phone lands on the page; if you
+   would rather the sign links jump straight through, that is a Short.io domain setting, not this repo.
+9. ✅ **Tracked QR codes in place** (your three Short.io exports, 2026-11-07): the Donate sign scans to
+   wnpt.tv/support, the PBS app block to wnpt.tv/wnptpbs-app (your landing page that picks the store and
+   can carry the Nashville PBS app later), the PBS KIDS block to wnpt.tv/pbskidsapps. For launch day the
+   Nashville PBS app needs its flag flipped (`CONFIG.apps.station.enabled`) and a link or file in
+   `CONFIG.tracked.apps.station`; say the word.
+10. ✅ **Wording and addresses settled** (you, 2026-11-07): GET THE FREE PBS APP with the fine print;
+   GET THE FREE PBS KIDS APP without it; the support end card stays on wnpt.org/support (tracked from
+   air); the signs use wnpt.org/donate.
 11. ⏸ **Outside editors on graphics.wnpt.app:** not added by hand. The brand-page session is building
    the self-service agency tool on brand.wnpt.app that edits Access policies; the studio's policy should
    be the one that tool manages. When it takes over, delete the graphics.wnpt.app entry from wnpt-events

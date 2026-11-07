@@ -63,7 +63,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 <script src="../vendor/html-to-image.js?v=20261107c"></script>
 <script src="../vendor/qrcode.js?v=20261107c"></script>
 <script src="../shared/studio-core.js?v=20261107d"></script>
-<script src="signs.js?v=20261107e"></script>
+<script src="signs.js?v=20261107f"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -182,6 +182,15 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
         if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
         host.appendChild(wrap); return;
       }
+      if (spec.type === 'checkbox') {
+        const row = document.createElement('label'); row.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;color:#0A145A;cursor:pointer';
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = id; cb.checked = !!f[spec.key]; cb.style.accentColor = '#2638C4';
+        cb.addEventListener('change', () => { f[spec.key] = cb.checked; schedule(); });
+        row.appendChild(cb); row.appendChild(document.createTextNode(spec.text || spec.label));
+        wrap.appendChild(row);
+        if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+        host.appendChild(wrap); return;
+      }
       if (spec.type === 'note') {
         if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
         host.appendChild(wrap); return;
@@ -195,7 +204,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
           const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!on; cb.style.accentColor = '#2638C4';
           cb.addEventListener('change', () => { apps[key] = cb.checked; schedule(); });
           row.appendChild(cb); row.appendChild(document.createTextNode(a.label));
-          const tracked = (S.CONFIG.tracked.apps[key] || '').replace(/^https?:\/\//, '');
+          const tracked = ((S.CONFIG.tracked.apps[key] || {}).url || '').replace(/^https?:\/\//, '');
           const t = document.createElement('span'); t.className = 'ec-hint'; t.style.marginLeft = 'auto'; t.textContent = tracked ? ('QR: ' + tracked) : 'no tracked link yet';
           row.appendChild(t);
           wrap.appendChild(row);

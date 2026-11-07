@@ -48,9 +48,18 @@
     // links, so every scan shows up in Google Analytics and nobody prints an untracked variant. Shane
     // supplies them (shane.md); until a link is set, the donate QR falls back to the printed address and an
     // app block has no QR and the download is blocked. The custom sign is the only one that makes new links.
+    // Shane supplied the three links and their QR files from Short.io on 2026-11-07 (the files are his
+    // exports with the modules recoloured Navy, nothing else changed): the donate sign scans to
+    // wnpt.tv/support; the PBS app block to wnpt.tv/wnptpbs-app, a landing page that sends a phone to its
+    // own store and can carry the Nashville PBS app later; the PBS KIDS block to wnpt.tv/pbskidsapps.
+    // `file` is the code that prints; `url` is what it encodes (used when a file is missing).
     tracked: {
-      donate: '',
-      apps: { pbs: '', station: '', kids: '' }
+      donate: { url: 'https://wnpt.tv/support', file: 'qr-support.svg' },
+      apps: {
+        pbs:     { url: 'https://wnpt.tv/wnptpbs-app', file: 'qr-wnptpbs-app.svg' },
+        station: { url: '', file: '' },
+        kids:    { url: 'https://wnpt.tv/pbskidsapps', file: 'qr-pbskidsapps.svg' }
+      }
     },
     // The app sign: one block per app the staffer turns on. Rules from the PBS App Marketing Guide (July 2024)
     // via the brand book: the PBS logo is the app's graphic (never the store icon), paired with an all-caps call
@@ -59,10 +68,12 @@
     // `enabled: false` hides it from the page and the sign; flip it to true, set its tracked link, done.
     // Logo heights put the three marks at a similar visual weight.
     apps: {
-      pbs:     { label: 'PBS app',           enabled: true,  file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP' },
-      station: { label: 'Nashville PBS app', enabled: false, file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP' },
-      kids:    { label: 'PBS KIDS app',      enabled: true,  file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS VIDEO APP' }
+      pbs:     { label: 'PBS app',           enabled: true,  file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP', finePrint: true },
+      station: { label: 'Nashville PBS app', enabled: false, file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP', finePrint: false },
+      kids:    { label: 'PBS KIDS app',      enabled: true,  file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS APP', finePrint: false }
     },
+    // The PBS app's fine print (the PBS App Marketing Guide's "free" claim). Shane, 2026-11-07: the line is
+    // for the PBS app only, so `finePrint` on the app decides, not the word FREE.
     finePrint: '*Local PBS station membership required to access some content.',
     // The app sign's blocks: logo over the call to action at left, the QR code at right. Portrait stacks one
     // block per line; landscape puts them side by side, so they are smaller there.
@@ -82,9 +93,21 @@
   ];
   // The station's approved photography notice (Shane Burkeen, 2026-11-07), verbatim apart from the headline's case.
   const QR_FIELDS = [
-    { key: 'url', label: 'Web address for the QR code', type: 'text', placeholder: 'wnpt.org/events', hint: 'Shown under the code as typed. The QR points at https:// plus this address, or at the wnpt.tv short link once one is made.' },
+    { key: 'url', label: 'Web address for the QR code', type: 'text', placeholder: 'wnpt.org/events', hint: 'A wnpt.org address is printed under the code as typed. Any other address stays off the sign unless you tick Show address.' },
+    { key: 'showAddress', label: 'Show address', type: 'checkbox', text: 'Print the address under the QR code', hint: 'For links that are not on wnpt.org: prints the short link if one was made, otherwise the address.' },
     { key: 'shortPath', label: 'Short link name', type: 'shortlink', placeholder: 'fall-screening', hint: 'Optional. Makes wnpt.tv/<name> point at the address above (tracked in Short.io) and puts that in the QR code. Leave empty for a random name.' }
   ];
+  // What prints under a custom sign's QR code (Shane, 2026-11-07): a wnpt.org address as typed; any other
+  // address nothing, unless Show address is ticked, then the short link if there is one, else the address.
+  function qrCaption(f) {
+    const addr = (f.url || '').trim();
+    if (!addr) return '';
+    let host = '';
+    try { host = new URL(SC.urlTarget(addr)).hostname.toLowerCase(); } catch (e) { host = ''; }
+    if (host === 'wnpt.org' || host.endsWith('.wnpt.org')) return addr;
+    if (!f.showAddress) return '';
+    return (f.shortURL || '').replace(/^https?:\/\//, '') || addr;
+  }
   const DONATE_FIELDS = [
     { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Donate', hint: 'Press Enter to force a line break.' },
     { key: 'monthly', label: 'Monthly amount', type: 'text', placeholder: '5', hint: 'Dollars per month for Passport; the sentence reads "at least $5 per month".' },
@@ -107,7 +130,7 @@
     restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
     quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
     photo:        { label: 'Photography Notice',   blurb: 'The station\'s approved notice that the event is photographed or recorded.',  defaults: { headline: 'Attention', subline: PHOTO_SUB, body: PHOTO_BODY, arrow: 'none', partnerLabel: '', partners: [] } },
-    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines, with a QR code if you give it a link.', defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [], url: '', shortPath: '', shortURL: '' }, fields: FIELDS.concat(QR_FIELDS) },
+    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines, with a QR code if you give it a link.', defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [], url: '', showAddress: false, shortPath: '', shortURL: '' }, fields: FIELDS.concat(QR_FIELDS) },
     donate:       { label: 'Donate',               blurb: 'wnpt.org/donate with the Passport amounts and the tracked QR code.', defaults: { headline: 'Donate', monthly: '5', yearly: '60', body: '', partnerLabel: '', partners: [] }, fields: DONATE_FIELDS },
     apps:         { label: 'Our Apps',             blurb: 'Download the PBS app or the PBS KIDS app, each with its tracked QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: true, station: false, kids: true }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
   };
@@ -146,9 +169,9 @@
   }
 
   // A QR code with the address under it. `text` is what the code encodes; `shown` what people read.
-  function qrBlock(text, shown, k, fg) {
+  function qrBlock(text, shown, k, fg, file) {
     const Q = CONFIG.qr;
-    const src = SC.qrSvgDataUrl(text, Q.dark, Q.level);
+    const src = file ? (CONFIG.assets + file) : SC.qrSvgDataUrl(text, Q.dark, Q.level);
     if (!src) return null;
     const box = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(8 * k) + 'px;flex:none');
     const img = document.createElement('img');
@@ -191,8 +214,8 @@
     u.className = 'ec-readable'; u.dataset.fitwrap = '1'; u.dataset.base = r(64 * k); u.dataset.floor = r(36 * k);
     text.appendChild(u);
     content.appendChild(text);
-    const tracked = (CONFIG.tracked.donate || '').trim();
-    const q = qrBlock(tracked || SC.urlTarget(shown), tracked ? tracked.replace(/^https?:\/\//, '') : '', k, fg);
+    const t = CONFIG.tracked.donate || {};
+    const q = qrBlock((t.url || '').trim() || SC.urlTarget(shown), '', k, fg, (t.file || '').trim());
     if (q) { if (!d.land) q.style.alignSelf = 'flex-start'; content.appendChild(q); }
   }
 
@@ -229,13 +252,14 @@
         logo.className = 'ec-readable';
         col.appendChild(logo);
         const cta = a.cta.toUpperCase();
-        if (/\bFREE\b/.test(cta)) free = true;
+        if (a.finePrint) free = true;
         const c = SC.el('div', 'font-size:' + r(A.cta * k) + 'px;font-weight:800;letter-spacing:.04em;line-height:1.2;color:' + fg, cta);
         c.className = 'ec-readable';
         col.appendChild(c);
         block.appendChild(col);
-        const target = (CONFIG.tracked.apps[key] || '').trim();
-        const src = target ? SC.qrSvgDataUrl(target, CONFIG.qr.dark, CONFIG.qr.level) : '';
+        const t = CONFIG.tracked.apps[key] || {};
+        const target = (t.url || '').trim();
+        const src = (t.file || '').trim() ? (CONFIG.assets + t.file) : (target ? SC.qrSvgDataUrl(target, CONFIG.qr.dark, CONFIG.qr.level) : '');
         if (!src) block.dataset.missing = 'No tracked link is set for the ' + a.label + ' yet (shane.md): no QR code, so the sign cannot be downloaded.';
         if (src) {
           const qb = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(6 * k) + 'px;flex:none');
@@ -244,8 +268,7 @@
           img.style.cssText = 'display:block;width:' + qrSize + 'px;height:' + qrSize + 'px';
           img.className = 'ec-readable';
           qb.appendChild(img);
-          const shown = target.replace(/^https?:\/\//, '');
-          if (shown) { const cap = SC.el('div', 'font-size:' + r(A.caption * k) + 'px;font-weight:700;line-height:1.2;max-width:' + r(A.captionW * k) + 'px;overflow-wrap:anywhere;color:' + fg, shown); cap.className = 'ec-readable'; qb.appendChild(cap); }
+          // No address under a tracked code: wnpt.tv links are for scanning, not typing (Shane, 2026-11-07).
           block.appendChild(qb);
         }
         row.appendChild(block);
@@ -310,7 +333,7 @@
       if (!d.land) a.style.alignSelf = 'flex-start';
       content.appendChild(a);
     } else if (state.sign === 'custom' && (f.url || '').trim()) {
-      const q = qrBlock((f.shortURL || '').trim() || SC.urlTarget(f.url), (f.shortURL || '').replace(/^https?:\/\//, '') || (f.url || '').trim(), k, fg);
+      const q = qrBlock((f.shortURL || '').trim() || SC.urlTarget(f.url), qrCaption(f), k, fg);
       if (q) { if (!d.land) q.style.alignSelf = 'flex-start'; content.appendChild(q); }
     }
     }
@@ -448,5 +471,5 @@
     return 'sign-' + base + '-' + d.size + '-' + (d.land ? 'landscape' : 'portrait') + '.' + (ext || 'pdf');
   }
 
-  global.EventSigns = { DPI, PRINT_DPI, MARGIN, SIZES, ACCENTS, CONFIG, SIGNS, FIELDS, ARROWS, fieldsFor, dims, defaultState, createStage, layout, exportPdf, exportPng, fileName, title };
+  global.EventSigns = { DPI, PRINT_DPI, MARGIN, SIZES, ACCENTS, CONFIG, SIGNS, FIELDS, ARROWS, fieldsFor, qrCaption, dims, defaultState, createStage, layout, exportPdf, exportPng, fileName, title };
 })(window);

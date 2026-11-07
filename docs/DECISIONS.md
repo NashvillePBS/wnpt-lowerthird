@@ -60,7 +60,12 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    encode fixed wnpt.tv links in `signs/signs.js` `CONFIG.tracked`, set once by Shane so every scan
    counts in Google Analytics; staff cannot change them. The custom sign is the only one that makes new
    short links. The Nashville PBS app stays wired in behind `CONFIG.apps.station.enabled = false` until
-   it launches; the brand book's rule (not launched, not referenced) holds until Shane flips it.
+   it launches; the brand book's rule (not launched, not referenced) holds until Shane flips it. The
+   codes are Shane's own Short.io exports (`signs/assets/qr-*.svg`, 2026-11-07), modules recoloured
+   Navy; nothing prints under a tracked code, since wnpt.tv links are for scanning. On a custom sign a
+   wnpt.org address prints as typed and any other address only when Show address is ticked.
+14. **The support end card stays on wnpt.org/support** (Shane, 2026-11-07: "I'm tracking those from
+   air"); the signs use wnpt.org/donate.
 
 ## External contracts
 

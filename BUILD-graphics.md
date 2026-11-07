@@ -270,9 +270,9 @@ sign is one entry in `SIGNS`.
 | Restrooms | Restrooms | right |
 | Quiet Please | Quiet Please / Recording in progress | no |
 | Photography Notice | Attention / This event is being photographed and/or video recorded. / the station's approved paragraphs and "Thank you!" (Shane, 2026-11-07) | no |
-| Custom | empty; a QR code when a web address is given, with a button that makes a new wnpt.tv short link for it | optional |
-| Donate | Donate / "Donate at least $5 per month or $60 per year and enjoy Nashville PBS Passport" (the amounts are fields, since the Passport price may change) / the Passport lockup / wnpt.org/donate large / the station's **fixed, tracked** QR code (`CONFIG.tracked.donate`; the printed address until it is set) | no |
-| Our Apps | Get Our Apps / Watch on your phone, tablet and TV. / one block per app turned on: the PBS app (national PBS logo, GET THE FREE PBS APP) and the PBS KIDS app (PBS KIDS logo, GET THE FREE PBS KIDS VIDEO APP), each with its **fixed, tracked** QR code (`CONFIG.tracked.apps`); the fine print once when a call to action says "free". The Nashville PBS app is wired in behind `enabled: false` until it launches (Shane, 2026-11-07) | no |
+| Custom | empty; a QR code when a web address is given, with a button that makes a new wnpt.tv short link for it. Under the code: a wnpt.org address as typed; any other address nothing, unless Show address is ticked (then the short link, else the address) (Shane, 2026-11-07) | optional |
+| Donate | Donate / "Donate at least $5 per month or $60 per year and enjoy Nashville PBS Passport" (the amounts are fields, since the Passport price may change) / the Passport lockup / wnpt.org/donate large / the station's **fixed, tracked** QR code: Shane's Short.io export for wnpt.tv/support (`signs/assets/qr-support.svg`, modules recoloured Navy), nothing printed under it | no |
+| Our Apps | Get Our Apps / Watch on your phone, tablet and TV. / one block per app turned on: the PBS app (national PBS logo, GET THE FREE PBS APP, the fine print) and the PBS KIDS app (PBS KIDS logo, GET THE FREE PBS KIDS APP, no fine print), each with Shane's **fixed, tracked** QR file (wnpt.tv/wnptpbs-app, a landing page that sends a phone to its store and can carry the Nashville PBS app later; wnpt.tv/pbskidsapps), nothing printed under the codes. The Nashville PBS app is wired in behind `enabled: false` until it launches | no |
 
 Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: **White by default** (Navy
 type, color logo), because these signs are printed in-house on the office color printer and a Navy
@@ -319,11 +319,12 @@ while a warning stands (a word too long at the floor, copy taller than the sign,
 print margin, a missing image).
 
 **Short links and QR codes.** The QR code is made in the page (`vendor/qrcode.js`, shared through
-`StudioCore.qrSvgDataUrl`). On the Donate and Our Apps signs the code is locked to a tracked wnpt.tv link
-that Shane sets once in `CONFIG.tracked` (his call, 2026-11-07: "lock down that QR code for those so I
-can track in Google Analytics"), so nobody prints an untracked variant; an app with no tracked link yet
-gets no code and the download is blocked. Only the custom sign makes new links: a "Make short link"
-button next to the address asks the studio's own API,
+`StudioCore.qrSvgDataUrl`). On the Donate and Our Apps signs the code is locked: `CONFIG.tracked`
+names, per sign, the tracked wnpt.tv link and the QR file Shane exported from Short.io for it (his call,
+2026-11-07: "lock down that QR code for those so I can track in Google Analytics"), so nobody prints an
+untracked variant; the files print as supplied with the modules recoloured Navy, an app with no file and
+no link gets no code and the download is blocked. Only the custom sign makes new links: a "Make short
+link" button next to the address asks the studio's own API,
 `POST /api/shortlink` on graphics.wnpt.app (`src/graphics-worker.js`), which verifies the Cloudflare
 Access login again and creates a wnpt.tv link in Short.io with the station's key, held as the Worker
 secret `SHORTIO_API_KEY` that only Shane sets (a Short.io public key, `pk_…`, is enough and safer, since

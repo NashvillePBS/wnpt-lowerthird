@@ -69,12 +69,16 @@ Evidence
   key as a Worker secret that waits on Shane, shane.md 8). Then Shane's rethink the same afternoon:
   the Donate and Our Apps QR codes are locked to tracked wnpt.tv links he sets once in
   `CONFIG.tracked` (DECISIONS 13); only the custom sign makes new links; the Nashville PBS app is hidden
-  behind `CONFIG.apps.station.enabled` until it launches. Verifier: 19 sign cases ALL OK.
+  behind `CONFIG.apps.station.enabled` until it launches. Then Shane's answers: his three Short.io QR
+  exports became the fixed codes (wnpt.tv/support, /wnptpbs-app, /pbskidsapps), KIDS reads GET THE FREE
+  PBS KIDS APP, the fine print is the PBS app's alone, the end card keeps /support; on a custom sign a
+  wnpt.org address prints under the code, other addresses only with Show address; the Short.io key is
+  set. Verifier: 21 sign cases ALL OK.
 
 Next
-1. Shane: the Short.io key (shane.md 8), the three tracked links (shane.md 9), the two wordings and
-   the end card's address (shane.md 10), the art-direction defaults (shane.md 6).
-2. After the secret: make and check one test link, then delete it or keep it (Shane's call).
+1. Shane's art-direction defaults (shane.md 6), if any should change; the Nashville PBS app's launch
+   (shane.md 9).
+2. The custom sign's short links: tested live with the key (see the commit after this line).
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).
