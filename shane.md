@@ -16,11 +16,10 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
 3. ⬜ **Rename the hostname if you want to** (it is a default): change `graphics.wnpt.app` in
    `wrangler.toml`, in wnpt-events `scripts/setup-access.mjs`, in wnpt-hub `src/apps.ts` and on the
    `gh-pages` branch's redirect page, and tell Claude to redeploy the four.
-4. ⬜ **Pick what the studio's picker links to** (art direction): the four end-card styles
-   (Endpage, Slate, Announcement slate, Support end card) and the eight signs (Welcome, Directional,
-   Reserved, Registration, Restrooms, Quiet Please, Photography Notice, Custom) are all built and
-   verified. Say which go live now; Claude adds the picker cards the same day. Also: should a sign
-   ever carry a sponsor or underwriter logo? (BUILD-graphics.md Part C, 1 to 3.)
+4. ✅ **The picker links both generators** (your call, 2026-11-07: "two cards on the studio page",
+   one for End Cards and one for Event Signs, each page keeping its own internal picker of four styles
+   and eight signs). Still yours: should a sign ever carry a sponsor or underwriter logo?
+   (BUILD-graphics.md Part C, 3.)
 5. ⬜ **Approve two pieces of copy before anyone prints or airs them:** the photography notice's
    small text (the tool ships a draft: "By attending this event, you may be photographed or recorded by
    Nashville PBS. Images may appear in station programming, promotion and publications.") and the

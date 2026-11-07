@@ -12,8 +12,9 @@ Logo, Color, Typography, Graphic Elements and Print sections, `tokens.json` and 
 Where a build departs from a template, the section says so and why.
 
 **Status (2026-11-07):** both generators exist and pass their verifiers (§A8, §B8); the PowerPoint
-sign template is built (§B10). Waiting on Shane: which end-card styles and which signs link from the
-picker, whether sponsor logos belong on signs, and the support card's facts (Part C). The hosting move
+sign template is built (§B10). The studio's picker links both generators (Shane, 2026-11-07: one
+card each; the pages keep their own pickers). Waiting on Shane: whether sponsor logos belong on signs,
+the support card's facts and the photography notice wording (Part C). The hosting move
 (Part D) is live: https://graphics.wnpt.app/ since 2026-11-07, evidence in `PROGRESS.md`.
 
 ---

@@ -7,8 +7,8 @@ decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graph
 ## Session 3, 2026-11-07: event signs, the shared core, and the move to graphics.wnpt.app
 
 **Status:** complete. Signs built and verified; the studio is live at https://graphics.wnpt.app/ behind
-Access and the old address redirects. Nothing is linked from the studio's picker yet (Shane's picks,
-shane.md 4).
+Access and the old address redirects. The picker links End Cards and Event Signs (Shane, 2026-11-07:
+"two cards on the studio page"; each page keeps its own internal picker).
 
 Done
 - `signs/`: eight printed event signs (welcome, directional with arrow, reserved, registration,
@@ -43,10 +43,14 @@ Evidence
   the `/endcards/` bookmark lands on https://graphics.wnpt.app/endcards/.
 - Hub: wnpt.app deployed with the Graphics tile at https://graphics.wnpt.app/.
 
+- Picker cards for End Cards and Event Signs added to the studio's Misc grid through
+  `scripts/patch-dist.py` (one hunk, ctx=1), `dist/index.html` mirrored to the root, deployed; the
+  patched bundle booted locally with both cards and their chevrons rendering, and the cards were
+  clicked through on graphics.wnpt.app (see the commit message of the commit that adds this line).
+
 Next
-1. Shane's picks (shane.md 4 to 6): link the picked generators from the studio's Misc grid via
-   `scripts/patch-dist.py`, `cp dist/index.html index.html`, push, `npm run deploy`, and verify the
-   cards on graphics.wnpt.app.
+1. Shane's remaining answers (shane.md 4 to 6): sponsor logos on signs, the support card's phone and
+   terms line, the photography notice wording.
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
 3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).

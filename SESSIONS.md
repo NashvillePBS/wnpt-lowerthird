@@ -338,6 +338,7 @@ HD and UHD PNG) and `signs/` (eight printed event signs, Letter and Tabloid, por
 Navy or white, 300 dpi PDF written in the browser), plus Arial PowerPoint sign templates under
 `templates/signs/`. Verified by `scripts/verify-graphics.py`, which runs the real exports in headless
 Chrome over the DevTools protocol and reads the pixels back against title-safe and the print margin
-(22 exports, all inside). Neither is linked from the picker yet: Shane picks what ships. The same
+(22 exports, all inside). Both are linked from the picker's Misc grid (Shane, 2026-11-07: one card
+each). The same
 sessions prepared the move to graphics.wnpt.app behind Access; `PROGRESS.md` says which production
 steps still wait on a person. Full record: `BUILD-graphics.md`, `docs/DECISIONS.md`.
