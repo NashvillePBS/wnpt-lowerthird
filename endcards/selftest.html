@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>End Cards self-test</title>
+<style>
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal}
+body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
+</style>
+<script src="vendor/html-to-image.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="endcards.js"></script>
+</head><body>
+<!-- Headless harness (scripts/verify-endcards.py): runs the real export for every style at HD and UHD, once in
+     full and once with every readable element hidden, and prints the results as JSON. Not linked from the tool. -->
+<pre id="out"></pre>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const only = q.get('style');
+  const CASES = {
+    'endpage':         { strand: 'ALL NEW', title: 'Tennessee Crossroads', qualifier: '', text: '', tunein: 'TONIGHT AT 8' },
+    'endpage-funding': { strand: '', title: 'Thank You', qualifier: '', text: 'This program was made possible by contributions to your Nashville PBS station from viewers like you.', tunein: '' },
+    'slate':           { message: 'We now join the following program already in progress.' },
+    'slate-caps':      { top: 'WE ARE EXPERIENCING', main: 'TECHNICAL DIFFICULTIES', sub: 'WE WILL BE BACK MOMENTARILY' },
+    'support':         {}
+  };
+  if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
+  const out = { fontsOk: false, results: {} };
+  try {
+    await document.fonts.load('800 112px "PBS Sans"');
+    out.fontsOk = document.fonts.check('800 112px "PBS Sans"') && document.fonts.check('500 72px "PBS Sans"');
+    for (const [name, fields] of Object.entries(CASES)) {
+      if (only && only !== name) continue;
+      const style = name.replace(/-funding$/, '');
+      const state = EndCards.defaultState(style);
+      Object.assign(state.fields, fields);
+      const r = { style, fileName: EndCards.fileName(state, 1) };
+      for (const scale of [1, 2]) {
+        const full = await EndCards.exportPng(state, scale);
+        const bg = await EndCards.exportPng(state, scale, { hideReadable: true });
+        r['x' + scale] = full.url; r['x' + scale + '_bg'] = bg.url;
+        r['x' + scale + '_warnings'] = full.warnings; r['x' + scale + '_sizes'] = full.sizes;
+      }
+      out.results[name] = r;
+    }
+  } catch (e) { out.error = String(e && e.stack || e); }
+  document.getElementById('out').textContent = JSON.stringify(out);
+  document.title = 'DONE';
+})();
+</script>
+</body></html>

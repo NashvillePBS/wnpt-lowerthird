@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>End Cards · Nashville PBS Lower Thirds Studio</title>
+<style>
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif;color:#0A145A}
+a{color:#2638C4;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+button{font-family:inherit}
+.ec-back{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px}
+.ec-back:hover{background:rgba(255,255,255,.18);color:#fff;text-decoration:none}
+.ec-label{font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180}
+.ec-field{display:flex;flex-direction:column;gap:6px}
+.ec-field label{font-weight:800;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180}
+.ec-input{font-family:inherit;font-size:14px;color:#0A145A;padding:10px 12px;border:1.5px solid #c7cde0;border-radius:8px;background:#fff;width:100%;box-sizing:border-box}
+.ec-input:focus{outline:2px solid #2638C4;outline-offset:1px;border-color:#2638C4}
+textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
+.ec-hint{font-size:12px;color:#5a6180;line-height:1.45}
+.ec-seg{display:flex;gap:6px;flex-wrap:wrap}
+.ec-seg button{flex:1;min-width:64px;text-align:center;cursor:pointer;padding:9px 6px;border-radius:8px;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;background:#fff;color:#5a6180}
+.ec-seg button[aria-pressed="true"]{border-color:#2638C4;background:#eef1fb;color:#2638C4}
+.ec-style{display:flex;flex-direction:column;gap:3px;text-align:left;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid #c7cde0;background:#fff;color:#0A145A}
+.ec-style[aria-pressed="true"]{border-color:#2638C4;background:#eef1fb;box-shadow:inset 0 0 0 1px #2638C4}
+.ec-style b{font-weight:800;font-size:14px}
+.ec-style span{font-size:12px;color:#5a6180;line-height:1.4}
+.ec-swatches{display:flex;gap:10px;align-items:center}
+.ec-swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #c7cde0;cursor:pointer;padding:0}
+.ec-swatch[aria-pressed="true"]{box-shadow:0 0 0 2.5px #2638C4}
+.ec-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;padding:12px 14px;border-radius:10px;font-weight:800;font-size:14px;border:1.5px solid #2638C4;background:#2638C4;color:#fff}
+.ec-btn:hover{background:#0F1E8C;border-color:#0F1E8C}
+.ec-btn.secondary{background:#fff;color:#2638C4}
+.ec-btn.secondary:hover{background:#eef1fb}
+.ec-btn[disabled]{opacity:.55;cursor:default}
+.ec-status{font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px}
+.ec-status.ok{background:#e8f7f5;color:#0f8a82}
+.ec-status.err{background:#fdece8;color:#c23a1a}
+.ec-status.busy{background:#eef1fb;color:#2638C4}
+.ec-warn{font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;background:#fdece8;color:#c23a1a}
+.ec-warn ul{margin:4px 0 0;padding-left:18px}
+#ec-grid{flex:1;display:grid;grid-template-columns:420px 1fr;min-height:0}
+#ec-aside{background:#fff;border-right:1px solid #d7dbe8;display:flex;flex-direction:column;min-height:0;overflow:auto}
+#ec-main{position:sticky;top:0;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 40px;overflow:hidden}
+#ec-howto summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;background:#f6f7fb;padding:14px 22px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180}
+#ec-howto summary::-webkit-details-marker{display:none}
+#ec-howto summary::marker{content:""}
+#ec-howto .ec-chev{transition:transform .15s ease}
+#ec-howto[open] .ec-chev{transform:rotate(90deg)}
+#ec-howto ol{margin:0;padding:16px 22px 20px 38px;font-size:13px;line-height:1.55;color:#0A145A}
+#ec-howto li{margin-bottom:8px}
+@media (max-width:820px){
+  #ec-grid{grid-template-columns:1fr}
+  #ec-aside{border-right:none;border-bottom:1px solid #d7dbe8}
+  #ec-main{position:static;height:auto;min-height:0;padding:24px 16px}
+}
+</style>
+<script src="vendor/html-to-image.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="endcards.js"></script>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+  <!-- Header matches the studio's generator header (build.md §13.9): same back pill, same logo / label lockup. -->
+  <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+    <a href="../" class="ec-back" title="Back to main">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>End Cards</span></div>
+  </header>
+
+  <div id="ec-grid">
+    <aside id="ec-aside">
+      <section style="padding:20px 22px 8px;display:flex;flex-direction:column;gap:12px">
+        <div class="ec-label">Style</div>
+        <div id="ec-styles" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+      </section>
+
+      <section id="ec-fields" style="padding:14px 22px 8px;display:flex;flex-direction:column;gap:14px"></section>
+
+      <section style="padding:14px 22px 8px;display:flex;flex-direction:column;gap:12px">
+        <div class="ec-label">Look</div>
+        <div class="ec-field"><label>Accent (one per card)</label><div id="ec-accents" class="ec-swatches"></div></div>
+        <div class="ec-field"><label>Background</label><div id="ec-bg" class="ec-seg"></div></div>
+        <div class="ec-field" id="ec-pattern-wrap"><label>Pattern</label><div id="ec-pattern" class="ec-seg"></div></div>
+        <div class="ec-field" id="ec-channel-wrap"><label>Co-brand</label><select id="ec-channel" class="ec-input"></select><div class="ec-hint">One channel mark per graphic, beside or instead of the station lockup.</div></div>
+      </section>
+
+      <section style="padding:14px 22px 22px;display:flex;flex-direction:column;gap:10px">
+        <div class="ec-label">Download</div>
+        <div id="ec-warnings"></div>
+        <button class="ec-btn" id="ec-dl-hd" type="button">Download HD · 1920×1080</button>
+        <button class="ec-btn" id="ec-dl-uhd" type="button">Download UHD · 3840×2160</button>
+        <button class="ec-btn secondary" id="ec-dl-both" type="button">Download both</button>
+        <label class="ec-hint" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="ec-guides" checked style="margin:2px 0 0;accent-color:#2638C4"><span>Show the safe-area guides in the preview. They are never in the download.</span></label>
+        <div id="ec-status"></div>
+      </section>
+
+      <details id="ec-howto" style="border-top:1px solid #e4e7f1">
+        <summary><svg class="ec-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>How to use</summary>
+        <ol>
+          <li>Pick a style and fill in the fields. The preview is exactly what downloads.</li>
+          <li>Everything readable must stay inside the red title-safe box (the inner 80% of the frame). Single lines shrink to fit, down to the 40px on-air minimum; past that the tool asks you to shorten the copy instead.</li>
+          <li>One accent per card. Tune-in copy renders in ALL CAPS in the accent; with TONIGHT, leave out "pm".</li>
+          <li>Download HD for playout and UHD for the master. Both are PNGs named style, text, size.</li>
+          <li>The support card's QR code is made from the web address. Upload your own only if you need a tracked code.</li>
+          <li>Your last card is remembered in this browser.</li>
+        </ol>
+      </details>
+    </aside>
+
+    <main id="ec-main">
+      <div class="ec-label" style="color:#6a7196">Preview · 1920×1080 · red = title safe (80%) · yellow = action safe (90%)</div>
+      <div id="ec-scaler-host" style="position:relative;overflow:hidden;border-radius:10px;box-shadow:0 2px 14px rgba(10,20,90,.16);background:#0A145A">
+        <div id="ec-scaler" style="position:relative;width:1920px;height:1080px;transform-origin:top left"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const S = window.EndCards;
+  const KEY = 'ec_state_v1';
+  const $ = (sel) => document.querySelector(sel);
+  const BG = [['auto', 'Auto'], ['gradient', 'Gradient'], ['pattern', 'Pattern'], ['pattern-rail', 'Rail'], ['navy', 'Navy']];
+
+  // ---------- state ----------
+  let state = load() || fresh('endpage');
+  function fresh(style) {
+    const d = S.defaultState(style);
+    return { style: d.style, accent: d.accent, background: 'auto', pattern: d.pattern, channel: d.channel, fieldsByStyle: { [d.style]: d.fields } };
+  }
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (s && S.STYLES[s.style] && s.fieldsByStyle) return s;
+    } catch (e) { /* storage unavailable: run without memory */ }
+    return null;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function fields() {
+    if (!state.fieldsByStyle[state.style]) state.fieldsByStyle[state.style] = Object.assign({}, S.STYLES[state.style].defaults);
+    return state.fieldsByStyle[state.style];
+  }
+  function renderState() { return { style: state.style, accent: state.accent, background: state.background, pattern: state.pattern, channel: state.channel, fields: fields() }; }
+  function effectiveBg() { return state.background === 'auto' ? S.STYLES[state.style].background : state.background; }
+
+  // ---------- panel ----------
+  function buildStyles() {
+    const host = $('#ec-styles'); host.innerHTML = '';
+    Object.entries(S.STYLES).forEach(([key, st]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ec-style'; b.setAttribute('aria-pressed', String(key === state.style));
+      b.innerHTML = '<b></b><span></span>';
+      b.querySelector('b').textContent = st.label; b.querySelector('span').textContent = st.blurb;
+      b.addEventListener('click', () => { state.style = key; state.background = 'auto'; buildAll(); schedule(); });
+      host.appendChild(b);
+    });
+  }
+  function buildFields() {
+    const host = $('#ec-fields'); host.innerHTML = '';
+    const st = S.STYLES[state.style], f = fields();
+    const head = document.createElement('div'); head.className = 'ec-label'; head.textContent = st.label; host.appendChild(head);
+    st.fields.forEach(spec => {
+      const wrap = document.createElement('div'); wrap.className = 'ec-field';
+      const id = 'ec-f-' + spec.key;
+      const label = document.createElement('label'); label.htmlFor = id; label.textContent = spec.label; wrap.appendChild(label);
+      if (spec.type === 'image') {
+        const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+        const input = document.createElement('input'); input.type = 'file'; input.id = id; input.accept = 'image/png,image/svg+xml,image/jpeg'; input.className = 'ec-hint';
+        input.addEventListener('change', () => {
+          const file = input.files && input.files[0]; if (!file) return;
+          const r = new FileReader();
+          r.onload = () => { f[spec.key] = String(r.result); buildFields(); schedule(); };
+          r.readAsDataURL(file);
+        });
+        row.appendChild(input);
+        if (f[spec.key]) {
+          const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'ec-btn secondary'; clear.style.width = 'auto'; clear.style.padding = '7px 12px'; clear.style.fontSize = '12px';
+          clear.textContent = 'Use the generated code'; clear.addEventListener('click', () => { f[spec.key] = ''; buildFields(); schedule(); });
+          row.appendChild(clear);
+        }
+        wrap.appendChild(row);
+      } else {
+        const input = document.createElement(spec.type === 'textarea' ? 'textarea' : 'input');
+        if (spec.type !== 'textarea') input.type = 'text'; else input.rows = spec.rows || 3;
+        input.id = id; input.className = 'ec-input'; input.placeholder = spec.placeholder || ''; input.value = f[spec.key] || '';
+        input.addEventListener('input', () => { f[spec.key] = input.value; schedule(); });
+        wrap.appendChild(input);
+      }
+      if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+      host.appendChild(wrap);
+    });
+  }
+  function buildLook() {
+    const st = S.STYLES[state.style];
+    const acc = $('#ec-accents'); acc.innerHTML = '';
+    Object.entries(S.ACCENTS).forEach(([key, hex]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-swatch'; b.title = key[0].toUpperCase() + key.slice(1);
+      b.style.background = hex; b.setAttribute('aria-label', 'Accent ' + key); b.setAttribute('aria-pressed', String(state.accent === key));
+      b.addEventListener('click', () => { state.accent = key; buildLook(); schedule(); });
+      acc.appendChild(b);
+    });
+    const bg = $('#ec-bg'); bg.innerHTML = '';
+    BG.forEach(([key, label]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', String(state.background === key));
+      if (key === 'auto') b.title = 'This style’s default: ' + st.background.replace('pattern-rail', 'Community rail on Navy').replace('pattern', 'pattern field');
+      b.addEventListener('click', () => { state.background = key; buildLook(); schedule(); });
+      bg.appendChild(b);
+    });
+    const mode = effectiveBg();
+    $('#ec-pattern-wrap').style.display = (mode === 'pattern' || mode === 'pattern-rail') ? '' : 'none';
+    const pat = $('#ec-pattern'); pat.innerHTML = '';
+    Object.entries(S.CONFIG.patterns).forEach(([key, p]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = p.label; b.setAttribute('aria-pressed', String(state.pattern === key));
+      b.addEventListener('click', () => { state.pattern = key; buildLook(); schedule(); });
+      pat.appendChild(b);
+    });
+    $('#ec-channel-wrap').style.display = st.coBrand ? '' : 'none';
+    const sel = $('#ec-channel'); sel.innerHTML = '';
+    Object.entries(S.CONFIG.channels).forEach(([key, ch]) => {
+      const o = document.createElement('option'); o.value = key; o.textContent = ch.label; o.selected = state.channel === key; sel.appendChild(o);
+    });
+  }
+  function buildAll() { buildStyles(); buildFields(); buildLook(); }
+
+  // ---------- preview ----------
+  let timer = null;
+  function schedule() { clearTimeout(timer); timer = setTimeout(render, 60); }
+  function guides(scaler) {
+    if (!$('#ec-guides').checked) return;
+    [[S.SAFE.action, 'rgba(255,207,0,.9)', '#FFCF00', 'ACTION SAFE (90% OF SCREEN)'], [S.SAFE.title, 'rgba(255,70,70,.9)', '#FF5A5A', 'TITLE SAFE (80% OF SCREEN)']].forEach(([r, border, color, label]) => {
+      const g = document.createElement('div');
+      g.style.cssText = 'position:absolute;left:' + r.x + 'px;top:' + r.y + 'px;width:' + r.w + 'px;height:' + r.h + 'px;border:2px solid ' + border + ';box-sizing:border-box;pointer-events:none';
+      const t = document.createElement('span');
+      t.style.cssText = 'position:absolute;left:8px;top:6px;font-size:20px;font-weight:700;letter-spacing:.1em;color:' + color + ';background:rgba(10,20,90,.7);padding:2px 10px';
+      t.textContent = label; g.appendChild(t); scaler.appendChild(g);
+    });
+  }
+  function scaleToFit() {
+    const main = $('#ec-main'), host = $('#ec-scaler-host'), scaler = $('#ec-scaler');
+    const availW = main.clientWidth - 80, availH = Math.max(200, main.clientHeight - 120);
+    const sc = Math.max(0.05, Math.min(availW / S.W, availH / S.H, 1));
+    scaler.style.transform = 'scale(' + sc + ')';
+    host.style.width = (S.W * sc) + 'px'; host.style.height = (S.H * sc) + 'px';
+  }
+  async function render() {
+    save();
+    const scaler = $('#ec-scaler'); scaler.innerHTML = '';
+    const stage = S.createStage(renderState());
+    scaler.appendChild(stage);
+    guides(scaler);
+    scaleToFit();
+    await Promise.all(Array.from(stage.querySelectorAll('img')).map(im => im.complete ? null : new Promise(res => { im.onload = res; im.onerror = res; })));
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const lay = S.layout(stage);
+    showWarnings(S.copyWarnings(renderState()).concat(lay.warnings));
+  }
+  function showWarnings(list) {
+    const host = $('#ec-warnings'); host.innerHTML = '';
+    const ok = !list.length;
+    ['#ec-dl-hd', '#ec-dl-uhd', '#ec-dl-both'].forEach(id => { $(id).disabled = !ok; });
+    if (ok) return;
+    const w = document.createElement('div'); w.className = 'ec-warn';
+    w.textContent = 'Fix these before downloading:';
+    const ul = document.createElement('ul'); list.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    w.appendChild(ul); host.appendChild(w);
+  }
+
+  // ---------- download ----------
+  function status(msg, kind) { const s = $('#ec-status'); s.className = msg ? 'ec-status ' + kind : ''; s.textContent = msg || ''; }
+  function trigger(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  async function download(scales) {
+    if (!window.htmlToImage) { status('The image library did not load. Reload the page.', 'err'); return; }
+    status('Rendering…', 'busy');
+    const names = [];
+    try {
+      for (const scale of scales) {
+        const r = await S.exportPng(renderState(), scale);
+        if (r.warnings.length) { showWarnings(r.warnings); status('Not downloaded: fix the warnings first.', 'err'); return; }
+        const name = S.fileName(renderState(), scale);
+        trigger(r.url, name); names.push(name);
+        if (scales.length > 1) await new Promise(res => setTimeout(res, 400));
+      }
+      status('Downloaded ' + names.join(' and ') + '.', 'ok');
+    } catch (e) { status('Render failed: ' + (e && e.message || e), 'err'); }
+  }
+  $('#ec-dl-hd').addEventListener('click', () => download([1]));
+  $('#ec-dl-uhd').addEventListener('click', () => download([2]));
+  $('#ec-dl-both').addEventListener('click', () => download([1, 2]));
+  $('#ec-guides').addEventListener('change', schedule);
+  $('#ec-channel').addEventListener('change', (e) => { state.channel = e.target.value; schedule(); });
+  window.addEventListener('resize', scaleToFit);
+
+  buildAll();
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+})();
+</script>
+</body>
+</html>
