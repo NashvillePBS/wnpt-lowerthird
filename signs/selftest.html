@@ -41,9 +41,9 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
     'partners-letter-portrait':        { sign: 'welcome', fields: { subline: 'Community Screening and Conversation', partnerLabel: 'Supported by', partners: LOGOS } },
     'partners-seven-letter-landscape': { sign: 'welcome', orientation: 'landscape', fields: { subline: 'Community Screening', partnerLabel: 'Supported by', partners: LOGOS.concat(LOGOS, [LOGOS[0]]) } },
     'donate-letter-portrait':          { sign: 'donate' },
-    'donate-letter-landscape':         { sign: 'donate', orientation: 'landscape', fields: { shortURL: 'https://wnpt.tv/donate' } },
-    'apps-letter-portrait':            { sign: 'apps', fields: { apps: { pbs: { on: true, url: 'pbs.org/app', cta: '', shortPath: '', shortURL: '' }, station: { on: true, url: 'wnpt.org/app', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: 'pbskids.org/apps', cta: '', shortPath: '', shortURL: '' } } } },
-    'apps-two-tabloid-landscape':      { sign: 'apps', size: 'tabloid', orientation: 'landscape', fields: { apps: { pbs: { on: true, url: 'pbs.org/app', cta: '', shortPath: '', shortURL: 'https://wnpt.tv/pbsapp' }, station: { on: false, url: '', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: 'pbskids.org/apps', cta: '', shortPath: '', shortURL: '' } } } },
+    'donate-letter-landscape':         { sign: 'donate', orientation: 'landscape', tracked: { donate: 'https://wnpt.tv/donate-sign' } },
+    'apps-letter-portrait':            { sign: 'apps', tracked: { apps: { pbs: 'https://wnpt.tv/pbs-app', station: 'https://wnpt.tv/nashville-pbs-app', kids: 'https://wnpt.tv/pbs-kids-app' } }, fields: { apps: { pbs: true, station: true, kids: true } }, enableStation: true },
+    'apps-two-tabloid-landscape':      { sign: 'apps', size: 'tabloid', orientation: 'landscape', tracked: { apps: { pbs: 'https://wnpt.tv/pbs-app', station: '', kids: 'https://wnpt.tv/pbs-kids-app' } }, fields: { apps: { pbs: true, station: false, kids: true } } },
     'custom-qr-letter-portrait':       { sign: 'custom', fields: { headline: 'Tonight\'s Program', subline: 'Scan for the program notes', url: 'wnpt.org/events', shortURL: 'https://wnpt.tv/notes' } }
   };
   if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
@@ -55,6 +55,10 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
     for (const [name, c] of Object.entries(CASES)) {
       if (only && only !== name) continue;
       const state = EventSigns.defaultState(c.sign);
+      // Tracked links are config in production (Shane sets them); the harness sets stand-ins per case.
+      EventSigns.CONFIG.apps.station.enabled = !!c.enableStation; // the launch switch, exercised once here
+      EventSigns.CONFIG.tracked.donate = (c.tracked && c.tracked.donate) || '';
+      Object.keys(EventSigns.CONFIG.tracked.apps).forEach(k => { EventSigns.CONFIG.tracked.apps[k] = (c.tracked && c.tracked.apps && c.tracked.apps[k]) || ''; });
       if (c.colorway) state.colorway = c.colorway;
       if (c.accent) state.accent = c.accent;
       if (c.size) state.size = c.size;

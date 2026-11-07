@@ -43,16 +43,25 @@
     qr: { size: 192, dark: '#0A145A', level: 'M', caption: 22 },
     // The donate sign (Shane, 2026-11-07): "Donate at least $5 per month or $60 per year and enjoy Nashville PBS
     // Passport", with the amounts as fields because the Passport price may change; wnpt.org/donate, not /support.
-    donate: { sentence: 'Donate at least ${monthly} per month or ${yearly} per year and enjoy Nashville PBS Passport', passportFile: 'Passport_Horizontal_Color.svg', passportH: 54 },
+    donate: { sentence: 'Donate at least ${monthly} per month or ${yearly} per year and enjoy Nashville PBS Passport', url: 'wnpt.org/donate', passportFile: 'Passport_Horizontal_Color.svg', passportH: 54 },
+    // Locked QR targets (Shane, 2026-11-07): the donate and app signs always encode these tracked wnpt.tv
+    // links, so every scan shows up in Google Analytics and nobody prints an untracked variant. Shane
+    // supplies them (shane.md); until a link is set, the donate QR falls back to the printed address and an
+    // app block has no QR and the download is blocked. The custom sign is the only one that makes new links.
+    tracked: {
+      donate: '',
+      apps: { pbs: '', station: '', kids: '' }
+    },
     // The app sign: one block per app the staffer turns on. Rules from the PBS App Marketing Guide (July 2024)
     // via the brand book: the PBS logo is the app's graphic (never the store icon), paired with an all-caps call
-    // to action; any "free" claim carries the fine print once. The Nashville PBS app is listed because Shane
-    // says the station has one (2026-11-07); the October brand book still says it is not launched, so he
-    // confirms the wording. Logo heights put the three marks at a similar visual weight.
+    // to action; any "free" claim carries the fine print once. The Nashville PBS app has not launched (Shane,
+    // 2026-11-07: "keep everything ready for it to be turned on, just don't expose it as an option yet"):
+    // `enabled: false` hides it from the page and the sign; flip it to true, set its tracked link, done.
+    // Logo heights put the three marks at a similar visual weight.
     apps: {
-      pbs:     { label: 'PBS app',           file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP' },
-      station: { label: 'Nashville PBS app', file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP' },
-      kids:    { label: 'PBS KIDS app',      file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS VIDEO APP' }
+      pbs:     { label: 'PBS app',           enabled: true,  file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP' },
+      station: { label: 'Nashville PBS app', enabled: false, file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP' },
+      kids:    { label: 'PBS KIDS app',      enabled: true,  file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS VIDEO APP' }
     },
     finePrint: '*Local PBS station membership required to access some content.',
     // The app sign's blocks: logo over the call to action at left, the QR code at right. Portrait stacks one
@@ -80,12 +89,13 @@
     { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Donate', hint: 'Press Enter to force a line break.' },
     { key: 'monthly', label: 'Monthly amount', type: 'text', placeholder: '5', hint: 'Dollars per month for Passport; the sentence reads "at least $5 per month".' },
     { key: 'yearly', label: 'Yearly amount', type: 'text', placeholder: '60', hint: 'Dollars per year.' },
-    { key: 'body', label: 'Small text', type: 'textarea', rows: 2, placeholder: '', hint: 'A sentence or two under the Passport line. Optional.' }
-  ].concat(QR_FIELDS);
+    { key: 'body', label: 'Small text', type: 'textarea', rows: 2, placeholder: '', hint: 'A sentence or two under the Passport line. Optional.' },
+    { key: 'qrNote', label: 'QR code', type: 'note', hint: 'Fixed: the code is the station\'s tracked donate link, so scans count in Google Analytics. The printed address is wnpt.org/donate.' }
+  ];
   const APP_FIELDS = [
     { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Get Our Apps', hint: 'Shorter than the other signs so three apps fit. Press Enter to force a line break.' },
     { key: 'subline', label: 'Second line', type: 'text', placeholder: 'Watch on your phone, tablet and TV.', hint: 'Optional.' },
-    { key: 'apps', label: 'Apps', type: 'apps', hint: 'Turn on the apps the sign is for. Each gets its logo, its call to action and a QR code to its link. A "free" claim adds the required fine print once.' }
+    { key: 'apps', label: 'Apps', type: 'apps', hint: 'Turn on the apps the sign is for. Each gets its logo, its call to action and the station\'s tracked QR code (fixed, so scans count in Google Analytics). A "free" claim adds the required fine print once.' }
   ];
   const PHOTO_SUB = 'This event is being photographed and/or video recorded.';
   const PHOTO_BODY = 'Please be advised that by entering this space, you are agreeing to being filmed and/or photographed, and the resulting assets may be used for marketing or promotional purposes.\n\nIf you do not wish to be photographed or recorded, please notify one of our staff members.\n\nThank you!';
@@ -98,8 +108,8 @@
     quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
     photo:        { label: 'Photography Notice',   blurb: 'The station\'s approved notice that the event is photographed or recorded.',  defaults: { headline: 'Attention', subline: PHOTO_SUB, body: PHOTO_BODY, arrow: 'none', partnerLabel: '', partners: [] } },
     custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines, with a QR code if you give it a link.', defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [], url: '', shortPath: '', shortURL: '' }, fields: FIELDS.concat(QR_FIELDS) },
-    donate:       { label: 'Donate',               blurb: 'wnpt.org/donate with the Passport amounts and a QR code.', defaults: { headline: 'Donate', monthly: '5', yearly: '60', body: '', url: 'wnpt.org/donate', shortPath: '', shortURL: '', partnerLabel: '', partners: [] }, fields: DONATE_FIELDS },
-    apps:         { label: 'Our Apps',             blurb: 'Download the PBS app, the Nashville PBS app or the PBS KIDS app, each with a QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: { on: true, url: '', cta: '', shortPath: '', shortURL: '' }, station: { on: true, url: '', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: '', cta: '', shortPath: '', shortURL: '' } }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
+    donate:       { label: 'Donate',               blurb: 'wnpt.org/donate with the Passport amounts and the tracked QR code.', defaults: { headline: 'Donate', monthly: '5', yearly: '60', body: '', partnerLabel: '', partners: [] }, fields: DONATE_FIELDS },
+    apps:         { label: 'Our Apps',             blurb: 'Download the PBS app, the Nashville PBS app or the PBS KIDS app, each with its tracked QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: true, station: false, kids: true }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
   };
   function fieldsFor(sign) { return (SIGNS[sign] && SIGNS[sign].fields) || FIELDS; }
 
@@ -171,14 +181,13 @@
       const b = SC.el('div', 'font-size:' + r(CONFIG.body * k) + 'px;font-weight:400;line-height:1.45;margin-top:' + r(26 * k) + 'px;max-width:' + r(CONFIG.bodyMax * k) + 'px;white-space:pre-line;text-wrap:pretty;color:' + fg, f.body.trim());
       b.className = 'ec-readable'; text.appendChild(b);
     }
-    const shown = (f.url || '').trim();
-    if (shown) {
-      const u = SC.el('div', 'font-size:' + r(64 * k) + 'px;font-weight:800;letter-spacing:-.01em;line-height:1.05;margin-top:' + r(34 * k) + 'px;color:' + (navy ? '#fff' : C.pbsBlue), shown);
-      u.className = 'ec-readable'; u.dataset.fitwrap = '1'; u.dataset.base = r(64 * k); u.dataset.floor = r(36 * k);
-      text.appendChild(u);
-    }
+    const shown = CONFIG.donate.url;
+    const u = SC.el('div', 'font-size:' + r(64 * k) + 'px;font-weight:800;letter-spacing:-.01em;line-height:1.05;margin-top:' + r(34 * k) + 'px;color:' + (navy ? '#fff' : C.pbsBlue), shown);
+    u.className = 'ec-readable'; u.dataset.fitwrap = '1'; u.dataset.base = r(64 * k); u.dataset.floor = r(36 * k);
+    text.appendChild(u);
     content.appendChild(text);
-    const q = qrBlock((f.shortURL || '').trim() || SC.urlTarget(f.url), (f.shortURL || '').replace(/^https?:\/\//, '') || '', k, fg);
+    const tracked = (CONFIG.tracked.donate || '').trim();
+    const q = qrBlock(tracked || SC.urlTarget(shown), tracked ? tracked.replace(/^https?:\/\//, '') : '', k, fg);
     if (q) { if (!d.land) q.style.alignSelf = 'flex-start'; content.appendChild(q); }
   }
 
@@ -199,7 +208,7 @@
     }
     content.appendChild(text);
     const apps = f.apps || {};
-    const on = Object.keys(CONFIG.apps).filter(key => apps[key] && apps[key].on);
+    const on = Object.keys(CONFIG.apps).filter(key => CONFIG.apps[key].enabled && (apps[key] === true || (apps[key] && apps[key].on)));
     let free = false;
     if (on.length) {
       const qrSize = r((d.land ? A.qr.landscape : A.qr.portrait) * k);
@@ -214,14 +223,15 @@
         logo.style.cssText = 'display:block;max-height:' + r(a.logoH * k) + 'px;max-width:100%;width:auto;height:auto;object-fit:contain';
         logo.className = 'ec-readable';
         col.appendChild(logo);
-        const cta = ((v.cta || '').trim() || a.cta).toUpperCase();
+        const cta = a.cta.toUpperCase();
         if (/\bFREE\b/.test(cta)) free = true;
         const c = SC.el('div', 'font-size:' + r(A.cta * k) + 'px;font-weight:800;letter-spacing:.04em;line-height:1.2;color:' + fg, cta);
         c.className = 'ec-readable';
         col.appendChild(c);
         block.appendChild(col);
-        const target = (v.shortURL || '').trim() || SC.urlTarget(v.url);
+        const target = (CONFIG.tracked.apps[key] || '').trim();
         const src = target ? SC.qrSvgDataUrl(target, CONFIG.qr.dark, CONFIG.qr.level) : '';
+        if (!src) block.dataset.missing = 'No tracked link is set for the ' + a.label + ' yet (shane.md): no QR code, so the sign cannot be downloaded.';
         if (src) {
           const qb = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(6 * k) + 'px;flex:none');
           const img = document.createElement('img');
@@ -229,7 +239,7 @@
           img.style.cssText = 'display:block;width:' + qrSize + 'px;height:' + qrSize + 'px';
           img.className = 'ec-readable';
           qb.appendChild(img);
-          const shown = (v.shortURL || '').replace(/^https?:\/\//, '') || (v.url || '').trim();
+          const shown = target.replace(/^https?:\/\//, '');
           if (shown) { const cap = SC.el('div', 'font-size:' + r(A.caption * k) + 'px;font-weight:700;line-height:1.2;max-width:' + r(A.captionW * k) + 'px;overflow-wrap:anywhere;color:' + fg, shown); cap.className = 'ec-readable'; qb.appendChild(cap); }
           block.appendChild(qb);
         }
@@ -343,6 +353,7 @@
       if (e.scrollWidth > e.clientWidth + 1) warnings.push('A word is too long for the sign even at the smallest size: "' + e.textContent + '". Shorten it.');
       sizes.push({ text: e.textContent, px: s, pt: Math.round(s * 72 / DPI) });
     });
+    stage.querySelectorAll('[data-missing]').forEach(e => warnings.push(e.dataset.missing));
     const copy = stage.querySelector('[data-box]');
     if (copy && copy.scrollHeight > copy.clientHeight + 1) warnings.push('The copy is taller than the sign. Shorten it, remove a line or remove a partner logo.');
     const out = SC.readableOutside(stage, d.W, { x: MARGIN, y: MARGIN, w: d.W - 2 * MARGIN, h: d.H - 2 * MARGIN });

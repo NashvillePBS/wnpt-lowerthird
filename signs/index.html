@@ -62,8 +62,8 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 </style>
 <script src="../vendor/html-to-image.js?v=20261107c"></script>
 <script src="../vendor/qrcode.js?v=20261107c"></script>
-<script src="../shared/studio-core.js?v=20261107c"></script>
-<script src="signs.js?v=20261107c"></script>
+<script src="../shared/studio-core.js?v=20261107d"></script>
+<script src="signs.js?v=20261107d"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -109,6 +109,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
           <li>Everything readable stays inside the dashed 0.5 in print margin; the headline shrinks only when a single word is too wide, and the tool tells you when to shorten the copy.</li>
           <li>Signs are white so the office color printer can run them quickly: Navy type, the color logo and one thin accent band. Navy is there for a print shop or a sign holder; it covers the page in ink and office printers leave a thin white edge on it.</li>
           <li>Partner logos: add the files under Partner logos and they line up above the station logo, each at its own shape; add more and the row wraps and the logos shrink. Keep the label plain: "Supported by".</li>
+          <li>QR codes: the Donate and Our Apps signs carry the station's fixed, tracked codes, so every scan counts in Google Analytics. The custom sign makes a new wnpt.tv short link for whatever address you give it.</li>
           <li>The PDF is one page at the exact paper size, 300 dpi, no bleed or crop marks: print at 100% scale, never "fit to page".</li>
           <li>Your last sign is remembered in this browser.</li>
         </ol>
@@ -181,23 +182,23 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
         if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
         host.appendChild(wrap); return;
       }
+      if (spec.type === 'note') {
+        if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+        host.appendChild(wrap); return;
+      }
       if (spec.type === 'apps') {
         const apps = f.apps || (f.apps = {});
         Object.entries(S.CONFIG.apps).forEach(([key, a]) => {
-          const v = apps[key] || (apps[key] = { on: false, url: '', cta: '', shortPath: '', shortURL: '' });
-          const card = document.createElement('div'); card.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid #e4e7f1;border-radius:10px;background:#f6f7fb';
-          const top = document.createElement('label'); top.style.cssText = 'display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#0A145A;cursor:pointer';
-          const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!v.on; cb.style.accentColor = '#2638C4';
-          cb.addEventListener('change', () => { v.on = cb.checked; buildFields(); schedule(); });
-          top.appendChild(cb); top.appendChild(document.createTextNode(a.label)); card.appendChild(top);
-          if (v.on) {
-            const link = document.createElement('input'); link.type = 'text'; link.className = 'ec-input'; link.placeholder = 'Link to the app, e.g. pbs.org/app'; link.value = v.url || '';
-            link.setAttribute('aria-label', a.label + ' link'); link.addEventListener('input', () => { v.url = link.value; v.shortURL = ''; schedule(); }); card.appendChild(link);
-            const cta = document.createElement('input'); cta.type = 'text'; cta.className = 'ec-input'; cta.placeholder = a.cta; cta.value = v.cta || '';
-            cta.setAttribute('aria-label', a.label + ' call to action'); cta.addEventListener('input', () => { v.cta = cta.value; schedule(); }); card.appendChild(cta);
-            card.appendChild(shortLinkRow(v, 'shortPath', 'shortURL', 'url', id + '-' + key));
-          }
-          wrap.appendChild(card);
+          if (!a.enabled) return; // not launched yet: kept ready, not offered
+          const on = apps[key] === true || (apps[key] && apps[key].on);
+          const row = document.createElement('label'); row.style.cssText = 'display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:#0A145A;cursor:pointer;padding:8px 10px;border:1px solid #e4e7f1;border-radius:8px;background:#f6f7fb';
+          const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!on; cb.style.accentColor = '#2638C4';
+          cb.addEventListener('change', () => { apps[key] = cb.checked; schedule(); });
+          row.appendChild(cb); row.appendChild(document.createTextNode(a.label));
+          const tracked = (S.CONFIG.tracked.apps[key] || '').replace(/^https?:\/\//, '');
+          const t = document.createElement('span'); t.className = 'ec-hint'; t.style.marginLeft = 'auto'; t.textContent = tracked ? ('QR: ' + tracked) : 'no tracked link yet';
+          row.appendChild(t);
+          wrap.appendChild(row);
         });
         if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
         host.appendChild(wrap); return;

@@ -270,9 +270,9 @@ sign is one entry in `SIGNS`.
 | Restrooms | Restrooms | right |
 | Quiet Please | Quiet Please / Recording in progress | no |
 | Photography Notice | Attention / This event is being photographed and/or video recorded. / the station's approved paragraphs and "Thank you!" (Shane, 2026-11-07) | no |
-| Custom | empty; a QR code when a web address is given | optional |
-| Donate | Donate / "Donate at least $5 per month or $60 per year and enjoy Nashville PBS Passport" (the amounts are fields, since the Passport price may change) / the Passport lockup / wnpt.org/donate large / a QR code | no |
-| Our Apps | Get Our Apps / Watch on your phone, tablet and TV. / one block per app turned on: the PBS app (national PBS logo, GET THE FREE PBS APP), the Nashville PBS app (station lockup, GET THE FREE NASHVILLE PBS APP), the PBS KIDS app (PBS KIDS logo, GET THE FREE PBS KIDS VIDEO APP), each with its link and QR code; the fine print once when a call to action says "free" | no |
+| Custom | empty; a QR code when a web address is given, with a button that makes a new wnpt.tv short link for it | optional |
+| Donate | Donate / "Donate at least $5 per month or $60 per year and enjoy Nashville PBS Passport" (the amounts are fields, since the Passport price may change) / the Passport lockup / wnpt.org/donate large / the station's **fixed, tracked** QR code (`CONFIG.tracked.donate`; the printed address until it is set) | no |
+| Our Apps | Get Our Apps / Watch on your phone, tablet and TV. / one block per app turned on: the PBS app (national PBS logo, GET THE FREE PBS APP) and the PBS KIDS app (PBS KIDS logo, GET THE FREE PBS KIDS VIDEO APP), each with its **fixed, tracked** QR code (`CONFIG.tracked.apps`); the fine print once when a call to action says "free". The Nashville PBS app is wired in behind `enabled: false` until it launches (Shane, 2026-11-07) | no |
 
 Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: **White by default** (Navy
 type, color logo), because these signs are printed in-house on the office color printer and a Navy
@@ -319,7 +319,11 @@ while a warning stands (a word too long at the floor, copy taller than the sign,
 print margin, a missing image).
 
 **Short links and QR codes.** The QR code is made in the page (`vendor/qrcode.js`, shared through
-`StudioCore.qrSvgDataUrl`). A "Make short link" button next to the address asks the studio's own API,
+`StudioCore.qrSvgDataUrl`). On the Donate and Our Apps signs the code is locked to a tracked wnpt.tv link
+that Shane sets once in `CONFIG.tracked` (his call, 2026-11-07: "lock down that QR code for those so I
+can track in Google Analytics"), so nobody prints an untracked variant; an app with no tracked link yet
+gets no code and the download is blocked. Only the custom sign makes new links: a "Make short link"
+button next to the address asks the studio's own API,
 `POST /api/shortlink` on graphics.wnpt.app (`src/graphics-worker.js`), which verifies the Cloudflare
 Access login again and creates a wnpt.tv link in Short.io with the station's key, held as the Worker
 secret `SHORTIO_API_KEY` that only Shane sets; the browser never sees the key. The QR then encodes the

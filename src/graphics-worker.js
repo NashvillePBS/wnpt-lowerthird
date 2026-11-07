@@ -69,7 +69,10 @@ export default {
       if (path && !PATH_RE.test(path)) return json({ error: 'A short link name is letters, numbers and hyphens, 63 at most.' }, 400);
       const payload = { domain: env.SHORTIO_DOMAIN, originalURL: parsed.toString(), title: String(body.title || 'Graphics studio sign').slice(0, 120) };
       if (path) payload.path = path;
-      const res = await fetch('https://api.short.io/links', {
+      // A Short.io public key (pk_...) may only create links and uses the public endpoint; a secret key (sk_...)
+      // uses the full one. Either works here, because creating links is all this Worker does.
+      const endpoint = env.SHORTIO_API_KEY.startsWith('pk_') ? 'https://api.short.io/links/public' : 'https://api.short.io/links';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { Authorization: env.SHORTIO_API_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload)
