@@ -14,7 +14,7 @@ docs
 *.dc.html
 dist-airtable
 dist-cdn
-support.js
+/support.js
 package.json
 package-lock.json
 wrangler.toml
