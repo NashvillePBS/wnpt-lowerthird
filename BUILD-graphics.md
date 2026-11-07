@@ -14,7 +14,7 @@ Where a build departs from a template, the section says so and why.
 **Status (2026-11-07):** both generators exist and pass their verifiers (§A8, §B8); the PowerPoint
 sign template is built (§B10). Waiting on Shane: which end-card styles and which signs link from the
 picker, whether sponsor logos belong on signs, and the support card's facts (Part C). The hosting move
-(Part D) is Shane's "Yes, move it" of 2026-11-07; its steps and evidence are in `PROGRESS.md`.
+(Part D) is live: https://graphics.wnpt.app/ since 2026-11-07, evidence in `PROGRESS.md`.
 
 ---
 
@@ -409,8 +409,8 @@ session (shane.md asks for that one open).
 Shane, 2026-11-07, via the design-system session: "Yes, move it." The studio leaves public GitHub
 Pages for `graphics.wnpt.app` behind Cloudflare Access, like the other staff tools. The hostname is
 the default the session picked because Shane now calls the tool the station's graphics studio; it is
-renameable (shane.md). What changes, and why, is recorded in `docs/DECISIONS.md`; the steps, which of
-them this session could run and which wait on Shane, and their evidence in `PROGRESS.md`.
+renameable (shane.md). What changes, and why, is recorded in `docs/DECISIONS.md`; the steps and their
+evidence in `PROGRESS.md`. Live since 2026-11-07 17:53 UTC; the old address redirects since 17:58.
 
 - **Serving.** A static-assets Worker (`wrangler.toml` at the repo root, name `wnpt-graphics`) serves
   the repository itself on the custom domain; `.assetsignore` keeps git metadata, the proxy, scripts

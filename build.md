@@ -1993,5 +1993,6 @@ capture pipeline, which carries the §6609ec6 `captureAtScale` fix) and the vend
 the open questions are in `BUILD-graphics.md`; the standing decisions in `docs/DECISIONS.md`. The
 studio's picker gets one card per generator once Shane picks what ships (shane.md). The same work
 moved the studio to graphics.wnpt.app behind Access (BUILD-graphics.md Part D), which supersedes the
-GitHub Pages deployment described in §11.1 and §13.1 step 4: a push still updates the Pages copy
-until the redirect lands, and `npm run deploy` updates the new address.
+GitHub Pages deployment described in §11.1 and §13.1 step 4: since 2026-11-07 a push updates nothing
+live by itself; `npm run deploy` publishes the repo to graphics.wnpt.app, and the Pages site is a
+redirect page on the `gh-pages` branch.

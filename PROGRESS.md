@@ -4,12 +4,11 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
-## Session 3, 2026-11-07: event signs, the shared core, and the move prepared
+## Session 3, 2026-11-07: event signs, the shared core, and the move to graphics.wnpt.app
 
-**Status:** signs built and verified; the move to graphics.wnpt.app is prepared end to end but four of
-its production steps were refused by this session's permission mode and wait on Shane or a session
-that may run them (shane.md 1 to 4, each a pasteable command). Nothing is linked from the studio's
-picker yet (Shane's styles answer, shane.md 5).
+**Status:** complete. Signs built and verified; the studio is live at https://graphics.wnpt.app/ behind
+Access and the old address redirects. Nothing is linked from the studio's picker yet (Shane's picks,
+shane.md 4).
 
 Done
 - `signs/`: eight printed event signs (welcome, directional with arrow, reserved, registration,
@@ -21,38 +20,39 @@ Done
   (readouts in BUILD-graphics.md §A8 and §B8; samples under `endcards/samples/`, `signs/samples/`).
 - `templates/signs/`: the Arial PowerPoint sign templates, Letter portrait and landscape, with the
   build script; QuickLook renders the first slide as designed (not opened in PowerPoint: human click).
-- The move, prepared: `wrangler.toml` (static-assets Worker `wnpt-graphics`, route held off),
-  `.assetsignore`, `package.json` with wrangler 4.158; the Worker uploaded with **no route and no
-  workers.dev address** (version `ade31ea4`, 105 files); the proxy code and `worker/wrangler.toml` take
-  a list of origins (not deployed: refused); the Access entry committed in wnpt-events (not pushed:
-  refused); the hub tile committed in wnpt-hub (not pushed: refused); the redirect page prepared on
-  the `gh-pages` branch (see the commit message for whether its push went through).
-- Docs: BUILD-graphics.md (Parts A to D), docs/DECISIONS.md 1 to 7, README.md repo map, build.md §13.10,
-  SESSIONS.md.
+- The move (docs/DECISIONS.md 1 to 3), in order: Access application created by wnpt-events
+  `access.yml` (run 42398381658: "created graphics.wnpt.app (allow)"); site Worker `wnpt-graphics`
+  deployed on the custom domain (version 40d3553a, then 647a1b5e with `.wrangler` ignored); proxy
+  deployed with the origin list (9d00fae7), then with the new origin only (b184ae9a); hub tile pushed
+  (c72685a) and deployed (28c88286); Pages source switched to `gh-pages` (build 603f386). The first
+  attempts at the pushes and deploys were refused by the session's permission mode; Shane answered
+  "Let Claude retry" and they went through one step at a time.
 
 Evidence
-- Verifier readouts: BUILD-graphics.md §A8, §B8 and the commit message.
-- Proxy CORS check against the deployed proxy, before the refused deploy: it still answers the Pages
-  origin only (the dashboard variable); the list goes live with shane.md 3.
-- `wrangler deploy` of the site Worker: "Uploaded 91 files (14 already uploaded)", "No targets
-  deployed" (by design: no route yet).
-- Refusals (auto-mode classifier): `git push` to wnpt-events (shared resource), `wrangler deploy` of
-  the proxy (production deploy). Not worked around.
+- Outside: `curl -sI https://graphics.wnpt.app/`, `/endcards/`, `/signs/` answer 302 to
+  nashville-pbs.cloudflareaccess.com; DNS was empty before the deploy (no collision).
+- Signed in (Shane's Chrome): the picker loads; the Nashville PBS Brand generator's Series picker
+  lists series through the proxy from the new origin; End Cards downloaded
+  `endpage-tennessee-crossroads-1920x1080.png` (checked in ~/Downloads: 1920×1080 RGBA, opaque);
+  Event Signs downloaded `sign-welcome-letter-portrait.pdf` (47,692 bytes; MediaBox 612×792 pt; one
+  2550×3300 RGB image; Navy at (100,100), white at the centre). No console errors on either page.
+- Proxy CORS after the final deploy: Origin graphics.wnpt.app is echoed; Origin nashvillepbs.github.io
+  gets graphics.wnpt.app back (the browser blocks it); `/series` still answers.
+- Old address after the Pages switch: `/` serves "Moved · Nashville PBS Lower Thirds Studio" (200);
+  `/endcards/`, `/pledge/`, `/fonts/PBSSans.woff2` answer 404 with the same redirect page; in Chrome
+  the `/endcards/` bookmark lands on https://graphics.wnpt.app/endcards/.
+- Hub: wnpt.app deployed with the Graphics tile at https://graphics.wnpt.app/.
 
-Next, in order (shane.md 1 to 4 carry the commands)
-1. Create the Access application: push wnpt-events and run its `access.yml` workflow.
-2. Switch the route on: uncomment `routes` in `wrangler.toml`, `npm run deploy`, confirm from outside
-   (`curl -sI https://graphics.wnpt.app/` answers 302 to nashville-pbs.cloudflareaccess.com) and from a
-   signed-in browser (the picker, a lower third export, an end card export, a sign PDF).
-3. Deploy the proxy (`npm run deploy:proxy`) and confirm the studio at the new address loads series.
-4. Push and deploy the hub; switch the Pages source to `gh-pages`; confirm the old URL redirects; then
-   drop the Pages origin from `ALLOW_ORIGIN` and redeploy the proxy.
-5. Tell the brand page session the final address (`https://graphics.wnpt.app/endcards/`, `/signs/`).
-6. Shane's picks (shane.md 5 to 7): link the picked generators from the studio's Misc grid via
-   `scripts/patch-dist.py`, `cp dist/index.html index.html`, push.
+Next
+1. Shane's picks (shane.md 4 to 6): link the picked generators from the studio's Misc grid via
+   `scripts/patch-dist.py`, `cp dist/index.html index.html`, push, `npm run deploy`, and verify the
+   cards on graphics.wnpt.app.
+2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
+   from wnpt-events `scripts/setup-access.mjs` (shane.md 8).
+3. Optional: the repository private (shane.md 2); a hostname rename (shane.md 3).
 
-Recommended model for the next session: `sonnet` for the deploy steps and the picker card; the
-strongest tier only if a generator changes.
+Recommended model for the next session: `sonnet` for the picker card and deploy; the strongest tier
+only if a generator changes.
 
 ## Session 2, 2026-11-06: End Cards
 

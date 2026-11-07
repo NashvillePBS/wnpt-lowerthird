@@ -14,13 +14,13 @@
 name = "wnpt-graphics"
 compatibility_date = "2026-11-01"
 
-# The custom domain goes live only once the Access application for it
-# exists (wnpt-events scripts/setup-access.mjs, run by its access.yml
-# workflow): until then the Worker is deployed with no route and no
-# workers.dev address, so the site is never public. Uncomment and redeploy.
-# routes = [
-#   { pattern = "graphics.wnpt.app", custom_domain = true }
-# ]
+# The custom domain route provisions the DNS record and the certificate.
+# It was switched on only after the Access application for it existed
+# (wnpt-events scripts/setup-access.mjs, run by its access.yml workflow on
+# 2026-11-07), so the hostname was never public. No workers.dev address.
+routes = [
+  { pattern = "graphics.wnpt.app", custom_domain = true }
+]
 workers_dev = false
 
 [assets]

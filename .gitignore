@@ -14,3 +14,4 @@ node_modules/
 
 # wrangler's local build/state cache, written next to wrangler.toml on deploy
 worker/.wrangler/
+.wrangler/

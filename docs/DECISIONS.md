@@ -9,7 +9,7 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    repository; `.assetsignore` says what stays out. The hostname is a default and renameable. The
    Access application is staff-only (@wnpt.org) and defined in wnpt-events `scripts/setup-access.mjs`
    until the brand-site agency tool takes its policy over, at which point that entry is deleted so the
-   script cannot clobber the tool's edits. The route is not switched on before the application exists.
+   script cannot clobber the tool's edits. The route was switched on after the application existed (live 2026-11-07 17:53 UTC).
 2. **`ALLOW_ORIGIN` lives in `worker/wrangler.toml` `[vars]`, as a comma-separated list** (2026-11-07).
    The proxy echoes the matching origin. Until now it was a dashboard variable holding one origin
    (build.md §11.1); with the studio changing hosts the origin belongs with the code. `AIRTABLE_BASE_ID`
@@ -17,8 +17,9 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
 3. **GitHub Pages becomes a redirect, not a second copy** (2026-11-07). The Pages source moves to a
    `gh-pages` branch holding only `index.html`, `404.html` (both redirect, keeping the path) and
    `.nojekyll`, so the public site stops serving the tool and the PBS Sans files while bookmarks keep
-   working. Making the repository private, which takes the font files off github.com as well, is
-   Shane's click (shane.md): on the org's plan a private repo cannot serve the redirect.
+   working (switched 2026-11-07, Pages build 603f386). Making the repository private, which takes the
+   font files off github.com as well, is Shane's click (shane.md): on the org's plan a private repo
+   cannot serve the redirect.
 4. **Sibling pages, plain JS, one shared capture core** (2026-11-06/07). New generators are sibling
    pages like `pledge/` and `business-essentials/` (build.md §13.8), written in plain HTML and JS with
    no dc runtime and no patcher, on `shared/studio-core.js` (element helpers, line fitting, the

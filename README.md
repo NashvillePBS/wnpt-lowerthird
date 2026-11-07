@@ -6,11 +6,12 @@ on-air end cards, printed event signs, pledge screens, business cards and name
 tags: transparent PNGs keyed over video, full-frame HD and UHD stills, and
 print-ready PDFs.
 
-**Live:** https://nashvillepbs.github.io/wnpt-lowerthird/ until the move to
-**https://graphics.wnpt.app/** (staff sign-in) completes; `PROGRESS.md` says
-where the move stands and `docs/DECISIONS.md` why. GitHub Pages serves the root
-`index.html`, which is a byte-for-byte copy of `dist/index.html`; the Worker in
-`wrangler.toml` serves the same files at the new address.
+**Live:** https://graphics.wnpt.app/ (staff sign-in through Cloudflare Access;
+moved from public GitHub Pages on 2026-11-07, `docs/DECISIONS.md`). The Worker in
+`wrangler.toml` serves this repository: `npm run deploy` after a push. The root
+`index.html` is still a byte-for-byte copy of `dist/index.html`. The old address
+https://nashvillepbs.github.io/wnpt-lowerthird/ is a redirect page (branch
+`gh-pages`) and serves nothing else.
 
 ## Repo map
 
