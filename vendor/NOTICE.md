@@ -1,4 +1,4 @@
-# Vendored libraries
+# Vendored libraries (shared by endcards/ and signs/)
 
 Both files are byte-for-byte the published npm builds, fetched from jsdelivr on 2026-11-06 and kept here so the
 tool has no network dependency at export time (build.md §11.1 records why that matters for a broadcast tool).
@@ -9,4 +9,4 @@ tool has no network dependency at export time (build.md §11.1 records why that 
 | `qrcode.js` | qrcode-generator, Kazuhiko Arase | 1.4.4 | MIT | https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js | `18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780` |
 
 Do not edit them. To upgrade, fetch the new build, record the version and hash here, and rerun
-`python3 scripts/verify-endcards.py --samples`.
+`python3 scripts/verify-graphics.py --samples`.

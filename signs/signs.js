@@ -1,0 +1,243 @@
+/* Nashville PBS Event Signs: printed signs for station events.
+ *
+ * Authored at 96 dpi (US Letter 816 x 1056 px, the brand book's Print register measure) and exported as a
+ * print-ready PDF whose one image is the same DOM captured at 300 dpi (Letter 2550 x 3300, Tabloid
+ * 3300 x 5100). Tabloid is the Letter layout scaled by 11/8.5 with the extra height given to the copy.
+ * Rules: Logo, Color, Typography, Graphic Elements and Print in the Design System's brand book. Taste
+ * lives in CONFIG; the sign types in SIGNS. Loads after vendor/html-to-image.js and shared/studio-core.js.
+ */
+(function (global) {
+  'use strict';
+  const SC = global.StudioCore;
+  const DPI = 96, PRINT_DPI = 300;
+  const SIZES = {
+    letter:  { label: 'Letter', detail: '8.5 × 11 in', w: 8.5, h: 11 },
+    tabloid: { label: 'Tabloid', detail: '11 × 17 in', w: 11, h: 17 }
+  };
+  const C = { pbsBlue: '#2638C4', navy: '#0A145A', mediumBlue: '#0F1E8C', white: '#FFFFFF' };
+  // Yellow is the print register's accent (Documents); Teal and Coral may take its place, never alongside it.
+  const ACCENTS = { yellow: '#FFCF00', teal: '#48D3CD', coral: '#FE704E' };
+  const FONT = "'PBS Sans',Arial,sans-serif";
+  const MARGIN = 48; // px at 96 dpi = 0.5 in: every readable element stays inside it (office printers cannot print the outer 0.2 in)
+
+  // Letter values in px at 96 dpi; Tabloid multiplies them by k = 11 / 8.5. Each is one line to change.
+  const CONFIG = {
+    assets: 'assets/',
+    logoWhite: 'NashvillePBS_Logo_Horizontal_White.svg',
+    logoColor: 'NashvillePBS_Logo_Horizontal_Color.svg',
+    band: 28,                 // the full-width accent band at the top (a fill, never type)
+    padX: 64, padTop: 64, padBottom: 56,
+    headline: 132, subline: 40, body: 26, floor: 56,  // floor: the headline never shrinks below (42 pt at Letter)
+    logo: 40,                 // the station shield's height (print minimum 0.2 in = 19 px)
+    arrow: { portrait: 260, landscape: 300 },
+    arrowUsesAccent: true,    // on Navy the arrow takes the accent (12:1 on Navy for Yellow); on white it is Navy
+    bodyMax: 560
+  };
+
+  const ARROWS = { none: 'None', up: 'Up', 'up-right': 'Up right', right: 'Right', 'down-right': 'Down right', down: 'Down', 'down-left': 'Down left', left: 'Left', 'up-left': 'Up left' };
+  const ROT = { right: 0, 'down-right': 45, down: 90, 'down-left': 135, left: 180, 'up-left': 225, up: 270, 'up-right': 315 };
+
+  const FIELDS = [
+    { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Welcome', hint: 'Big and short. Press Enter to force a line break.' },
+    { key: 'subline', label: 'Second line', type: 'text', placeholder: 'Community Screening', hint: 'Event name, room or detail. Optional.' },
+    { key: 'body', label: 'Small text', type: 'textarea', rows: 3, placeholder: '', hint: 'A sentence or two. Optional.' },
+    { key: 'arrow', label: 'Arrow', type: 'select', options: ARROWS }
+  ];
+  const PHOTO_DRAFT = 'By attending this event, you may be photographed or recorded by Nashville PBS. Images may appear in station programming, promotion and publications.';
+  const SIGNS = {
+    welcome:      { label: 'Welcome',              blurb: 'Welcome with the event name.',                       defaults: { headline: 'Welcome', subline: '', body: '', arrow: 'none' } },
+    directional:  { label: 'Directional',          blurb: 'A destination and an arrow.',                         defaults: { headline: 'Registration', subline: '', body: '', arrow: 'right' } },
+    reserved:     { label: 'Reserved',             blurb: 'Reserved seating or a reserved space.',               defaults: { headline: 'Reserved', subline: '', body: '', arrow: 'none' } },
+    registration: { label: 'Registration',         blurb: 'Registration or check-in table.',                     defaults: { headline: 'Check-In', subline: '', body: '', arrow: 'none' } },
+    restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right' } },
+    quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none' } },
+    photo:        { label: 'Photography Notice',   blurb: 'Notice that the event is photographed or recorded.',  defaults: { headline: 'Photography Notice', subline: '', body: PHOTO_DRAFT, arrow: 'none' }, draftBody: true },
+    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines.',         defaults: { headline: '', subline: '', body: '', arrow: 'none' } }
+  };
+
+  function dims(state) {
+    const sz = SIZES[state.size] || SIZES.letter;
+    const land = state.orientation === 'landscape';
+    const wIn = land ? sz.h : sz.w, hIn = land ? sz.w : sz.h;
+    return { wIn, hIn, W: Math.round(wIn * DPI), H: Math.round(hIn * DPI), k: Math.min(wIn, hIn) / 8.5, land, size: state.size || 'letter' };
+  }
+  const r = (n) => Math.round(n);
+
+  function arrowSvg(dir, size, color) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100'); svg.setAttribute('width', size); svg.setAttribute('height', size);
+    svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Arrow ' + (ARROWS[dir] || '').toLowerCase());
+    svg.style.cssText = 'display:block;transform:rotate(' + (ROT[dir] || 0) + 'deg)';
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', 'M14 50h72M56 20l30 30-30 30');
+    p.setAttribute('fill', 'none'); p.setAttribute('stroke', color); p.setAttribute('stroke-width', '13');
+    p.setAttribute('stroke-linecap', 'round'); p.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(p);
+    // The readable box is the unrotated square: the glyph stays inside it at every angle (its farthest
+    // point is 42.5 of 50 units from the centre), while a rotated element's own rect grows by root 2.
+    const wrap = SC.el('div', 'width:' + size + 'px;height:' + size + 'px;flex:none');
+    wrap.className = 'ec-readable'; wrap.setAttribute('aria-label', 'Arrow ' + (ARROWS[dir] || '').toLowerCase());
+    wrap.appendChild(svg);
+    return wrap;
+  }
+
+  function defaultState(sign) {
+    const sg = SIGNS[sign] || SIGNS.welcome;
+    return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'navy', accent: 'yellow', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults) };
+  }
+
+  // The sign's DOM at 96 dpi. opts.hideReadable hides text, arrow and logo but keeps the layout (self-test).
+  function createStage(state, opts) {
+    const d = dims(state), k = d.k;
+    const sg = SIGNS[state.sign] || SIGNS.welcome;
+    const f = Object.assign({}, sg.defaults, state.fields || {});
+    const navy = (state.colorway || 'navy') === 'navy';
+    const accent = ACCENTS[state.accent] || ACCENTS.yellow;
+    const fg = navy ? '#fff' : C.navy;
+    const stage = SC.el('div', 'position:relative;width:' + d.W + 'px;height:' + d.H + 'px;overflow:hidden;background:' + (navy ? C.navy : '#fff') + ';font-family:' + FONT + ';color:' + fg + ';box-sizing:border-box');
+    stage.className = 'ec-stage';
+    const band = r(CONFIG.band * k);
+    stage.appendChild(SC.el('div', 'position:absolute;left:0;top:0;width:100%;height:' + band + 'px;background:' + accent));
+    const box = SC.el('div', 'position:absolute;left:' + r(CONFIG.padX * k) + 'px;right:' + r(CONFIG.padX * k) + 'px;top:' + (band + r(CONFIG.padTop * k)) + 'px;bottom:' + r(CONFIG.padBottom * k) + 'px;display:flex;flex-direction:column');
+    const content = SC.el('div', 'flex:1;min-height:0;display:flex;' + (d.land ? 'flex-direction:row;align-items:center;gap:' + r(56 * k) + 'px' : 'flex-direction:column;justify-content:center;gap:' + r(40 * k) + 'px'));
+    content.dataset.box = 'copy';
+    const text = SC.el('div', 'display:flex;flex-direction:column;min-width:0;' + (d.land ? 'flex:1' : ''));
+    const lines = String(f.headline || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    lines.forEach(t => {
+      const h = SC.el('div', 'font-size:' + r(CONFIG.headline * k) + 'px;font-weight:800;letter-spacing:-.02em;line-height:1.02;text-wrap:balance;overflow-wrap:normal;color:' + fg, t);
+      h.className = 'ec-readable'; h.dataset.fitwrap = '1'; h.dataset.base = r(CONFIG.headline * k); h.dataset.floor = r(CONFIG.floor * k);
+      text.appendChild(h);
+    });
+    if ((f.subline || '').trim()) {
+      const s = SC.el('div', 'font-size:' + r(CONFIG.subline * k) + 'px;font-weight:500;line-height:1.25;margin-top:' + r(18 * k) + 'px;text-wrap:pretty;color:' + fg, f.subline.trim());
+      s.className = 'ec-readable'; s.dataset.fitwrap = '1'; s.dataset.base = r(CONFIG.subline * k); s.dataset.floor = r(24 * k);
+      text.appendChild(s);
+    }
+    if ((f.body || '').trim()) {
+      const b = SC.el('div', 'font-size:' + r(CONFIG.body * k) + 'px;font-weight:400;line-height:1.45;margin-top:' + r(26 * k) + 'px;max-width:' + r(CONFIG.bodyMax * k) + 'px;white-space:pre-line;text-wrap:pretty;color:' + fg, f.body.trim());
+      b.className = 'ec-readable';
+      text.appendChild(b);
+    }
+    content.appendChild(text);
+    if (f.arrow && f.arrow !== 'none' && ARROWS[f.arrow]) {
+      const size = r((d.land ? CONFIG.arrow.landscape : CONFIG.arrow.portrait) * k);
+      const color = navy ? (CONFIG.arrowUsesAccent ? accent : '#fff') : C.navy;
+      const a = arrowSvg(f.arrow, size, color);
+      if (!d.land) a.style.alignSelf = 'flex-start';
+      content.appendChild(a);
+    }
+    box.appendChild(content);
+    const logo = document.createElement('img');
+    logo.src = CONFIG.assets + (navy ? CONFIG.logoWhite : CONFIG.logoColor); logo.alt = 'Nashville PBS';
+    logo.style.cssText = 'display:block;height:' + r(CONFIG.logo * k) + 'px;width:auto;margin-top:' + r(32 * k) + 'px;align-self:flex-start;flex:none';
+    logo.className = 'ec-readable';
+    box.appendChild(logo);
+    stage.appendChild(box);
+    if (opts && opts.hideReadable) stage.querySelectorAll('.ec-readable').forEach(e => { e.style.visibility = 'hidden'; });
+    return stage;
+  }
+
+  // Wrapping text shrinks only when a single word is wider than its column, down to its floor; then the
+  // copy block must fit between the band and the logo, and nothing readable may enter the print margin.
+  function layout(stage, d) {
+    const warnings = [], sizes = [];
+    stage.querySelectorAll('[data-fitwrap]').forEach(e => {
+      const base = +e.dataset.base, floor = +e.dataset.floor;
+      let s = base; e.style.fontSize = s + 'px';
+      let guard = 0;
+      while (e.scrollWidth > e.clientWidth + 1 && s > floor && guard++ < 60) { s = Math.max(floor, Math.floor(s * 0.95)); e.style.fontSize = s + 'px'; }
+      if (e.scrollWidth > e.clientWidth + 1) warnings.push('A word is too long for the sign even at the smallest size: "' + e.textContent + '". Shorten it.');
+      sizes.push({ text: e.textContent, px: s, pt: Math.round(s * 72 / DPI) });
+    });
+    const copy = stage.querySelector('[data-box]');
+    if (copy && copy.scrollHeight > copy.clientHeight + 1) warnings.push('The copy is taller than the sign. Shorten it or remove a line.');
+    const out = SC.readableOutside(stage, d.W, { x: MARGIN, y: MARGIN, w: d.W - 2 * MARGIN, h: d.H - 2 * MARGIN });
+    if (out.length) warnings.push('Inside the 0.5 in print margin: ' + out.map(SC.describe).join(', ') + '. Shorten the copy.');
+    warnings.push(...SC.brokenImages(stage));
+    return { warnings, sizes };
+  }
+
+  // ---------- PDF ----------
+  async function deflate(bytes) {
+    if (typeof CompressionStream !== 'function') throw new Error('This browser cannot build the PDF (no CompressionStream). Use a current Chrome, Edge, Safari or Firefox.');
+    const cs = new CompressionStream('deflate');
+    const w = cs.writable.getWriter();
+    w.write(bytes); w.close();
+    return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+  }
+  function pdfString(s) { return '(' + String(s).replace(/[^\x20-\x7E]/g, '?').replace(/[\\()]/g, m => '\\' + m) + ')'; }
+  // One page, one FlateDecode RGB image at the page's size: the smallest print-ready PDF there is.
+  async function canvasToPdf(canvas, pageW, pageH, title) {
+    const w = canvas.width, h = canvas.height;
+    const px = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+    const rgb = new Uint8Array(w * h * 3);
+    for (let i = 0, j = 0; i < px.length; i += 4, j += 3) { rgb[j] = px[i]; rgb[j + 1] = px[i + 1]; rgb[j + 2] = px[i + 2]; }
+    const img = await deflate(rgb);
+    const enc = new TextEncoder();
+    const chunks = []; let offset = 0; const offsets = [];
+    const push = (x) => { const b = typeof x === 'string' ? enc.encode(x) : x; chunks.push(b); offset += b.length; };
+    const obj = (n, body) => { offsets[n] = offset; push(n + ' 0 obj\n'); push(body); push('\nendobj\n'); };
+    push('%PDF-1.4\n'); push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+    obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+    obj(3, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pageW + ' ' + pageH + '] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+    offsets[4] = offset;
+    push('4 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + w + ' /Height ' + h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /Length ' + img.length + ' >>\nstream\n');
+    push(img); push('\nendstream\nendobj\n');
+    const content = 'q ' + pageW + ' 0 0 ' + pageH + ' 0 0 cm /Im0 Do Q';
+    obj(5, '<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream');
+    const now = new Date(); const pad = (n) => String(n).padStart(2, '0');
+    const date = 'D:' + now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + pad(now.getUTCSeconds()) + 'Z';
+    obj(6, '<< /Title ' + pdfString(title) + ' /Producer (Nashville PBS Lower Thirds Studio) /Creator (Event Signs) /CreationDate (' + date + ') >>');
+    const xref = offset;
+    push('xref\n0 7\n0000000000 65535 f \n');
+    for (let n = 1; n <= 6; n++) push(String(offsets[n]).padStart(10, '0') + ' 00000 n \n');
+    push('trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n' + xref + '\n%%EOF\n');
+    return new Blob(chunks, { type: 'application/pdf' });
+  }
+
+  async function render(state, opts) {
+    const d = dims(state);
+    const host = SC.exportHost(d.W, d.H);
+    const node = createStage(state, opts);
+    host.appendChild(node);
+    try {
+      await SC.settle(node);
+      const lay = layout(node, d);
+      await SC.raf2();
+      return { node, d, lay, done: () => host.removeChild(node) };
+    } catch (e) { host.removeChild(node); throw e; }
+  }
+  // The print-ready PDF: the sign captured at 300 dpi on one page of the chosen size.
+  async function exportPdf(state, opts) {
+    const r0 = await render(state, opts);
+    try {
+      const canvas = await SC.captureCanvas(r0.node, r0.d.W, r0.d.H, PRINT_DPI / DPI);
+      const blob = await canvasToPdf(canvas, r0.d.wIn * 72, r0.d.hIn * 72, title(state));
+      return { blob, warnings: r0.lay.warnings, sizes: r0.lay.sizes, width: canvas.width, height: canvas.height, pageW: r0.d.wIn * 72, pageH: r0.d.hIn * 72 };
+    } finally { r0.done(); }
+  }
+  // A PNG at the same 300 dpi (or any scale), for screens and for the self-test's diffs.
+  async function exportPng(state, scale, opts) {
+    const r0 = await render(state, opts);
+    try {
+      const url = await SC.capturePng(r0.node, r0.d.W, r0.d.H, scale || PRINT_DPI / DPI);
+      return { url, warnings: r0.lay.warnings, sizes: r0.lay.sizes, width: Math.round(r0.d.W * (scale || PRINT_DPI / DPI)), height: Math.round(r0.d.H * (scale || PRINT_DPI / DPI)) };
+    } finally { r0.done(); }
+  }
+  function title(state) {
+    const sg = SIGNS[state.sign] || SIGNS.welcome;
+    const f = Object.assign({}, sg.defaults, state.fields || {});
+    return 'Nashville PBS event sign: ' + (String(f.headline || '').split(/\r?\n/)[0].trim() || sg.label);
+  }
+  function fileName(state, ext) {
+    const sg = SIGNS[state.sign] || SIGNS.welcome;
+    const f = Object.assign({}, sg.defaults, state.fields || {});
+    const d = dims(state);
+    const base = SC.slug(String(f.headline || '').split(/\r?\n/)[0]) || SC.slug(sg.label) || 'sign';
+    return 'sign-' + base + '-' + d.size + '-' + (d.land ? 'landscape' : 'portrait') + '.' + (ext || 'pdf');
+  }
+
+  global.EventSigns = { DPI, PRINT_DPI, MARGIN, SIZES, ACCENTS, CONFIG, SIGNS, FIELDS, ARROWS, dims, defaultState, createStage, layout, exportPdf, exportPng, fileName, title };
+})(window);

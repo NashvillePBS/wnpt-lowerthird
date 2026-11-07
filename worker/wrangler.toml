@@ -17,8 +17,16 @@ compatibility_date = "2026-07-16"
 # The tool is served from this URL today — do not disable.
 workers_dev = true
 
-# CRITICAL: dashboard-managed variables (AIRTABLE_BASE_ID, ALLOW_ORIGIN)
-# and the AIRTABLE_TOKEN secret stay in the dashboard (build.md §11.1).
-# Without keep_vars, `wrangler deploy` DELETES the plaintext variables
-# and the tool goes down. Never remove this line.
+# CRITICAL: the dashboard-managed variable AIRTABLE_BASE_ID and the
+# AIRTABLE_TOKEN secret stay in the dashboard (build.md §11.1). Without
+# keep_vars, `wrangler deploy` DELETES the plaintext variables and the tool
+# goes down. Never remove this line.
 keep_vars = true
+
+# The page origins allowed to call this proxy, comma-separated; the code
+# echoes the matching one. Moved out of the dashboard on 2026-11-07 when the
+# studio moved to graphics.wnpt.app, so the origin changes with the code
+# (docs/DECISIONS.md 2). The GitHub Pages origin stays on the list until its
+# redirect page is confirmed; then drop it.
+[vars]
+ALLOW_ORIGIN = "https://graphics.wnpt.app,https://nashvillepbs.github.io"

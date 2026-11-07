@@ -4,7 +4,8 @@
  * 2x (3840 x 2160), never a separate layout. Rules come from the Design System's Broadcast
  * section (title-safe = inner 80%, 40px minimum type at 1080, one accent, PBS Sans only); the
  * numbers that are art direction rather than rules sit in CONFIG and STYLES so a decision is a
- * config change, not a rewrite (see BUILD-endcards.md).
+ * config change, not a rewrite (see BUILD-graphics.md). Loads after vendor/html-to-image.js, vendor/qrcode.js
+ * and shared/studio-core.js.
  */
 (function (global) {
   'use strict';
@@ -109,22 +110,9 @@
     }
   };
 
-  // ---------- small helpers ----------
-  function el(tag, css, text) {
-    const e = document.createElement(tag);
-    if (css) e.style.cssText = css;
-    if (text != null) e.textContent = text;
-    return e;
-  }
-  // A single display line that shrinks to `max` px wide and never below FLOOR (layout() does the fitting).
-  function line(text, o) {
-    const e = el('div', 'white-space:nowrap;flex:none;font-weight:' + o.weight + ';letter-spacing:' + (o.ls || '0') +
-      ';line-height:' + (o.lh || 1.15) + ';color:' + (o.color || '#fff') + ';' + (o.css || ''), text);
-    e.className = 'ec-readable';
-    e.dataset.fit = o.max; e.dataset.base = o.size;
-    e.style.fontSize = o.size + 'px';
-    return e;
-  }
+  // ---------- small helpers (shared/studio-core.js) ----------
+  const SC = global.StudioCore;
+  const el = SC.el, line = SC.line;
   function logo(channel, shieldPx, css) {
     const ch = CONFIG.channels[channel] || CONFIG.channels.station;
     const img = document.createElement('img');
@@ -278,76 +266,35 @@
   // Fit every single-line element to its width (floor FLOOR), then report what could not fit and
   // whether any readable element crosses title-safe. Run after the stage is in the document.
   function layout(stage) {
-    const warnings = [], sizes = [];
-    stage.querySelectorAll('[data-fit]').forEach(e => {
-      const max = +e.dataset.fit, base = +e.dataset.base;
-      e.style.fontSize = base + 'px';
-      const w = e.scrollWidth;
-      if (w > max) {
-        e.style.fontSize = Math.max(FLOOR, Math.floor(base * max / w)) + 'px';
-        if (e.scrollWidth > max + 1) warnings.push('Too long even at the ' + FLOOR + 'px on-air minimum: "' + e.textContent + '". Shorten it.');
-      }
-      sizes.push({ text: e.textContent, px: parseFloat(e.style.fontSize) });
-    });
-    const s = stage.getBoundingClientRect();
-    const k = s.width / W; // the preview is scaled; measure in stage units
-    const t = SAFE.title;
-    const out = [];
-    stage.querySelectorAll('.ec-readable').forEach(e => {
-      const r = e.getBoundingClientRect();
-      if (!r.width && !r.height) return;
-      const x0 = (r.left - s.left) / k, y0 = (r.top - s.top) / k, x1 = (r.right - s.left) / k, y1 = (r.bottom - s.top) / k;
-      if (x0 < t.x - .5 || y0 < t.y - .5 || x1 > t.x + t.w + .5 || y1 > t.y + t.h + .5) out.push(e);
-    });
-    if (out.length) warnings.push('Outside title-safe: ' + out.map(e => e.tagName === 'IMG' ? e.alt : '"' + e.textContent.trim().slice(0, 40) + '"').join(', ') + '. Shorten the copy.');
-    stage.querySelectorAll('img').forEach(im => { if (im.complete && !im.naturalWidth) warnings.push('An image did not load: ' + (im.alt || im.src)); });
-    return { warnings, sizes };
+    const fit = SC.fitLines(stage, FLOOR);
+    const warnings = fit.warnings.slice();
+    const out = SC.readableOutside(stage, W, SAFE.title);
+    if (out.length) warnings.push('Outside title-safe: ' + out.map(SC.describe).join(', ') + '. Shorten the copy.');
+    warnings.push(...SC.brokenImages(stage));
+    return { warnings, sizes: fit.sizes };
   }
 
   // ---------- export ----------
-  const raf2 = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  async function settle(node) {
-    if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    await Promise.all(Array.from(node.querySelectorAll('img')).map(im => (im.complete) ? null : new Promise(res => { im.onload = res; im.onerror = res; })));
-    await raf2();
-  }
-  function exportHost() {
-    let h = document.getElementById('ec-export-host');
-    if (!h) {
-      h = el('div', 'position:fixed;left:-30000px;top:0;width:' + W + 'px;height:' + H + 'px;overflow:visible;pointer-events:none');
-      h.id = 'ec-export-host';
-      document.body.appendChild(h);
-    }
-    return h;
-  }
   // scale 1 = HD 1920 x 1080; scale 2 = UHD 3840 x 2160. The node is built fresh off-screen at natural size and,
-  // for UHD, scaled with a real CSS transform so the browser paints text at the target resolution
-  // (the studio's captureAtScale fix, build.md: html-to-image upscales a small raster otherwise).
+  // for UHD, captured through StudioCore.capturePng, which scales it with a real CSS transform so the browser
+  // paints text at the target resolution (the studio's captureAtScale fix, build.md).
   async function exportPng(state, scale, opts) {
     const s = scale || 1;
-    const host = exportHost();
+    const host = SC.exportHost(W, H);
     const node = createStage(state, opts);
     host.appendChild(node);
     try {
-      await settle(node);
+      await SC.settle(node);
       const lay = layout(node);
       lay.warnings = copyWarnings(state).concat(lay.warnings);
-      await raf2();
-      let url;
-      if (s === 1) {
-        url = await global.htmlToImage.toPng(node, { pixelRatio: 1, width: W, height: H });
-      } else {
-        node.style.transformOrigin = 'top left';
-        node.style.transform = 'scale(' + s + ')';
-        await raf2();
-        url = await global.htmlToImage.toPng(node, { pixelRatio: 1, width: W * s, height: H * s });
-      }
+      await SC.raf2();
+      const url = await SC.capturePng(node, W, H, s);
       return { url, warnings: lay.warnings, sizes: lay.sizes, width: W * s, height: H * s };
     } finally {
       host.removeChild(node);
     }
   }
-  function slug(s) { return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48); }
+  const slug = SC.slug;
   function fileName(state, scale) {
     const st = STYLES[state.style] || STYLES.endpage;
     const f = Object.assign({}, st.defaults, state.fields || {});

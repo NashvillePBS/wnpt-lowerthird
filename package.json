@@ -1,0 +1,13 @@
+{
+  "name": "wnpt-lowerthird",
+  "private": true,
+  "description": "Nashville PBS Lower Thirds Studio: the station's graphics studio. Static site deployed as a Cloudflare Worker at graphics.wnpt.app; the Airtable proxy Worker lives in worker/.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "deploy:proxy": "cd worker && wrangler deploy",
+    "verify": "python3 scripts/verify-graphics.py"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
+  }
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Event Signs self-test</title>
+<style>
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal}
+body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
+</style>
+<script src="../vendor/html-to-image.js"></script>
+<script src="../shared/studio-core.js"></script>
+<script src="signs.js"></script>
+</head><body>
+<!-- Headless harness (scripts/verify-graphics.py): exports each case as the real PDF plus a PNG of the same
+     frame with every readable element hidden, and prints the results as JSON. Not linked from the tool. -->
+<pre id="out"></pre>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const only = q.get('style');
+  const CASES = {
+    'welcome-letter-portrait':         { sign: 'welcome', fields: { subline: 'Community Screening and Conversation' } },
+    'welcome-white-letter-landscape':  { sign: 'welcome', colorway: 'white', orientation: 'landscape', fields: { subline: 'Community Screening and Conversation' } },
+    'directional-letter-portrait':     { sign: 'directional' },
+    'directional-letter-landscape':    { sign: 'directional', orientation: 'landscape', fields: { headline: 'Auditorium', arrow: 'up-right' } },
+    'directional-tabloid-portrait':    { sign: 'directional', size: 'tabloid', fields: { headline: 'Registration', arrow: 'left' } },
+    'directional-tabloid-landscape':   { sign: 'directional', size: 'tabloid', orientation: 'landscape', fields: { headline: 'Studio A', arrow: 'down' } },
+    'reserved-letter-portrait':        { sign: 'reserved', fields: { subline: 'Board of Directors' } },
+    'registration-letter-portrait':    { sign: 'registration', fields: { subline: 'Please have your name ready' } },
+    'restrooms-letter-portrait':       { sign: 'restrooms' },
+    'quiet-letter-portrait':           { sign: 'quiet' },
+    'photo-letter-portrait':           { sign: 'photo' },
+    'custom-letter-landscape':         { sign: 'custom', orientation: 'landscape', accent: 'teal', fields: { headline: 'Green Room', subline: 'Guests and crew only', arrow: 'none' } }
+  };
+  if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
+  const toDataUrl = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+  const out = { fontsOk: false, results: {} };
+  try {
+    await document.fonts.load('800 132px "PBS Sans"');
+    out.fontsOk = document.fonts.check('800 132px "PBS Sans"') && document.fonts.check('500 40px "PBS Sans"');
+    for (const [name, c] of Object.entries(CASES)) {
+      if (only && only !== name) continue;
+      const state = EventSigns.defaultState(c.sign);
+      if (c.colorway) state.colorway = c.colorway;
+      if (c.accent) state.accent = c.accent;
+      if (c.size) state.size = c.size;
+      if (c.orientation) state.orientation = c.orientation;
+      Object.assign(state.fields, c.fields || {});
+      const d = EventSigns.dims(state);
+      const pdf = await EventSigns.exportPdf(state);
+      const bg = await EventSigns.exportPng(state, undefined, { hideReadable: true });
+      out.results[name] = { sign: c.sign, fileName: EventSigns.fileName(state), dims: d, pageW: pdf.pageW, pageH: pdf.pageH,
+        pdf: await toDataUrl(pdf.blob), bg: bg.url, warnings: pdf.warnings, sizes: pdf.sizes, width: pdf.width, height: pdf.height };
+    }
+  } catch (e) { out.error = String(e && e.stack || e); }
+  document.getElementById('out').textContent = JSON.stringify(out);
+  document.title = 'DONE';
+})();
+</script>
+</body></html>

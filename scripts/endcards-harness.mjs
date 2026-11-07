@@ -1,6 +1,6 @@
 // Drives endcards/selftest.html in headless Chrome over the DevTools protocol and prints its JSON on stdout.
 // One page load per style keeps each DevTools message small. Needs only Node 22+ (built-in WebSocket) and
-// Google Chrome. Used by scripts/verify-endcards.py; run it alone with the harness URL to debug.
+// Google Chrome. Used by scripts/verify-graphics.py; run it alone with the harness URL to debug.
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';

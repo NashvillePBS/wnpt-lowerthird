@@ -1980,3 +1980,18 @@ top-aligned with the `@nashvillepbs` line and left-aligned with the address, whi
 
 An earlier push the same day (`77d48b0`) put the stacked logo on the Vision Rail face by
 mistake (the front/back naming mix-up above); that face is restored byte-for-byte.
+
+---
+
+### 13.10 End Cards and Event Signs — sibling pages on a shared core (Shane, 2026-11-06/07)
+
+Two more sibling pages on the §13.8 pattern, written in plain HTML and JS with no dc runtime:
+`endcards/` (on-air endpage, slates, support end card at 1920×1080 and 3840×2160) and `signs/`
+(printed event signs as 300 dpi PDFs at Letter and Tabloid). They share `shared/studio-core.js` (the
+capture pipeline, which carries the §6609ec6 `captureAtScale` fix) and the vendored libraries in
+`vendor/`. Spec, geometry, the departures from the design-system templates, the verifier readouts and
+the open questions are in `BUILD-graphics.md`; the standing decisions in `docs/DECISIONS.md`. The
+studio's picker gets one card per generator once Shane picks what ships (shane.md). The same work
+moved the studio to graphics.wnpt.app behind Access (BUILD-graphics.md Part D), which supersedes the
+GitHub Pages deployment described in §11.1 and §13.1 step 4: a push still updates the Pages copy
+until the redirect lands, and `npm run deploy` updates the new address.

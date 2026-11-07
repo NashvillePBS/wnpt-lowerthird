@@ -1,0 +1,19 @@
+# Not part of the served site (wrangler static assets, see wrangler.toml).
+.git
+.gitignore
+.assetsignore
+.claude
+.DS_Store
+node_modules
+worker
+scripts
+templates/signs/build
+docs
+*.md
+*.dc.html
+dist-airtable
+dist-cdn
+support.js
+package.json
+package-lock.json
+wrangler.toml

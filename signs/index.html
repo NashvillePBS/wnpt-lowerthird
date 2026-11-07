@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Signs · Nashville PBS Lower Thirds Studio</title>
+<style>
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PBS Sans";src:url("../fonts/PBSSans-Black.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap}
+body{margin:0;background:#eef0f6;font-family:"PBS Sans",Arial,sans-serif;color:#0A145A}
+a{color:#2638C4;text-decoration:none}
+a:hover{color:#0F1E8C;text-decoration:underline}
+button,select{font-family:inherit}
+.ec-back{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px}
+.ec-back:hover{background:rgba(255,255,255,.18);color:#fff;text-decoration:none}
+.ec-label{font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180}
+.ec-field{display:flex;flex-direction:column;gap:6px}
+.ec-field label{font-weight:800;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180}
+.ec-input{font-family:inherit;font-size:14px;color:#0A145A;padding:10px 12px;border:1.5px solid #c7cde0;border-radius:8px;background:#fff;width:100%;box-sizing:border-box}
+.ec-input:focus{outline:2px solid #2638C4;outline-offset:1px;border-color:#2638C4}
+textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
+.ec-hint{font-size:12px;color:#5a6180;line-height:1.45}
+.ec-seg{display:flex;gap:6px;flex-wrap:wrap}
+.ec-seg button{flex:1;min-width:64px;text-align:center;cursor:pointer;padding:9px 6px;border-radius:8px;font-weight:700;font-size:13px;border:1.5px solid #c7cde0;background:#fff;color:#5a6180}
+.ec-seg button[aria-pressed="true"]{border-color:#2638C4;background:#eef1fb;color:#2638C4}
+.ec-style{display:flex;flex-direction:column;gap:3px;text-align:left;cursor:pointer;padding:12px 14px;border-radius:10px;border:1.5px solid #c7cde0;background:#fff;color:#0A145A}
+.ec-style[aria-pressed="true"]{border-color:#2638C4;background:#eef1fb;box-shadow:inset 0 0 0 1px #2638C4}
+.ec-style b{font-weight:800;font-size:14px}
+.ec-style span{font-size:12px;color:#5a6180;line-height:1.4}
+.ec-swatches{display:flex;gap:10px;align-items:center}
+.ec-swatch{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #c7cde0;cursor:pointer;padding:0}
+.ec-swatch[aria-pressed="true"]{box-shadow:0 0 0 2.5px #2638C4}
+.ec-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;padding:12px 14px;border-radius:10px;font-weight:800;font-size:14px;border:1.5px solid #2638C4;background:#2638C4;color:#fff}
+.ec-btn:hover{background:#0F1E8C;border-color:#0F1E8C}
+.ec-btn.secondary{background:#fff;color:#2638C4}
+.ec-btn.secondary:hover{background:#eef1fb}
+.ec-btn[disabled]{opacity:.55;cursor:default}
+.ec-status{font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px}
+.ec-status.ok{background:#e8f7f5;color:#0f8a82}
+.ec-status.err{background:#fdece8;color:#c23a1a}
+.ec-status.busy{background:#eef1fb;color:#2638C4}
+.ec-warn{font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;background:#fdece8;color:#c23a1a}
+.ec-warn ul{margin:4px 0 0;padding-left:18px}
+.ec-draft{font-size:12.5px;font-weight:600;line-height:1.5;padding:8px 11px;border-radius:8px;background:#fff7d6;color:#5a4a00}
+#ec-grid{flex:1;display:grid;grid-template-columns:420px 1fr;min-height:0}
+#ec-aside{background:#fff;border-right:1px solid #d7dbe8;display:flex;flex-direction:column;min-height:0;overflow:auto}
+#ec-main{position:sticky;top:0;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 40px;overflow:hidden}
+#ec-howto summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;background:#f6f7fb;padding:14px 22px;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a6180}
+#ec-howto summary::-webkit-details-marker{display:none}
+#ec-howto summary::marker{content:""}
+#ec-howto .ec-chev{transition:transform .15s ease}
+#ec-howto[open] .ec-chev{transform:rotate(90deg)}
+#ec-howto ol{margin:0;padding:16px 22px 20px 38px;font-size:13px;line-height:1.55;color:#0A145A}
+#ec-howto li{margin-bottom:8px}
+@media (max-width:820px){
+  #ec-grid{grid-template-columns:1fr}
+  #ec-aside{border-right:none;border-bottom:1px solid #d7dbe8}
+  #ec-main{position:static;height:auto;min-height:0;padding:24px 16px}
+}
+</style>
+<script src="../vendor/html-to-image.js"></script>
+<script src="../shared/studio-core.js"></script>
+<script src="signs.js"></script>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+  <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+    <a href="../" class="ec-back" title="Back to main">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>Event Signs</span></div>
+  </header>
+
+  <div id="ec-grid">
+    <aside id="ec-aside">
+      <section style="padding:20px 22px 8px;display:flex;flex-direction:column;gap:12px">
+        <div class="ec-label">Sign</div>
+        <div id="ec-styles" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+      </section>
+
+      <section id="ec-fields" style="padding:14px 22px 8px;display:flex;flex-direction:column;gap:14px"></section>
+
+      <section style="padding:14px 22px 8px;display:flex;flex-direction:column;gap:12px">
+        <div class="ec-label">Paper and look</div>
+        <div class="ec-field"><label>Size</label><div id="ec-size" class="ec-seg"></div></div>
+        <div class="ec-field"><label>Orientation</label><div id="ec-orient" class="ec-seg"></div></div>
+        <div class="ec-field"><label>Field</label><div id="ec-colorway" class="ec-seg"></div></div>
+        <div class="ec-field"><label>Accent (one per sign)</label><div id="ec-accents" class="ec-swatches"></div></div>
+      </section>
+
+      <section style="padding:14px 22px 22px;display:flex;flex-direction:column;gap:10px">
+        <div class="ec-label">Download</div>
+        <div id="ec-warnings"></div>
+        <button class="ec-btn" id="ec-dl-pdf" type="button">Download print PDF</button>
+        <button class="ec-btn secondary" id="ec-dl-png" type="button">Download PNG (300 dpi)</button>
+        <label class="ec-hint" style="display:flex;gap:8px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="ec-guides" checked style="margin:2px 0 0;accent-color:#2638C4"><span>Show the 0.5 in print margin in the preview. It is never in the download.</span></label>
+        <div id="ec-status"></div>
+      </section>
+
+      <details id="ec-howto" style="border-top:1px solid #e4e7f1">
+        <summary><svg class="ec-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>How to use</summary>
+        <ol>
+          <li>Pick a sign and fill in the lines. The preview is exactly what prints.</li>
+          <li>Letter fits an 8.5 × 11 sign holder; Tabloid is 11 × 17 for easels and doors. Switch orientation for wide spaces.</li>
+          <li>Everything readable stays inside the dashed 0.5 in print margin; the headline shrinks only when a single word is too wide, and the tool tells you when to shorten the copy.</li>
+          <li>Navy signs print the station's dark field edge to edge (office printers leave a thin white edge; sign holders hide it). White signs save toner.</li>
+          <li>The PDF is one page at the exact paper size, 300 dpi, no bleed or crop marks: print at 100% scale, never "fit to page".</li>
+          <li>Your last sign is remembered in this browser.</li>
+        </ol>
+      </details>
+    </aside>
+
+    <main id="ec-main">
+      <div class="ec-label" id="ec-note" style="color:#6a7196">Preview</div>
+      <div id="ec-scaler-host" style="position:relative;overflow:hidden;box-shadow:0 2px 14px rgba(10,20,90,.16);background:#fff">
+        <div id="ec-scaler" style="position:relative;transform-origin:top left"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const S = window.EventSigns;
+  const KEY = 'es_state_v1';
+  const $ = (sel) => document.querySelector(sel);
+
+  let state = load() || fresh('welcome');
+  function fresh(sign) { const d = S.defaultState(sign); return { sign: d.sign, colorway: d.colorway, accent: d.accent, size: d.size, orientation: d.orientation, fieldsBySign: { [d.sign]: d.fields } }; }
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && S.SIGNS[s.sign] && s.fieldsBySign) return s; } catch (e) { /* no storage */ }
+    return null;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function fields() {
+    if (!state.fieldsBySign[state.sign]) state.fieldsBySign[state.sign] = Object.assign({}, S.SIGNS[state.sign].defaults);
+    return state.fieldsBySign[state.sign];
+  }
+  function renderState() { return { sign: state.sign, colorway: state.colorway, accent: state.accent, size: state.size, orientation: state.orientation, fields: fields() }; }
+
+  function seg(host, options, current, onPick) {
+    host.innerHTML = '';
+    options.forEach(([key, label]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', String(current === key));
+      b.addEventListener('click', () => { onPick(key); buildLook(); schedule(); });
+      host.appendChild(b);
+    });
+  }
+  function buildStyles() {
+    const host = $('#ec-styles'); host.innerHTML = '';
+    Object.entries(S.SIGNS).forEach(([key, sg]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-style'; b.setAttribute('aria-pressed', String(key === state.sign));
+      b.innerHTML = '<b></b><span></span>'; b.querySelector('b').textContent = sg.label; b.querySelector('span').textContent = sg.blurb;
+      b.addEventListener('click', () => { state.sign = key; buildAll(); schedule(); });
+      host.appendChild(b);
+    });
+  }
+  function buildFields() {
+    const host = $('#ec-fields'); host.innerHTML = '';
+    const sg = S.SIGNS[state.sign], f = fields();
+    const head = document.createElement('div'); head.className = 'ec-label'; head.textContent = sg.label; host.appendChild(head);
+    if (sg.draftBody) { const d = document.createElement('div'); d.className = 'ec-draft'; d.textContent = 'The small text is draft wording. Use the notice approved by Communications before printing.'; host.appendChild(d); }
+    S.FIELDS.forEach(spec => {
+      const wrap = document.createElement('div'); wrap.className = 'ec-field';
+      const id = 'es-f-' + spec.key;
+      const label = document.createElement('label'); label.htmlFor = id; label.textContent = spec.label; wrap.appendChild(label);
+      let input;
+      if (spec.type === 'select') {
+        input = document.createElement('select'); input.className = 'ec-input';
+        Object.entries(spec.options).forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; o.selected = (f[spec.key] || 'none') === v; input.appendChild(o); });
+        input.addEventListener('change', () => { f[spec.key] = input.value; schedule(); });
+      } else {
+        input = document.createElement(spec.type === 'textarea' ? 'textarea' : 'input');
+        if (spec.type !== 'textarea') input.type = 'text'; else input.rows = spec.rows || 3;
+        input.className = 'ec-input'; input.placeholder = spec.placeholder || ''; input.value = f[spec.key] || '';
+        input.addEventListener('input', () => { f[spec.key] = input.value; schedule(); });
+      }
+      input.id = id; wrap.appendChild(input);
+      if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+      host.appendChild(wrap);
+    });
+  }
+  function buildLook() {
+    seg($('#ec-size'), Object.entries(S.SIZES).map(([k, v]) => [k, v.label + ' · ' + v.detail]), state.size, k => { state.size = k; });
+    seg($('#ec-orient'), [['portrait', 'Portrait'], ['landscape', 'Landscape']], state.orientation, k => { state.orientation = k; });
+    seg($('#ec-colorway'), [['navy', 'Navy'], ['white', 'White']], state.colorway, k => { state.colorway = k; });
+    const acc = $('#ec-accents'); acc.innerHTML = '';
+    Object.entries(S.ACCENTS).forEach(([key, hex]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ec-swatch'; b.title = key[0].toUpperCase() + key.slice(1);
+      b.style.background = hex; b.setAttribute('aria-label', 'Accent ' + key); b.setAttribute('aria-pressed', String(state.accent === key));
+      b.addEventListener('click', () => { state.accent = key; buildLook(); schedule(); });
+      acc.appendChild(b);
+    });
+  }
+  function buildAll() { buildStyles(); buildFields(); buildLook(); }
+
+  let timer = null;
+  function schedule() { clearTimeout(timer); timer = setTimeout(render, 60); }
+  function scaleToFit(d) {
+    const main = $('#ec-main'), host = $('#ec-scaler-host'), scaler = $('#ec-scaler');
+    const availW = main.clientWidth - 80, availH = Math.max(200, main.clientHeight - 120);
+    const sc = Math.max(0.05, Math.min(availW / d.W, availH / d.H, 1));
+    scaler.style.width = d.W + 'px'; scaler.style.height = d.H + 'px'; scaler.style.transform = 'scale(' + sc + ')';
+    host.style.width = (d.W * sc) + 'px'; host.style.height = (d.H * sc) + 'px';
+  }
+  let lastDims = null;
+  async function render() {
+    save();
+    const rs = renderState(); const d = S.dims(rs); lastDims = d;
+    $('#ec-note').textContent = 'Preview · ' + S.SIZES[d.size].label + ' ' + (d.land ? 'landscape' : 'portrait') + ' · ' + d.wIn + ' × ' + d.hIn + ' in · dashed = 0.5 in print margin';
+    const scaler = $('#ec-scaler'); scaler.innerHTML = '';
+    const stage = S.createStage(rs);
+    scaler.appendChild(stage);
+    if ($('#ec-guides').checked) {
+      const g = document.createElement('div');
+      g.style.cssText = 'position:absolute;left:' + S.MARGIN + 'px;top:' + S.MARGIN + 'px;width:' + (d.W - 2 * S.MARGIN) + 'px;height:' + (d.H - 2 * S.MARGIN) + 'px;border:2px dashed rgba(255,70,70,.85);box-sizing:border-box;pointer-events:none';
+      scaler.appendChild(g);
+    }
+    scaleToFit(d);
+    await Promise.all(Array.from(stage.querySelectorAll('img')).map(im => im.complete ? null : new Promise(res => { im.onload = res; im.onerror = res; })));
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    showWarnings(S.layout(stage, d).warnings);
+  }
+  function showWarnings(list) {
+    const host = $('#ec-warnings'); host.innerHTML = '';
+    const ok = !list.length;
+    ['#ec-dl-pdf', '#ec-dl-png'].forEach(id => { $(id).disabled = !ok; });
+    if (ok) return;
+    const w = document.createElement('div'); w.className = 'ec-warn'; w.textContent = 'Fix these before downloading:';
+    const ul = document.createElement('ul'); list.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    w.appendChild(ul); host.appendChild(w);
+  }
+
+  function status(msg, kind) { const s = $('#ec-status'); s.className = msg ? 'ec-status ' + kind : ''; s.textContent = msg || ''; }
+  async function downloadPdf() {
+    if (!window.htmlToImage) { status('The image library did not load. Reload the page.', 'err'); return; }
+    status('Rendering the PDF at 300 dpi…', 'busy');
+    try {
+      const r = await S.exportPdf(renderState());
+      if (r.warnings.length) { showWarnings(r.warnings); status('Not downloaded: fix the warnings first.', 'err'); return; }
+      const name = S.fileName(renderState(), 'pdf');
+      const url = URL.createObjectURL(r.blob);
+      window.StudioCore.download(url, name);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      status('Downloaded ' + name + ' (' + r.width + ' × ' + r.height + ' px, ' + Math.round(r.blob.size / 1024) + ' KB).', 'ok');
+    } catch (e) { status('Render failed: ' + (e && e.message || e), 'err'); }
+  }
+  async function downloadPng() {
+    if (!window.htmlToImage) { status('The image library did not load. Reload the page.', 'err'); return; }
+    status('Rendering the PNG at 300 dpi…', 'busy');
+    try {
+      const r = await S.exportPng(renderState());
+      if (r.warnings.length) { showWarnings(r.warnings); status('Not downloaded: fix the warnings first.', 'err'); return; }
+      const name = S.fileName(renderState(), 'png');
+      window.StudioCore.download(r.url, name);
+      status('Downloaded ' + name + ' (' + r.width + ' × ' + r.height + ' px).', 'ok');
+    } catch (e) { status('Render failed: ' + (e && e.message || e), 'err'); }
+  }
+  $('#ec-dl-pdf').addEventListener('click', downloadPdf);
+  $('#ec-dl-png').addEventListener('click', downloadPng);
+  $('#ec-guides').addEventListener('change', schedule);
+  window.addEventListener('resize', () => { if (lastDims) scaleToFit(lastDims); });
+
+  buildAll();
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+})();
+</script>
+</body>
+</html>

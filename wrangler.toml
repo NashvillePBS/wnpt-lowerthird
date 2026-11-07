@@ -1,0 +1,29 @@
+# Deploy config for the studio itself: a static-assets Worker that serves this
+# repository at graphics.wnpt.app, behind the Cloudflare Access application
+# "Nashville PBS Graphics Studio" (wnpt-events scripts/setup-access.mjs).
+# Moved here from public GitHub Pages on 2026-11-07 (docs/DECISIONS.md 1).
+#
+# Deploy: `npm run deploy` (wrangler, logged in as wnpt.digital). The custom
+# domain route provisions the DNS record and certificate on the wnpt.app zone
+# itself, the same mechanism as wnpt.app on the hub Worker. The Airtable proxy
+# (worker/wrangler.toml) is a separate Worker with its own deploy.
+#
+# .assetsignore keeps the git metadata, the proxy, the scripts and the docs
+# out of the upload; everything else in the repo is the site.
+
+name = "wnpt-graphics"
+compatibility_date = "2026-11-01"
+
+# The custom domain goes live only once the Access application for it
+# exists (wnpt-events scripts/setup-access.mjs, run by its access.yml
+# workflow): until then the Worker is deployed with no route and no
+# workers.dev address, so the site is never public. Uncomment and redeploy.
+# routes = [
+#   { pattern = "graphics.wnpt.app", custom_domain = true }
+# ]
+workers_dev = false
+
+[assets]
+directory = "./"
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"

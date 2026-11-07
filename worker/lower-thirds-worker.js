@@ -78,9 +78,16 @@ const GRAPHICS_TYPES = ["Business Card", "Name Tag", "Station ID"];
 
 export default {
   async fetch(request, env) {
-    const origin = env.ALLOW_ORIGIN || "*";
+    // ALLOW_ORIGIN is a comma-separated list of page origins (worker/wrangler.toml [vars]).
+    // The response echoes the caller's origin when it is on the list, so the studio can move
+    // between hosts (GitHub Pages to graphics.wnpt.app, 2026-11-07) without a window where
+    // the proxy answers nobody; an origin off the list gets the first one and the browser blocks it.
+    const allowed = String(env.ALLOW_ORIGIN || "*").split(",").map(s => s.trim()).filter(Boolean);
+    const reqOrigin = request.headers.get("Origin") || "";
+    const origin = allowed.includes("*") ? "*" : (allowed.includes(reqOrigin) ? reqOrigin : allowed[0]);
     const cors = {
       "Access-Control-Allow-Origin": origin,
+      "Vary": "Origin",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",

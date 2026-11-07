@@ -330,3 +330,14 @@ the top of `business-essentials/BUILD-NOTES.md`.
 
 Still open: the Airtable automation that checks `Archived` on superseded Graphics rows
 (intentionally not the Worker's job), and a real print job through a vendor's RIP.
+
+**End Cards and Event Signs — 2026-11-06 and 2026-11-07, commits `7f66108` and the one that adds this
+paragraph.** Two plain-JS sibling pages on a shared capture core: `endcards/` (endpage with tune-in or
+funding text, slate on the Community rail, announcement slate, support end card with a generated QR;
+HD and UHD PNG) and `signs/` (eight printed event signs, Letter and Tabloid, portrait and landscape,
+Navy or white, 300 dpi PDF written in the browser), plus Arial PowerPoint sign templates under
+`templates/signs/`. Verified by `scripts/verify-graphics.py`, which runs the real exports in headless
+Chrome over the DevTools protocol and reads the pixels back against title-safe and the print margin
+(22 exports, all inside). Neither is linked from the picker yet: Shane picks what ships. The same
+sessions prepared the move to graphics.wnpt.app behind Access; `PROGRESS.md` says which production
+steps still wait on a person. Full record: `BUILD-graphics.md`, `docs/DECISIONS.md`.
