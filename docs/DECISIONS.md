@@ -56,6 +56,12 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    application's audience, and calls Short.io with the secret `SHORTIO_API_KEY`. Domain `wnpt.tv`, the
    one the web-sync Worker uses; a separate copy of the key, because secrets cannot be shared.
 
+13. **Tracked QR codes are locked on the Donate and Our Apps signs** (Shane, 2026-11-07). Their codes
+   encode fixed wnpt.tv links in `signs/signs.js` `CONFIG.tracked`, set once by Shane so every scan
+   counts in Google Analytics; staff cannot change them. The custom sign is the only one that makes new
+   short links. The Nashville PBS app stays wired in behind `CONFIG.apps.station.enabled = false` until
+   it launches; the brand book's rule (not launched, not referenced) holds until Shane flips it.
+
 ## External contracts
 
 - `endcards/` and `signs/` are linked by path from the studio's picker and from brand.wnpt.app; the

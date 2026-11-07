@@ -66,11 +66,14 @@ Evidence
   (editable Passport amounts, wnpt.org/donate, QR) and Our Apps (PBS app, Nashville PBS app, PBS KIDS
   app, each with its link and QR, fine print once); QR codes on custom signs; short links through a new
   `POST /api/shortlink` on graphics.wnpt.app (`src/graphics-worker.js`, Access JWT verified, Short.io
-  key as a Worker secret that waits on Shane, shane.md 8). Verifier: 19 sign cases.
+  key as a Worker secret that waits on Shane, shane.md 8). Then Shane's rethink the same afternoon:
+  the Donate and Our Apps QR codes are locked to tracked wnpt.tv links he sets once in
+  `CONFIG.tracked` (DECISIONS 13); only the custom sign makes new links; the Nashville PBS app is hidden
+  behind `CONFIG.apps.station.enabled` until it launches. Verifier: 19 sign cases ALL OK.
 
 Next
-1. Shane: the Short.io secret (shane.md 8), the app links and wording (shane.md 9), the end card's
-   address (shane.md 10), the art-direction defaults (shane.md 6).
+1. Shane: the Short.io key (shane.md 8), the three tracked links (shane.md 9), the two wordings and
+   the end card's address (shane.md 10), the art-direction defaults (shane.md 6).
 2. After the secret: make and check one test link, then delete it or keep it (Shane's call).
 2. When the brand-site agency tool takes over the Access policy, delete the graphics.wnpt.app entry
    from wnpt-events `scripts/setup-access.mjs` (shane.md 8).

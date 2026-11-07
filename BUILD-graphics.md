@@ -326,7 +326,8 @@ gets no code and the download is blocked. Only the custom sign makes new links: 
 button next to the address asks the studio's own API,
 `POST /api/shortlink` on graphics.wnpt.app (`src/graphics-worker.js`), which verifies the Cloudflare
 Access login again and creates a wnpt.tv link in Short.io with the station's key, held as the Worker
-secret `SHORTIO_API_KEY` that only Shane sets; the browser never sees the key. The QR then encodes the
+secret `SHORTIO_API_KEY` that only Shane sets (a Short.io public key, `pk_…`, is enough and safer, since
+creating links is all the Worker does; a secret key works too); the browser never sees it. The QR then encodes the
 short link and prints it under the code. Until the secret is set the API answers 503 and the QR uses
 the full address; the page says so. Short.io is the same account and domain the web-sync Worker uses
 (`wnpt.tv`), with its own copy of the key, because a Worker secret cannot be read back or shared.
