@@ -50,6 +50,12 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
    its own shape, in a wrapping row above the station logo that steps its size tiers down as logos are
    added, under a plain label ("Supported by"). Never larger than the station lockup, never ad copy.
 
+12. **Short links come from the studio's own API, never from a key in the page** (2026-11-07).
+   `POST /api/shortlink` on graphics.wnpt.app runs in `src/graphics-worker.js` (the static-assets
+   Worker gained code; `run_worker_first = ["/api/*"]`), verifies the Access JWT against the
+   application's audience, and calls Short.io with the secret `SHORTIO_API_KEY`. Domain `wnpt.tv`, the
+   one the web-sync Worker uses; a separate copy of the key, because secrets cannot be shared.
+
 ## External contracts
 
 - `endcards/` and `signs/` are linked by path from the studio's picker and from brand.wnpt.app; the
@@ -57,6 +63,9 @@ the November 2026 work. A rename that breaks a contract below is a bug even if e
   live; `https://nashvillepbs.github.io/wnpt-lowerthird/endcards/` and `/signs/` until then.
 - `vendor/html-to-image.js` and `vendor/qrcode.js` are referenced by relative path from both
   generators and their self-tests; `vendor/NOTICE.md` carries the versions and hashes.
+- `POST /api/shortlink` takes `{ url, path?, title? }` and answers `{ shortURL, path }`; 401 without
+  an Access session, 503 without the key, 409 when the name is taken. `GET /api/shortlink/status`
+  answers `{ configured }`. The signs page reads both.
 - The Airtable proxy's response header `Access-Control-Allow-Origin` echoes one of the origins in
   `ALLOW_ORIGIN`; the studio's bundle calls the proxy from the page origin and nothing else.
 - Export file names: end cards `<style>-<slug>-<WxH>.png` (build.md §1.10 slug rules); signs

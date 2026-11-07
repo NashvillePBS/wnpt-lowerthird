@@ -8,10 +8,11 @@
 # itself, the same mechanism as wnpt.app on the hub Worker. The Airtable proxy
 # (worker/wrangler.toml) is a separate Worker with its own deploy.
 #
-# .assetsignore keeps the git metadata, the proxy, the scripts and the docs
-# out of the upload; everything else in the repo is the site.
+# .assetsignore keeps the git metadata, the proxy, this Worker's code, the
+# scripts and the docs out of the upload; everything else in the repo is the site.
 
 name = "wnpt-graphics"
+main = "src/graphics-worker.js"
 compatibility_date = "2026-11-01"
 
 # The custom domain route provisions the DNS record and the certificate.
@@ -25,5 +26,16 @@ workers_dev = false
 
 [assets]
 directory = "./"
+binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
+# Only /api/* reaches the Worker code; every other path is served straight from the files.
+run_worker_first = ["/api/*"]
+
+[vars]
+# Cloudflare Access JWT verification for /api/*. POLICY_AUD is the "Nashville PBS Graphics Studio"
+# application's Audience tag (not a secret: it only says which application a JWT must be for).
+TEAM_DOMAIN = "nashville-pbs.cloudflareaccess.com"
+POLICY_AUD = "422e286ed186dcf53e80d2373668a9d614d6fc3b2d03399c51c10072b217b118"
+# Short.io: the station's link domain. The API key is the secret SHORTIO_API_KEY (shane.md).
+SHORTIO_DOMAIN = "wnpt.tv"

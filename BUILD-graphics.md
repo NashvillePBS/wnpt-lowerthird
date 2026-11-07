@@ -255,9 +255,11 @@ capture core, download only.
 
 ## B2. The set
 
-Eight signs share one layout and six fields: **headline** (one or two typed lines), **second line**,
-**small text**, **arrow** (none, or one of eight directions), **partner label** and **partner logos**
-(any number of logo files; see the partner row in §B3). Every sign is one entry in `SIGNS`.
+Ten signs. Eight share one layout and six fields: **headline** (one or two typed lines), **second
+line**, **small text**, **arrow** (none, or one of eight directions), **partner label** and **partner
+logos** (any number of logo files; see the partner row in §B3); the custom sign adds a web address and
+a QR code. Two more have their own layouts: **Donate** and **Our Apps** (Shane, 2026-11-07). Every
+sign is one entry in `SIGNS`.
 
 | Sign | Default lines | Arrow |
 |---|---|---|
@@ -268,7 +270,9 @@ Eight signs share one layout and six fields: **headline** (one or two typed line
 | Restrooms | Restrooms | right |
 | Quiet Please | Quiet Please / Recording in progress | no |
 | Photography Notice | Attention / This event is being photographed and/or video recorded. / the station's approved paragraphs and "Thank you!" (Shane, 2026-11-07) | no |
-| Custom | empty | optional |
+| Custom | empty; a QR code when a web address is given | optional |
+| Donate | Donate / "Donate at least $5 per month or $60 per year and enjoy Nashville PBS Passport" (the amounts are fields, since the Passport price may change) / the Passport lockup / wnpt.org/donate large / a QR code | no |
+| Our Apps | Get Our Apps / Watch on your phone, tablet and TV. / one block per app turned on: the PBS app (national PBS logo, GET THE FREE PBS APP), the Nashville PBS app (station lockup, GET THE FREE NASHVILLE PBS APP), the PBS KIDS app (PBS KIDS logo, GET THE FREE PBS KIDS VIDEO APP), each with its link and QR code; the fine print once when a call to action says "free" | no |
 
 Paper: Letter 8.5×11 and Tabloid 11×17, portrait or landscape. Field: **White by default** (Navy
 type, color logo), because these signs are printed in-house on the office color printer and a Navy
@@ -289,6 +293,9 @@ layout scaled by 11/8.5 with the extra height given to the copy. Values at Lette
 | Small text | 26px (19.5pt) Regular, line-height 1.45, 560px wide at most |
 | Arrow | 260px portrait (below the text), 300px landscape (beside it); the accent on Navy, Navy on white; a rounded line arrow in the Lucide stroke the brand book names for icons |
 | Partner logos | a flex row above the station logo, wrapping as logos are added: label (20px Medium, "Supported by"), then each logo at its own shape inside a box no taller than 64px and no wider than 220px for 1 to 3 logos, 52/170px for 4 to 6, 44/130px for 7 or more; gaps 28px across, 18px between rows; 36px above the row. Sponsor and underwriter marks stay smaller than the station lockup and carry a plain label, nothing that reads as an advertisement |
+| QR code | 192px (2 in) at Letter, Navy modules on white, quiet zone 4, error level M; the address printed under it in 22px Bold. It encodes the wnpt.tv short link when one was made, otherwise https:// plus the address |
+| Donate | headline 132px; the Passport sentence at 40px Medium; the Passport lockup 54px tall; the address 64px Black in PBS Blue; the QR beside the copy in landscape, under it in portrait |
+| Our Apps | headline 96px (so three apps fit); each app a row of logo over call to action (22px Black, .04em, ALL CAPS) beside a 120px QR (112px in landscape) with its address under it; the PBS logo 70px, the station lockup 44px, the PBS KIDS logo 96px tall; blocks stacked in portrait, side by side in landscape; the fine print 18px once |
 | Logo | white or color horizontal lockup, shield 40px (0.42 in; the print minimum is 0.2 in), bottom-left |
 | Print margin | 0.5 in (48px): nothing readable crosses it. Office printers cannot print the outer 0.2 in; the Navy field bleeds to the edge and prints with a thin white edge that a sign holder hides |
 
@@ -310,6 +317,15 @@ draws the trim size, as the task allowed. A 300 dpi PNG of the same frame is the
 screens. Names: `sign-<headline>-<letter|tabloid>-<portrait|landscape>.pdf`. Downloads are blocked
 while a warning stands (a word too long at the floor, copy taller than the sign, anything inside the
 print margin, a missing image).
+
+**Short links and QR codes.** The QR code is made in the page (`vendor/qrcode.js`, shared through
+`StudioCore.qrSvgDataUrl`). A "Make short link" button next to the address asks the studio's own API,
+`POST /api/shortlink` on graphics.wnpt.app (`src/graphics-worker.js`), which verifies the Cloudflare
+Access login again and creates a wnpt.tv link in Short.io with the station's key, held as the Worker
+secret `SHORTIO_API_KEY` that only Shane sets; the browser never sees the key. The QR then encodes the
+short link and prints it under the code. Until the secret is set the API answers 503 and the QR uses
+the full address; the page says so. Short.io is the same account and domain the web-sync Worker uses
+(`wnpt.tv`), with its own copy of the key, because a Worker secret cannot be read back or shared.
 
 Raster, not vector: Business Essentials draws its PDFs as vectors with embedded PBS Sans because
 business cards go to a press. Signs are office-printed or quick-printed, and a 300 dpi raster prints
@@ -335,8 +351,9 @@ and the partner row's `CONFIG.partners` (label, label size, the three size tiers
 ## B8. Verification
 
 The same verifier (`python3 scripts/verify-graphics.py --only signs`) drives `signs/selftest.html`:
-fourteen cases across every sign, both papers, both orientations, both fields and the partner row
-(three logos of different shapes; seven logos, wrapping tier). For each it takes the
+nineteen cases across every sign, both papers, both orientations, both fields, the partner row
+(three logos of different shapes; seven logos, wrapping tier), the donate sign, the app sign with three
+apps and with two, and a custom sign with a QR code. For each it takes the
 real PDF, parses its one image back out of the FlateDecode stream, checks the page size against the
 paper and the image size against 300 dpi, diffs the image against a render of the same frame with the
 readable elements hidden, and requires the ink's bounding box to sit inside the 0.5 in margin (150px

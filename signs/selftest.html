@@ -8,6 +8,7 @@
 body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
 </style>
 <script src="../vendor/html-to-image.js"></script>
+<script src="../vendor/qrcode.js"></script>
 <script src="../shared/studio-core.js"></script>
 <script src="signs.js"></script>
 </head><body>
@@ -38,7 +39,12 @@ body{margin:0;font-family:"PBS Sans",Arial,sans-serif}
     'photo-letter-portrait':           { sign: 'photo' },
     'custom-letter-landscape':         { sign: 'custom', orientation: 'landscape', accent: 'teal', fields: { headline: 'Green Room', subline: 'Guests and crew only', arrow: 'none' } },
     'partners-letter-portrait':        { sign: 'welcome', fields: { subline: 'Community Screening and Conversation', partnerLabel: 'Supported by', partners: LOGOS } },
-    'partners-seven-letter-landscape': { sign: 'welcome', orientation: 'landscape', fields: { subline: 'Community Screening', partnerLabel: 'Supported by', partners: LOGOS.concat(LOGOS, [LOGOS[0]]) } }
+    'partners-seven-letter-landscape': { sign: 'welcome', orientation: 'landscape', fields: { subline: 'Community Screening', partnerLabel: 'Supported by', partners: LOGOS.concat(LOGOS, [LOGOS[0]]) } },
+    'donate-letter-portrait':          { sign: 'donate' },
+    'donate-letter-landscape':         { sign: 'donate', orientation: 'landscape', fields: { shortURL: 'https://wnpt.tv/donate' } },
+    'apps-letter-portrait':            { sign: 'apps', fields: { apps: { pbs: { on: true, url: 'pbs.org/app', cta: '', shortPath: '', shortURL: '' }, station: { on: true, url: 'wnpt.org/app', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: 'pbskids.org/apps', cta: '', shortPath: '', shortURL: '' } } } },
+    'apps-two-tabloid-landscape':      { sign: 'apps', size: 'tabloid', orientation: 'landscape', fields: { apps: { pbs: { on: true, url: 'pbs.org/app', cta: '', shortPath: '', shortURL: 'https://wnpt.tv/pbsapp' }, station: { on: false, url: '', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: 'pbskids.org/apps', cta: '', shortPath: '', shortURL: '' } } } },
+    'custom-qr-letter-portrait':       { sign: 'custom', fields: { headline: 'Tonight\'s Program', subline: 'Scan for the program notes', url: 'wnpt.org/events', shortURL: 'https://wnpt.tv/notes' } }
   };
   if (q.get('list')) { document.getElementById('out').textContent = JSON.stringify({ cases: Object.keys(CASES) }); document.title = 'DONE'; return; }
   const toDataUrl = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });

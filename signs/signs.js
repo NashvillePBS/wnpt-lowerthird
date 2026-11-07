@@ -38,7 +38,26 @@
     // Partner (sponsor, underwriter) logos: a flex row above the station logo that wraps as logos are
     // added. Each logo keeps its own shape inside a box no taller than maxH and no wider than maxW for
     // the row's count (1 to 3, 4 to 6, 7 or more), so a wide mark and a square mark sit together.
-    partners: { label: 'Supported by', labelSize: 20, maxH: [64, 52, 44], maxW: [220, 170, 130], gap: 28, rowGap: 18, above: 36 }
+    partners: { label: 'Supported by', labelSize: 20, maxH: [64, 52, 44], maxW: [220, 170, 130], gap: 28, rowGap: 18, above: 36 },
+    // QR codes (custom, donate and app signs): 2 in square at Letter, Navy modules, the address printed under it.
+    qr: { size: 192, dark: '#0A145A', level: 'M', caption: 22 },
+    // The donate sign (Shane, 2026-11-07): "Donate at least $5 per month or $60 per year and enjoy Nashville PBS
+    // Passport", with the amounts as fields because the Passport price may change; wnpt.org/donate, not /support.
+    donate: { sentence: 'Donate at least ${monthly} per month or ${yearly} per year and enjoy Nashville PBS Passport', passportFile: 'Passport_Horizontal_Color.svg', passportH: 54 },
+    // The app sign: one block per app the staffer turns on. Rules from the PBS App Marketing Guide (July 2024)
+    // via the brand book: the PBS logo is the app's graphic (never the store icon), paired with an all-caps call
+    // to action; any "free" claim carries the fine print once. The Nashville PBS app is listed because Shane
+    // says the station has one (2026-11-07); the October brand book still says it is not launched, so he
+    // confirms the wording. Logo heights put the three marks at a similar visual weight.
+    apps: {
+      pbs:     { label: 'PBS app',           file: 'PBS_Logo_Color_RGB.svg',                 logoH: 70, cta: 'GET THE FREE PBS APP' },
+      station: { label: 'Nashville PBS app', file: 'NashvillePBS_Logo_Horizontal_Color.svg', logoH: 44, cta: 'GET THE FREE NASHVILLE PBS APP' },
+      kids:    { label: 'PBS KIDS app',      file: 'PBS_KIDS_Color_RGB_Digital.svg',          logoH: 96, cta: 'GET THE FREE PBS KIDS VIDEO APP' }
+    },
+    finePrint: '*Local PBS station membership required to access some content.',
+    // The app sign's blocks: logo over the call to action at left, the QR code at right. Portrait stacks one
+    // block per line; landscape puts them side by side, so they are smaller there.
+    appBlock: { headline: 96, qr: { portrait: 120, landscape: 112 }, colW: { portrait: 300, landscape: 150 }, cta: 22, caption: 20, captionW: 230, gap: 20, rowGap: 14 }
   };
 
   const ARROWS = { none: 'None', up: 'Up', 'up-right': 'Up right', right: 'Right', 'down-right': 'Down right', down: 'Down', 'down-left': 'Down left', left: 'Left', 'up-left': 'Up left' };
@@ -53,6 +72,21 @@
     { key: 'partners', label: 'Partner logos', type: 'images', hint: 'Add one or more logo files (PNG, JPG or SVG). They sit in a row above the station logo, each at its own shape; add more and the row wraps and the logos get smaller. On the white field use color or dark logos; on Navy, white ones. Not remembered after a reload.' }
   ];
   // The station's approved photography notice (Shane Burkeen, 2026-11-07), verbatim apart from the headline's case.
+  const QR_FIELDS = [
+    { key: 'url', label: 'Web address for the QR code', type: 'text', placeholder: 'wnpt.org/events', hint: 'Shown under the code as typed. The QR points at https:// plus this address, or at the wnpt.tv short link once one is made.' },
+    { key: 'shortPath', label: 'Short link name', type: 'shortlink', placeholder: 'fall-screening', hint: 'Optional. Makes wnpt.tv/<name> point at the address above (tracked in Short.io) and puts that in the QR code. Leave empty for a random name.' }
+  ];
+  const DONATE_FIELDS = [
+    { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Donate', hint: 'Press Enter to force a line break.' },
+    { key: 'monthly', label: 'Monthly amount', type: 'text', placeholder: '5', hint: 'Dollars per month for Passport; the sentence reads "at least $5 per month".' },
+    { key: 'yearly', label: 'Yearly amount', type: 'text', placeholder: '60', hint: 'Dollars per year.' },
+    { key: 'body', label: 'Small text', type: 'textarea', rows: 2, placeholder: '', hint: 'A sentence or two under the Passport line. Optional.' }
+  ].concat(QR_FIELDS);
+  const APP_FIELDS = [
+    { key: 'headline', label: 'Headline', type: 'textarea', rows: 2, placeholder: 'Get Our Apps', hint: 'Shorter than the other signs so three apps fit. Press Enter to force a line break.' },
+    { key: 'subline', label: 'Second line', type: 'text', placeholder: 'Watch on your phone, tablet and TV.', hint: 'Optional.' },
+    { key: 'apps', label: 'Apps', type: 'apps', hint: 'Turn on the apps the sign is for. Each gets its logo, its call to action and a QR code to its link. A "free" claim adds the required fine print once.' }
+  ];
   const PHOTO_SUB = 'This event is being photographed and/or video recorded.';
   const PHOTO_BODY = 'Please be advised that by entering this space, you are agreeing to being filmed and/or photographed, and the resulting assets may be used for marketing or promotional purposes.\n\nIf you do not wish to be photographed or recorded, please notify one of our staff members.\n\nThank you!';
   const SIGNS = {
@@ -63,8 +97,11 @@
     restrooms:    { label: 'Restrooms',            blurb: 'Restrooms, with an arrow.',                           defaults: { headline: 'Restrooms', subline: '', body: '', arrow: 'right', partnerLabel: '', partners: [] } },
     quiet:        { label: 'Quiet Please',         blurb: 'Quiet please: recording or a program in progress.',   defaults: { headline: 'Quiet Please', subline: 'Recording in progress', body: '', arrow: 'none', partnerLabel: '', partners: [] } },
     photo:        { label: 'Photography Notice',   blurb: 'The station\'s approved notice that the event is photographed or recorded.',  defaults: { headline: 'Attention', subline: PHOTO_SUB, body: PHOTO_BODY, arrow: 'none', partnerLabel: '', partners: [] } },
-    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines.',         defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [] } }
+    custom:       { label: 'Custom',               blurb: 'Anything else: your own headline and lines, with a QR code if you give it a link.', defaults: { headline: '', subline: '', body: '', arrow: 'none', partnerLabel: '', partners: [], url: '', shortPath: '', shortURL: '' }, fields: FIELDS.concat(QR_FIELDS) },
+    donate:       { label: 'Donate',               blurb: 'wnpt.org/donate with the Passport amounts and a QR code.', defaults: { headline: 'Donate', monthly: '5', yearly: '60', body: '', url: 'wnpt.org/donate', shortPath: '', shortURL: '', partnerLabel: '', partners: [] }, fields: DONATE_FIELDS },
+    apps:         { label: 'Our Apps',             blurb: 'Download the PBS app, the Nashville PBS app or the PBS KIDS app, each with a QR code.', defaults: { headline: 'Get Our Apps', subline: 'Watch on your phone, tablet and TV.', apps: { pbs: { on: true, url: '', cta: '', shortPath: '', shortURL: '' }, station: { on: true, url: '', cta: '', shortPath: '', shortURL: '' }, kids: { on: true, url: '', cta: '', shortPath: '', shortURL: '' } }, partnerLabel: '', partners: [] }, fields: APP_FIELDS }
   };
+  function fieldsFor(sign) { return (SIGNS[sign] && SIGNS[sign].fields) || FIELDS; }
 
   function dims(state) {
     const sz = SIZES[state.size] || SIZES.letter;
@@ -93,6 +130,120 @@
     return wrap;
   }
 
+  // A QR code with the address under it. `text` is what the code encodes; `shown` what people read.
+  function qrBlock(text, shown, k, fg) {
+    const Q = CONFIG.qr;
+    const src = SC.qrSvgDataUrl(text, Q.dark, Q.level);
+    if (!src) return null;
+    const box = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(8 * k) + 'px;flex:none');
+    const img = document.createElement('img');
+    img.src = src; img.alt = 'QR code for ' + shown;
+    img.style.cssText = 'display:block;width:' + r(Q.size * k) + 'px;height:' + r(Q.size * k) + 'px';
+    img.className = 'ec-readable';
+    box.appendChild(img);
+    if (shown) {
+      const cap = SC.el('div', 'font-size:' + r(Q.caption * k) + 'px;font-weight:700;line-height:1.2;color:' + fg, shown);
+      cap.className = 'ec-readable';
+      box.appendChild(cap);
+    }
+    return box;
+  }
+  function money(v) { const n = String(v == null ? '' : v).trim().replace(/^\$/, ''); return n ? '$' + n : ''; }
+
+  // Donate: headline, the Passport sentence with the amounts, the Passport lockup, the address big, the QR.
+  function buildDonate(text, content, f, d, k, fg, navy) {
+    const lines = String(f.headline || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    lines.forEach(t => {
+      const h = SC.el('div', 'font-size:' + r(CONFIG.headline * k) + 'px;font-weight:800;letter-spacing:-.02em;line-height:1.02;text-wrap:balance;overflow-wrap:normal;color:' + fg, t);
+      h.className = 'ec-readable'; h.dataset.fitwrap = '1'; h.dataset.base = r(CONFIG.headline * k); h.dataset.floor = r(CONFIG.floor * k);
+      text.appendChild(h);
+    });
+    const sentence = CONFIG.donate.sentence.replace('${monthly}', money(f.monthly) || '$5').replace('${yearly}', money(f.yearly) || '$60');
+    const s1 = SC.el('div', 'font-size:' + r(CONFIG.subline * k) + 'px;font-weight:500;line-height:1.25;margin-top:' + r(18 * k) + 'px;text-wrap:pretty;color:' + fg, sentence);
+    s1.className = 'ec-readable'; s1.dataset.fitwrap = '1'; s1.dataset.base = r(CONFIG.subline * k); s1.dataset.floor = r(24 * k);
+    text.appendChild(s1);
+    const pp = document.createElement('img');
+    pp.src = CONFIG.assets + CONFIG.donate.passportFile; pp.alt = 'Nashville PBS Passport';
+    pp.style.cssText = 'display:block;height:' + r(CONFIG.donate.passportH * k) + 'px;width:auto;margin-top:' + r(26 * k) + 'px;align-self:flex-start';
+    pp.className = 'ec-readable';
+    text.appendChild(pp);
+    if ((f.body || '').trim()) {
+      const b = SC.el('div', 'font-size:' + r(CONFIG.body * k) + 'px;font-weight:400;line-height:1.45;margin-top:' + r(26 * k) + 'px;max-width:' + r(CONFIG.bodyMax * k) + 'px;white-space:pre-line;text-wrap:pretty;color:' + fg, f.body.trim());
+      b.className = 'ec-readable'; text.appendChild(b);
+    }
+    const shown = (f.url || '').trim();
+    if (shown) {
+      const u = SC.el('div', 'font-size:' + r(64 * k) + 'px;font-weight:800;letter-spacing:-.01em;line-height:1.05;margin-top:' + r(34 * k) + 'px;color:' + (navy ? '#fff' : C.pbsBlue), shown);
+      u.className = 'ec-readable'; u.dataset.fitwrap = '1'; u.dataset.base = r(64 * k); u.dataset.floor = r(36 * k);
+      text.appendChild(u);
+    }
+    content.appendChild(text);
+    const q = qrBlock((f.shortURL || '').trim() || SC.urlTarget(f.url), (f.shortURL || '').replace(/^https?:\/\//, '') || '', k, fg);
+    if (q) { if (!d.land) q.style.alignSelf = 'flex-start'; content.appendChild(q); }
+  }
+
+  // Apps: headline, second line, then one block per app that is on (logo over the call to action, the QR code
+  // beside them), fine print once if any call to action claims "free".
+  function buildApps(text, content, box, f, d, k, fg, navy) {
+    const A = CONFIG.appBlock;
+    const lines = String(f.headline || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    lines.forEach(t => {
+      const h = SC.el('div', 'font-size:' + r(A.headline * k) + 'px;font-weight:800;letter-spacing:-.02em;line-height:1.02;text-wrap:balance;overflow-wrap:normal;color:' + fg, t);
+      h.className = 'ec-readable'; h.dataset.fitwrap = '1'; h.dataset.base = r(A.headline * k); h.dataset.floor = r(CONFIG.floor * k);
+      text.appendChild(h);
+    });
+    if ((f.subline || '').trim()) {
+      const s1 = SC.el('div', 'font-size:' + r(CONFIG.subline * k) + 'px;font-weight:500;line-height:1.25;margin-top:' + r(14 * k) + 'px;text-wrap:pretty;color:' + fg, f.subline.trim());
+      s1.className = 'ec-readable'; s1.dataset.fitwrap = '1'; s1.dataset.base = r(CONFIG.subline * k); s1.dataset.floor = r(24 * k);
+      text.appendChild(s1);
+    }
+    content.appendChild(text);
+    const apps = f.apps || {};
+    const on = Object.keys(CONFIG.apps).filter(key => apps[key] && apps[key].on);
+    let free = false;
+    if (on.length) {
+      const qrSize = r((d.land ? A.qr.landscape : A.qr.portrait) * k);
+      const colW = r((d.land ? A.colW.landscape : A.colW.portrait) * k);
+      const row = SC.el('div', 'display:flex;flex-wrap:wrap;align-items:flex-start;gap:' + r(A.rowGap * k) + 'px ' + r(28 * k) + 'px;margin-top:' + r(28 * k) + 'px;' + (d.land ? '' : 'flex-direction:column'));
+      on.forEach(key => {
+        const a = CONFIG.apps[key], v = apps[key] || {};
+        const block = SC.el('div', 'display:flex;flex-direction:row;align-items:center;gap:' + r(A.gap * k) + 'px;flex:none');
+        const col = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(12 * k) + 'px;width:' + colW + 'px;flex:none');
+        const logo = document.createElement('img');
+        logo.src = CONFIG.assets + a.file; logo.alt = a.label;
+        logo.style.cssText = 'display:block;max-height:' + r(a.logoH * k) + 'px;max-width:100%;width:auto;height:auto;object-fit:contain';
+        logo.className = 'ec-readable';
+        col.appendChild(logo);
+        const cta = ((v.cta || '').trim() || a.cta).toUpperCase();
+        if (/\bFREE\b/.test(cta)) free = true;
+        const c = SC.el('div', 'font-size:' + r(A.cta * k) + 'px;font-weight:800;letter-spacing:.04em;line-height:1.2;color:' + fg, cta);
+        c.className = 'ec-readable';
+        col.appendChild(c);
+        block.appendChild(col);
+        const target = (v.shortURL || '').trim() || SC.urlTarget(v.url);
+        const src = target ? SC.qrSvgDataUrl(target, CONFIG.qr.dark, CONFIG.qr.level) : '';
+        if (src) {
+          const qb = SC.el('div', 'display:flex;flex-direction:column;align-items:flex-start;gap:' + r(6 * k) + 'px;flex:none');
+          const img = document.createElement('img');
+          img.src = src; img.alt = 'QR code for ' + a.label;
+          img.style.cssText = 'display:block;width:' + qrSize + 'px;height:' + qrSize + 'px';
+          img.className = 'ec-readable';
+          qb.appendChild(img);
+          const shown = (v.shortURL || '').replace(/^https?:\/\//, '') || (v.url || '').trim();
+          if (shown) { const cap = SC.el('div', 'font-size:' + r(A.caption * k) + 'px;font-weight:700;line-height:1.2;max-width:' + r(A.captionW * k) + 'px;overflow-wrap:anywhere;color:' + fg, shown); cap.className = 'ec-readable'; qb.appendChild(cap); }
+          block.appendChild(qb);
+        }
+        row.appendChild(block);
+      });
+      content.appendChild(row);
+    }
+    if (free) {
+      const fp = SC.el('div', 'font-size:' + r(18 * k) + 'px;font-weight:400;line-height:1.3;margin-top:' + r(20 * k) + 'px;color:' + fg, CONFIG.finePrint);
+      fp.className = 'ec-readable';
+      content.appendChild(fp);
+    }
+  }
+
   function defaultState(sign) {
     const sg = SIGNS[sign] || SIGNS.welcome;
     return { sign: SIGNS[sign] ? sign : 'welcome', colorway: 'white', accent: 'yellow', size: 'letter', orientation: 'portrait', fields: Object.assign({}, sg.defaults, { partners: [] }) };
@@ -114,6 +265,12 @@
     const content = SC.el('div', 'flex:1;min-height:0;display:flex;' + (d.land ? 'flex-direction:row;align-items:center;gap:' + r(56 * k) + 'px' : 'flex-direction:column;justify-content:center;gap:' + r(40 * k) + 'px'));
     content.dataset.box = 'copy';
     const text = SC.el('div', 'display:flex;flex-direction:column;min-width:0;' + (d.land ? 'flex:1' : ''));
+    if (state.sign === 'donate' || state.sign === 'apps') {
+      if (d.land) content.style.flexDirection = 'column';
+      content.style.alignItems = 'flex-start'; content.style.justifyContent = 'center';
+      if (state.sign === 'donate') { if (d.land) { content.style.flexDirection = 'row'; content.style.alignItems = 'center'; } buildDonate(text, content, f, d, k, fg, navy); }
+      else buildApps(text, content, box, f, d, k, fg, navy);
+    } else {
     const lines = String(f.headline || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     lines.forEach(t => {
       const h = SC.el('div', 'font-size:' + r(CONFIG.headline * k) + 'px;font-weight:800;letter-spacing:-.02em;line-height:1.02;text-wrap:balance;overflow-wrap:normal;color:' + fg, t);
@@ -137,6 +294,10 @@
       const a = arrowSvg(f.arrow, size, color);
       if (!d.land) a.style.alignSelf = 'flex-start';
       content.appendChild(a);
+    } else if (state.sign === 'custom' && (f.url || '').trim()) {
+      const q = qrBlock((f.shortURL || '').trim() || SC.urlTarget(f.url), (f.shortURL || '').replace(/^https?:\/\//, '') || (f.url || '').trim(), k, fg);
+      if (q) { if (!d.land) q.style.alignSelf = 'flex-start'; content.appendChild(q); }
+    }
     }
     box.appendChild(content);
     const partners = Array.isArray(f.partners) ? f.partners.filter(x => x && x.src) : [];
@@ -271,5 +432,5 @@
     return 'sign-' + base + '-' + d.size + '-' + (d.land ? 'landscape' : 'portrait') + '.' + (ext || 'pdf');
   }
 
-  global.EventSigns = { DPI, PRINT_DPI, MARGIN, SIZES, ACCENTS, CONFIG, SIGNS, FIELDS, ARROWS, dims, defaultState, createStage, layout, exportPdf, exportPng, fileName, title };
+  global.EventSigns = { DPI, PRINT_DPI, MARGIN, SIZES, ACCENTS, CONFIG, SIGNS, FIELDS, ARROWS, fieldsFor, dims, defaultState, createStage, layout, exportPdf, exportPng, fileName, title };
 })(window);

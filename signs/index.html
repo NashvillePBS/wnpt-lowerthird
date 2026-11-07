@@ -60,9 +60,10 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
   #ec-main{position:static;height:auto;min-height:0;padding:24px 16px}
 }
 </style>
-<script src="../vendor/html-to-image.js?v=20261107b"></script>
-<script src="../shared/studio-core.js?v=20261107b"></script>
-<script src="signs.js?v=20261107b"></script>
+<script src="../vendor/html-to-image.js?v=20261107c"></script>
+<script src="../vendor/qrcode.js?v=20261107c"></script>
+<script src="../shared/studio-core.js?v=20261107c"></script>
+<script src="signs.js?v=20261107c"></script>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column">
@@ -170,11 +171,37 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
     const host = $('#ec-fields'); host.innerHTML = '';
     const sg = S.SIGNS[state.sign], f = fields();
     const head = document.createElement('div'); head.className = 'ec-label'; head.textContent = sg.label; host.appendChild(head);
-    S.FIELDS.forEach(spec => {
+    S.fieldsFor(state.sign).forEach(spec => {
       const wrap = document.createElement('div'); wrap.className = 'ec-field';
       const id = 'es-f-' + spec.key;
       const label = document.createElement('label'); label.htmlFor = id; label.textContent = spec.label; wrap.appendChild(label);
       let input;
+      if (spec.type === 'shortlink') {
+        wrap.appendChild(shortLinkRow(f, 'shortPath', 'shortURL', 'url', id));
+        if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+        host.appendChild(wrap); return;
+      }
+      if (spec.type === 'apps') {
+        const apps = f.apps || (f.apps = {});
+        Object.entries(S.CONFIG.apps).forEach(([key, a]) => {
+          const v = apps[key] || (apps[key] = { on: false, url: '', cta: '', shortPath: '', shortURL: '' });
+          const card = document.createElement('div'); card.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid #e4e7f1;border-radius:10px;background:#f6f7fb';
+          const top = document.createElement('label'); top.style.cssText = 'display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#0A145A;cursor:pointer';
+          const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!v.on; cb.style.accentColor = '#2638C4';
+          cb.addEventListener('change', () => { v.on = cb.checked; buildFields(); schedule(); });
+          top.appendChild(cb); top.appendChild(document.createTextNode(a.label)); card.appendChild(top);
+          if (v.on) {
+            const link = document.createElement('input'); link.type = 'text'; link.className = 'ec-input'; link.placeholder = 'Link to the app, e.g. pbs.org/app'; link.value = v.url || '';
+            link.setAttribute('aria-label', a.label + ' link'); link.addEventListener('input', () => { v.url = link.value; v.shortURL = ''; schedule(); }); card.appendChild(link);
+            const cta = document.createElement('input'); cta.type = 'text'; cta.className = 'ec-input'; cta.placeholder = a.cta; cta.value = v.cta || '';
+            cta.setAttribute('aria-label', a.label + ' call to action'); cta.addEventListener('input', () => { v.cta = cta.value; schedule(); }); card.appendChild(cta);
+            card.appendChild(shortLinkRow(v, 'shortPath', 'shortURL', 'url', id + '-' + key));
+          }
+          wrap.appendChild(card);
+        });
+        if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
+        host.appendChild(wrap); return;
+      }
       if (spec.type === 'images') {
         const list = Array.isArray(f[spec.key]) ? f[spec.key] : (f[spec.key] = []);
         const rows = document.createElement('div'); rows.style.cssText = 'display:flex;flex-direction:column;gap:6px';
@@ -212,6 +239,42 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
       if (spec.hint) { const h = document.createElement('div'); h.className = 'ec-hint'; h.textContent = spec.hint; wrap.appendChild(h); }
       host.appendChild(wrap);
     });
+  }
+  // A short-link name field, the button that makes the wnpt.tv link through the studio's API, and the result.
+  let shortLinkStatus = null; // null = unknown, true/false = /api/shortlink/status
+  function shortLinkRow(obj, pathKey, urlKey, targetKey, id) {
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+    const line = document.createElement('div'); line.style.cssText = 'display:flex;gap:8px;align-items:center';
+    const prefix = document.createElement('span'); prefix.className = 'ec-hint'; prefix.textContent = 'wnpt.tv/'; line.appendChild(prefix);
+    const input = document.createElement('input'); input.type = 'text'; input.className = 'ec-input'; input.id = id; input.placeholder = 'optional-name'; input.value = obj[pathKey] || '';
+    input.addEventListener('input', () => { obj[pathKey] = input.value.trim().toLowerCase(); });
+    line.appendChild(input);
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ec-btn secondary'; btn.style.cssText = 'width:auto;padding:9px 12px;font-size:12px;white-space:nowrap'; btn.textContent = obj[urlKey] ? 'Remake' : 'Make short link';
+    btn.addEventListener('click', () => makeShortLink(obj, pathKey, urlKey, targetKey, msg, btn));
+    line.appendChild(btn); row.appendChild(line);
+    const msg = document.createElement('div'); msg.className = 'ec-hint';
+    msg.textContent = obj[urlKey] ? ('Short link: ' + obj[urlKey] + ' (in the QR code)') : (shortLinkStatus === false ? 'Short links are not set up yet; the QR code uses the full address.' : '');
+    row.appendChild(msg);
+    return row;
+  }
+  async function makeShortLink(obj, pathKey, urlKey, targetKey, msg, btn) {
+    const target = (obj[targetKey] || '').trim();
+    if (!target) { msg.textContent = 'Type the web address first.'; return; }
+    btn.disabled = true; msg.textContent = 'Asking Short.io\u2026';
+    try {
+      const res = await fetch('/api/shortlink', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+        body: JSON.stringify({ url: target, path: obj[pathKey] || '', title: 'Sign: ' + (fields().headline || S.SIGNS[state.sign].label).split('\n')[0] }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { msg.textContent = data.error || ('Short.io answered ' + res.status + '.'); return; }
+      obj[urlKey] = data.shortURL; obj[pathKey] = data.path || obj[pathKey];
+      buildFields(); schedule();
+    } catch (e) { msg.textContent = 'Could not reach the studio API: ' + (e && e.message || e); }
+    finally { btn.disabled = false; }
+  }
+  async function checkShortLinks() {
+    try { const r = await fetch('/api/shortlink/status', { credentials: 'same-origin' }); const d = await r.json(); shortLinkStatus = !!d.configured; }
+    catch (e) { shortLinkStatus = false; }
+    buildFields();
   }
   function buildLook() {
     seg($('#ec-size'), Object.entries(S.SIZES).map(([k, v]) => [k, v.label + ' · ' + v.detail]), state.size, k => { state.size = k; });
@@ -296,6 +359,7 @@ textarea.ec-input{resize:vertical;min-height:62px;line-height:1.45}
 
   buildAll();
   render();
+  checkShortLinks();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
 })();
 </script>

@@ -31,7 +31,25 @@ Ordered by what each one unblocks. ✅ done · ⬜ open · ⏸ parked.
    band at 28px in Yellow. Each is one config value (BUILD-graphics.md §A5, §B7).
 7. ✅ **PowerPoint sign templates removed** (you, 2026-11-07: the generator is enough). They were built
    at another session's request, not yours.
-8. ⏸ **Outside editors on graphics.wnpt.app:** not added by hand. The brand-page session is building
+8. ⬜ **Set the Short.io key on the graphics Worker** so the sign generator can make wnpt.tv short
+   links for its QR codes. The web-sync Worker already holds this key as a secret you set on 2026-08-25;
+   a secret cannot be copied between Workers, so paste it once more here (it stays in Cloudflare, never
+   in this repo or in chat):
+   ```bash
+   cd "/Users/sburkeen/Projects/wnpt-lowerthird" && npx wrangler secret put SHORTIO_API_KEY
+   ```
+   Paste the key at the prompt and press Return. You should see "Success! Uploaded secret
+   SHORTIO_API_KEY". Then tell Claude, who makes one test link (`wnpt.tv/graphics-test`) and checks it.
+9. ⬜ **Three answers for the app sign** (BUILD-graphics.md §B2): the links each QR code should point at
+   (the PBS app, the Nashville PBS app, the PBS KIDS app: an app-store page, a landing page, or a
+   wnpt.tv link you already use); whether the Nashville PBS app may be shown at all (the October brand
+   book still says "the Nashville PBS app is not launched: do not reference it"; you say the station has
+   one, so your word stands, but say so); and the three calls to action, which today read GET THE FREE
+   PBS APP, GET THE FREE NASHVILLE PBS APP and GET THE FREE PBS KIDS VIDEO APP (editable on the sign).
+10. ⬜ **The support end card's address:** you asked for /support to become /donate on the signs. The
+   support end card (`endcards/`) still reads wnpt.org/support, which you confirmed this morning. Say
+   "change it" and it becomes wnpt.org/donate too.
+11. ⏸ **Outside editors on graphics.wnpt.app:** not added by hand. The brand-page session is building
    the self-service agency tool on brand.wnpt.app that edits Access policies; the studio's policy should
    be the one that tool manages. When it takes over, delete the graphics.wnpt.app entry from wnpt-events
    `scripts/setup-access.mjs` (its comment says why).

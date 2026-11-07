@@ -100,8 +100,27 @@
   const capturePng = (node, w, h, scale) => captureWith((n, o) => global.htmlToImage.toPng(n, o), node, w, h, scale);
   const captureCanvas = (node, w, h, scale) => captureWith((n, o) => global.htmlToImage.toCanvas(n, o), node, w, h, scale);
 
+  // A QR code as an SVG data URL: dark modules on white with a 4-module quiet zone, crisp at any scale.
+  // Needs vendor/qrcode.js (window.qrcode). Returns '' when the text is empty or the encoder is missing.
+  function qrSvgDataUrl(text, dark, level) {
+    if (!text || typeof global.qrcode !== 'function') return '';
+    const q = global.qrcode(0, level || 'M');
+    q.addData(text); q.make();
+    const n = q.getModuleCount(), m = 4, size = n + m * 2;
+    let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += 'M' + (c + m) + ' ' + (r + m) + 'h1v1h-1z';
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges">' +
+      '<rect width="' + size + '" height="' + size + '" fill="#fff"/><path d="' + d + '" fill="' + (dark || '#0A145A') + '"/></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  function urlTarget(u) {
+    u = (u || '').trim();
+    if (!u) return '';
+    return /^[a-z][a-z0-9+.-]*:\/\//i.test(u) ? u : 'https://' + u;
+  }
+
   function slug(s) { return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48); }
   function download(url, name) { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 
-  global.StudioCore = { el, line, fitLines, readableOutside, describe, brokenImages, raf2, settle, exportHost, capturePng, captureCanvas, slug, download };
+  global.StudioCore = { el, line, fitLines, readableOutside, describe, brokenImages, raf2, settle, exportHost, capturePng, captureCanvas, slug, download, qrSvgDataUrl, urlTarget };
 })(window);
