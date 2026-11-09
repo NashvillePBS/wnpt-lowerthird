@@ -4,6 +4,23 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-09: the Hub breadcrumb header
+
+**Status:** committed locally, not pushed or deployed (deploy is `npm run deploy`, Shane's call).
+Every navy header now follows wnpt-events `docs/design/chrome.md` §2: the lockup (not a link), then
+`HUB` (https://wnpt.app) / `GRAPHICS` (the studio's home) / the screen's own name. The studio's four
+headers (picker, generator, credits, Slice) and the End Cards, Event Signs, Business Essentials and
+Pledge Graphics pages. The Back to main pill stays (Business Essentials' flushes its autosave, the
+studio's keeps state) but moves to the right; the GRAPHICS crumb on Business Essentials uses the same
+autosave-aware handler. Pledge's header now uses the shared lockup file (`../assets/`), not its copy.
+At 760 px and below the screen name and the pill's label hide, the lockup drops to 17 px and the
+crumbs to 11 px; the header wraps instead of overlapping at any width. No footer exists, so nothing
+to relink. `scripts/patch-dist.py` learned the bundle's asset ids (`ASSET_IDS`), which is what let
+hunks touching the lockup line patch `dist/`.
+Checked locally (python http.server, 375×812 emulated): document and header scrollWidth 375 on the
+picker, a generator, Credits, End Cards, Event Signs, Business Essentials and Pledge; also 576 and
+1280 px; no console errors from the change.
+
 ## Session 3, 2026-11-07: event signs, the shared core, and the move to graphics.wnpt.app
 
 **Status:** complete. Signs built and verified; the studio is live at https://graphics.wnpt.app/ behind

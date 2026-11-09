@@ -17,7 +17,7 @@ one escaped JS string:
 | `</` | `<` followed by `/` (script-tag safety) |
 | non-ASCII (curly quotes, em dashes) | raw UTF-8, unescaped |
 | `\` (a literal backslash) | `\\` (two backslashes) |
-| `src="assets/…"` on `<img>` | **rewritten to a base64 data URI** |
+| `src="assets/…"` on `<img>` (and the helmet's `<script src>`) | **rewritten to an asset-manifest id** (a UUID); paths listed in `patch-dist.py`'s `ASSET_IDS` are mapped, any other keeps the old rule: keep hunks clear of it |
 | a camelCase attribute (`onClick=`, `viewBox=`, …) — **template only** | `sc-camel-` + kebab-case (`sc-camel-on-click=`, `sc-camel-view-box=`) |
 
 The asset-URI row is the one to keep in mind: the template text in the bundle

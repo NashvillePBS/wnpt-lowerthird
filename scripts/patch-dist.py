@@ -58,6 +58,21 @@ def _to_camel_attr(m):
     return sp + "sc-camel-" + kebab + eq
 
 
+# The bundle's template refers to an <img src="assets/..."> (and a helmet
+# <script src>) by the id of its
+# entry in the bundle's asset manifest, the same id at every site. Mapping a
+# path here lets a hunk that touches such a line match (verified 2026-11-09
+# for the header lockup: all ten lockup <img>s carry this id). A path not
+# listed keeps the old rule: keep hunks clear of it.
+ASSET_IDS = {
+    "assets/NashvillePBS_Logo_Horizontal_White.svg": "3eb2be12-dfc9-4002-ae58-254f1bc6b458",
+    # the helmet's two <script src>s, same manifest (a hunk at the end of the
+    # <style> block reaches them as context)
+    "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js": "18a4b517-7dbe-4389-bbe9-b4e5a55d7fe1",
+    "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js": "7b3ba48e-7cb9-4d1b-acbd-b6222b2ed83a",
+}
+
+
 def esc(t: str, is_template: bool) -> str:
     """Escape plain source text into the bundle's embedded-string encoding.
 
@@ -76,6 +91,8 @@ def esc(t: str, is_template: bool) -> str:
     """
     if is_template:
         t = CAMEL_ATTR_RE.sub(_to_camel_attr, t)
+        for path, asset_id in ASSET_IDS.items():
+            t = t.replace(f'src="{path}"', f'src="{asset_id}"')
     t = t.replace("\\", "\\\\")
     t = t.replace('"', '\\"')
     t = t.replace("\n", "\\n")

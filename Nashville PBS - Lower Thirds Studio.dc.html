@@ -26,6 +26,14 @@ a:hover{color:#0F1E8C;text-decoration:underline}
   #pick-grid{grid-template-columns:1fr !important}
   #onair-grid{grid-template-columns:1fr !important}
 }
+[data-chrome]{flex-wrap:wrap;row-gap:10px}
+[data-chrome]>a,[data-chrome]>button{white-space:nowrap;flex:none}
+@media (max-width:760px){
+  [data-chrome]{gap:8px !important;padding:12px 14px !important;height:auto !important;min-height:54px}
+  [data-chrome] [data-brand] img{height:17px !important}
+  [data-chrome] [data-crumb]{font-size:11px !important;letter-spacing:.04em !important}
+  [data-chrome] [data-crumb-tail],[data-chrome] [data-back-label]{display:none !important}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -39,8 +47,9 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 
   <!-- ════════ SPLASH / SHOW PICKER ════════ -->
   <sc-if value="{{ isPicker }}" hint-placeholder-val="{{ true }}">
-    <header style="display:flex;align-items:center;gap:14px;padding:18px 32px;background:#0A145A;color:#fff">
-      <div style="display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:28px;width:auto;display:block"><span>- Graphics</span></div>
+    <header data-chrome style="display:flex;align-items:center;gap:14px;padding:18px 32px;background:#0A145A;color:#fff">
+      <span data-brand style="display:flex;align-items:center;flex:none"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:28px;width:auto;display:block"></span>
+      <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;min-width:0"><a href="https://wnpt.app" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Hub</a><span aria-hidden="true" style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><a href="/" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Graphics</a></nav>
       <button onClick="{{ configure }}" title="Airtable connection" style="margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;cursor:pointer">
         <span style="width:8px;height:8px;border-radius:50%;background:{{ connDot }}"></span>{{ connLabel }}
       </button>
@@ -247,12 +256,13 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 
   <!-- ════════ GENERATOR ════════ -->
   <sc-if value="{{ isGen }}">
-    <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
-      <button onClick="{{ backToPicker }}" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer" style-hover="background:rgba(255,255,255,.18)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    <header data-chrome style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+      <span data-brand style="display:flex;align-items:center;flex:none"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"></span>
+      <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;min-width:0"><a href="https://wnpt.app" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Hub</a><span aria-hidden="true" style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><a href="/" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Graphics</a><span aria-hidden="true" data-crumb-tail style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><span data-crumb-tail style="color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ showLabel }}</span></nav>
+      <button onClick="{{ backToPicker }}" title="Back to main" aria-label="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer;margin-left:auto" style-hover="background:rgba(255,255,255,.18)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg><span data-back-label>Back to main</span>
       </button>
-      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>{{ showLabel }}</span></div>
-      <button onClick="{{ configure }}" title="Airtable connection" style="margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;cursor:pointer">
+      <button onClick="{{ configure }}" title="Airtable connection" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;cursor:pointer">
         <span style="width:8px;height:8px;border-radius:50%;background:{{ connDot }}"></span>{{ connLabel }}
       </button>
     </header>
@@ -585,11 +595,12 @@ a:hover{color:#0F1E8C;text-decoration:underline}
   </sc-if>
   <!-- ════════ CREDITS GENERATOR ════════ -->
   <sc-if value="{{ isCredits }}">
-    <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
-      <button onClick="{{ backToPicker }}" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer" style-hover="background:rgba(255,255,255,.18)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    <header data-chrome style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+      <span data-brand style="display:flex;align-items:center;flex:none"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"></span>
+      <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;min-width:0"><a href="https://wnpt.app" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Hub</a><span aria-hidden="true" style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><a href="/" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Graphics</a><span aria-hidden="true" data-crumb-tail style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><span data-crumb-tail style="color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Credits</span></nav>
+      <button onClick="{{ backToPicker }}" title="Back to main" aria-label="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer;margin-left:auto" style-hover="background:rgba(255,255,255,.18)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg><span data-back-label>Back to main</span>
       </button>
-      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>Credits</span></div>
     </header>
 
     <div id="lt-grid" style="flex:1;display:grid;grid-template-columns:440px 1fr;min-height:0">
@@ -664,12 +675,13 @@ a:hover{color:#0F1E8C;text-decoration:underline}
 
   <!-- ════════ SLICE EVENT GRAPHICS ════════ -->
   <sc-if value="{{ isSliceEvent }}">
-    <header style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
-      <button onClick="{{ backToPicker }}" title="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer" style-hover="background:rgba(255,255,255,.18)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>Back to main
+    <header data-chrome style="display:flex;align-items:center;gap:14px;padding:16px 24px;background:#0A145A;color:#fff">
+      <span data-brand style="display:flex;align-items:center;flex:none"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"></span>
+      <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:8px;min-width:0"><a href="https://wnpt.app" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Hub</a><span aria-hidden="true" style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><a href="/" data-crumb style="color:rgba(255,255,255,.82);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex:none;text-decoration:none">Graphics</a><span aria-hidden="true" data-crumb-tail style="color:rgba(255,255,255,.34);font-size:12px;font-weight:600;flex:none">/</span><span data-crumb-tail style="color:#fff;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">A Slice of the Community — Event Graphics</span></nav>
+      <button onClick="{{ backToPicker }}" title="Back to main" aria-label="Back to main" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.10);color:#fff;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:8px 14px 8px 11px;cursor:pointer;margin-left:auto" style-hover="background:rgba(255,255,255,.18)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg><span data-back-label>Back to main</span>
       </button>
-      <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em"><img src="assets/NashvillePBS_Logo_Horizontal_White.svg" alt="Nashville PBS" style="height:24px;width:auto;display:block"><span style="color:rgba(255,255,255,.5);font-weight:500">/</span><span>A Slice of the Community — Event Graphics</span></div>
-      <span style="margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px">Download only</span>
+      <span style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 14px;white-space:nowrap">Download only</span>
     </header>
 
     <div id="lt-grid" style="flex:1;display:grid;grid-template-columns:428px 1fr;min-height:0">
