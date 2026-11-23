@@ -379,7 +379,8 @@ function suggestTitle(name) {
       for (const [k, v] of ITEM_MAP) if (key === k || key.includes(k)) return v;
       return p;
     });
-    if (items.length >= 3) return 'Gift Set';
+    // Any gift made of two or more items (a kit or combo) is titled "Gift Set" (Shane, 2026-11-23).
+    if (items.length >= 2) return 'Gift Set';
     return joinItems(items);
   }
   // Whole words only (so HAT doesn't match "That" or TEE "Steel"), plurals allowed, longest keys
@@ -398,7 +399,7 @@ function suggestTitle(name) {
     if (at >= 0) { const f = found.find(x => x.v === v); if (!f) found.push({ v, at }); else f.at = Math.min(f.at, at); }
   }
   const items = found.sort((a, b) => a.at - b.at).map(x => x.v);
-  if (items.length >= 3) return 'Gift Set';
+  if (items.length >= 2 || /\bCOMBO\b/.test(name.toUpperCase())) return 'Gift Set';
   return items.length >= 1 ? joinItems(items) : '';
 }
 let uid = 1;

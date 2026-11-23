@@ -4,6 +4,16 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Every multi-item gift is titled "Gift Set"
+
+**Status:** deployed (version cf9c6989) and pushed. Shane's call: combos say "Gift Set". Any gift
+whose name yields two or more items, or contains the word "combo", now suggests "Gift Set" (was:
+three or more; two-item kits listed the items, e.g. "Tee and Hat", "DVD and CD"). Single items
+unchanged. Note: exported PNGs are transparent with white title text, so a title looks missing when
+the PNG is viewed on white; it is there.
+**Evidence:** old vs new on the August and End of Year gift names: only the two-item kit and the
+combo changed; live page code returns "Gift Set" for both, "Tee" and "Mug" for single items.
+
 ## 2026-11-23: Pledge title suggestions know Tee and Bag
 
 **Status:** deployed (version 0f304fcc) and pushed. `suggestTitle` in `pledge/index.html` had no
