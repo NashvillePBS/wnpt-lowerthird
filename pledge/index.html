@@ -999,8 +999,10 @@ class Component extends DCLogic {
   }
 
   // Pledge-night premiums checklist: every gift from the loaded sheet (plus gifts added with
-  // "+ Gift"), grouped by program, with its donation level, the graphic's filename and title when
-  // one is in the queue, and a box to tick. Opens a print-ready page in the station's Standard
+  // "+ Gift"), grouped by program, with its donation level, the graphic's filename (always: the
+  // name it exports under, so graphics exported earlier or on another computer still match) and
+  // its title when it is in this browser's queue, then one show screen per program, each with a
+  // box to tick. Opens a print-ready page in the station's Standard
   // document style (Letter, Arial, PBS Blue headings, Navy table header, Nashville PBS footer).
   printChecklist() {
     const { gifts, queue } = this.state;
@@ -1012,7 +1014,7 @@ class Component extends DCLogic {
       const prog = g.program || 'Other';
       if (prog !== last || !blocks.length) { blocks.push({ prog, rows: [] }); last = prog; }
       const item = queue.find(q => q.giftIdx === i && (q.mode || 'standard') !== 'show');
-      blocks[blocks.length - 1].rows.push({ num: this.giftSeq({ giftIdx: i }), name: g.name, level: g.level, g: gfx(item) });
+      blocks[blocks.length - 1].rows.push({ num: this.giftSeq({ giftIdx: i }), name: g.name, level: g.level, g: gfx(item) || { file: this.autoFile({ giftIdx: i, mode: 'standard' }), title: '' } });
     });
     queue.filter(q => (q.mode || 'standard') !== 'show' && q.giftIdx === -1).forEach(q => {
       const prog = q.program || 'Other';
@@ -1021,7 +1023,10 @@ class Component extends DCLogic {
       b.rows.push({ num: this.giftSeq(q), name: (q.title || 'Added gift').replace(/\n/g, ' '), level: [q.amount, q.annual].filter(v => v && v !== '$').join('/'), g: gfx(q) });
     });
     const total = blocks.reduce((n, b) => n + b.rows.length, 0);
-    const built = blocks.reduce((n, b) => n + b.rows.filter(r => r.g).length, 0);
+    const screens = blocks.map(b => {
+      const q = queue.find(x => (x.mode || 'standard') === 'show' && x.showOf === b.prog);
+      return { prog: b.prog, file: q ? (q.file || this.autoFile(q)) : this.autoFile({ mode: 'show', title: b.prog }) };
+    });
     const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const sheet = this.state.sheetLabel || '';
     const body = blocks.map(b => `
@@ -1030,9 +1035,16 @@ class Component extends DCLogic {
         <thead><tr><th class="ck">Done</th><th class="n">#</th><th>Gift</th><th class="lv">Level</th><th class="gx">Graphic</th></tr></thead>
         <tbody>${b.rows.map(r => `
           <tr><td class="ck"><span class="box"></span></td><td class="n">${esc(r.num)}</td><td>${esc(r.name)}</td><td class="lv">${esc(r.level)}</td>
-          <td>${r.g ? `<span class="file">${esc(r.g.file)}</span><br><span class="ttl">${esc(r.g.title)}</span>` : '<span class="none">No graphic yet</span>'}</td></tr>`).join('')}
+          <td><span class="file">${esc(r.g.file)}</span>${r.g.title ? `<br><span class="ttl">${esc(r.g.title)}</span>` : ''}</td></tr>`).join('')}
         </tbody>
-      </table>`).join('');
+      </table>`).join('') + `
+      <h2>Show Screens</h2>
+      <table>
+        <thead><tr><th class="ck">Done</th><th>Program</th><th class="gx">Graphic</th></tr></thead>
+        <tbody>${screens.map(r => `
+          <tr><td class="ck"><span class="box"></span></td><td>${esc(r.prog)}</td><td><span class="file">${esc(r.file)}</span></td></tr>`).join('')}
+        </tbody>
+      </table>`;
     const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Pledge Premiums Checklist · Nashville PBS</title>
 <style>
@@ -1045,19 +1057,19 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 12pt; line-height: 
 h1 { font-size: 26pt; font-weight: 700; color: #2638C4; margin: 0; line-height: 1.15; }
 .date { font-size: 11pt; color: #0A145A; margin: 4pt 0 0; }
 .meta { font-size: 11pt; margin: 10pt 0 4pt; }
-h2 { font-size: 17pt; font-weight: 700; color: #2638C4; margin: 18pt 0 4pt; line-height: 1.2; break-after: avoid; }
-table { width: 100%; border-collapse: collapse; margin: 6pt 0 12pt; font-size: 10.5pt; line-height: 1.4; table-layout: fixed; }
+h2 { font-size: 17pt; font-weight: 700; color: #2638C4; margin: 14pt 0 4pt; line-height: 1.2; break-after: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 4pt 0 8pt; font-size: 10.5pt; line-height: 1.4; table-layout: fixed; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th { background: #0A145A; color: #fff; text-align: left; font-weight: 700; padding: 5pt 7pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-td { padding: 6pt 7pt; border-bottom: 0.75pt solid #5C6E85; vertical-align: top; }
-.ck { width: 0.5in; text-align: center; } .n { width: 0.3in; } .lv { width: 0.85in; white-space: nowrap; } .gx { width: 2.1in; }
+td { padding: 4.5pt 7pt; border-bottom: 0.75pt solid #5C6E85; vertical-align: top; }
+.ck { width: 0.5in; text-align: center; } .n { width: 0.3in; } .lv { width: 0.85in; white-space: nowrap; } .gx { width: 2.5in; }
 .box { display: inline-block; width: 12pt; height: 12pt; border: 1.25pt solid #0A145A; border-radius: 2pt; }
 .file { font-weight: 700; overflow-wrap: anywhere; } .ttl { color: #0A145A; } .none { color: #5C6E85; font-style: italic; }
 </style></head><body>
 <h1>Pledge Premiums Checklist</h1>
 <p class="date">${esc(date)}</p>
-<p class="meta">${esc(sheet)}<br>${total} gifts · ${built} with a graphic built</p>
+<p class="meta">${esc(sheet)}<br>${total} gifts · ${screens.length} show screens</p>
 ${body}
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));<\/script>
 </body></html>`;

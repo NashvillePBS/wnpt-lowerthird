@@ -4,6 +4,18 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Checklist lists every filename, plus show screens
+
+**Status:** deployed and pushed. Shane's graphics were exported earlier, so the checklist showed
+"No graphic yet" for all of them (the queue lives in one browser). Every gift line now shows the
+filename it exports under (the queue's override if set, otherwise the automatic name), the title
+only when queued, and a Show Screens table follows (one per program). Spacing tightened, filename
+column 2.5in. Custom names typed in the tool (AMERICANA_n, SHOW_Daystage) only appear when that
+browser has the queue. Also built a one-off PDF from the real files in Dropbox
+Production/Pledge/2026/December 2026 (saved there as "Pledge Premiums Checklist.pdf", 2 pages, every
+listed file confirmed present). Fixed DOLLYPARTONHEREIAM_2.png there: "Gift Set" title and the CD
+cover added beside the DVD (covers taken from the exported _1/_2 PNGs); originals in the scratchpad.
+
 ## 2026-11-23: Pledge-night premiums checklist
 
 **Status:** deployed (version 1ceff6e0) and pushed. A Checklist button beside Load… opens a
