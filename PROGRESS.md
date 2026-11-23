@@ -4,6 +4,25 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Banner, Website, Phone and Location lower thirds (test on 3 shows)
+
+**Status:** deployed (site 5d80c9fa, proxy 8b0b6b23) and pushed; live check in Chrome shows the
+Style picker on graphics.wnpt.app. Staff feedback asked for more options. Nashville PBS Brand, Aging Matters and Next Door
+Neighbors now show a Style picker above the fields: Name (the existing lower third), Banner (free
+text in one box, wraps at a fixed width, Enter for new lines), and Website, Phone and Location (a
+line icon in the show's accent beside the website, number or place, with an optional text line
+above it, e.g. "Learn more at"). Each style follows the show's own look (Nashville PBS navy with
+the yellow bar, Light Mode included; Aging Matters blue Chivo; Next Door Neighbors orange). Other
+shows unchanged until staff have tested. A banner's text is stored in Secondary, and its first line
+becomes the Name (file name and Airtable row name).
+Airtable: new single select **Style** on Lower Thirds (fldcKYJi3K4ITDS59: Name, Banner, Website,
+Phone, Location; blank = Name). The proxy (`worker/lower-thirds-worker.js`) reads and writes it, so
+a saved collection reopens with the right style. Deploy order: `npm run deploy:proxy`, then
+`npm run deploy`.
+**Evidence:** dist patched with `scripts/patch-dist.py` (12 hunks), root index.html copied; local
+dist preview exported all four new styles for all three shows through the real "This one" path (12
+PNGs, viewed); no new console errors.
+
 ## 2026-11-23: Checklist lists every filename, plus show screens
 
 **Status:** deployed and pushed. Shane's graphics were exported earlier, so the checklist showed

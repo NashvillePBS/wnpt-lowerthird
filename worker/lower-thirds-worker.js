@@ -16,7 +16,7 @@
  *   Content  (tbl7u0utEYTfwPya9)  title "Content Title", linked to Series via "Series"
  *   Collections (tblcS0voNB7RZg5ck)  "Collection Name", "Lower Thirds", "ZIP",
  *                                    "Created", and "Series" (link → Series)
- *   Lower Thirds (tbliZoHF9pEYT3aVx) "Name","Secondary","Light Mode","PNG",
+ *   Lower Thirds (tbliZoHF9pEYT3aVx) "Name","Secondary","Light Mode","Style","PNG",
  *                                    "Collections", and "Content" (link → Content)
  *
  *   • A Collection links to exactly one Series (the show).
@@ -139,6 +139,7 @@ export default {
             name: r.fields["Name"] || "",
             secondary: r.fields["Secondary"] || "",
             lightMode: !!r.fields["Light Mode"],
+            style: styleKey(r.fields["Style"]),
             png: firstAtt(r.fields["PNG"]),
           })),
         });
@@ -200,6 +201,7 @@ export default {
             name: r.fields["Name"] || "",
             secondary: r.fields["Secondary"] || "",
             lightMode: !!r.fields["Light Mode"],
+            style: styleKey(r.fields["Style"]),
             png: firstAtt(r.fields["PNG"]),
           });
         }
@@ -254,12 +256,19 @@ export default {
 };
 
 /* ----------------------------- save logic ----------------------------- */
+// Lower Thirds "Style" single select (added 2026-11-23). Blank on older rows = Name.
+const STYLE_NAMES = { name: "Name", banner: "Banner", website: "Website", phone: "Phone", location: "Location" };
+function styleKey(v) {
+  const k = String(v || "").toLowerCase();
+  return STYLE_NAMES[k] ? k : "name";
+}
 // body = {
 //   seriesTitle: string,            // the show — resolved to a Series record id
 //   contentId?: string,             // the episode — linked on every lower third (null for WNPT Brand)
 //   collectionId?: string,
 //   collectionName: string,
-//   entries: [{ id?, name, secondary, lightMode, pngBase64? }],
+//   entries: [{ id?, name, secondary, lightMode, style?, pngBase64? }],
+//   (style: "name" | "banner" | "website" | "phone" | "location"; written to the "Style" select)
 //   zipBase64?: string,
 // }
 async function saveCollection(api, body) {
@@ -293,6 +302,7 @@ async function saveCollection(api, body) {
       "Name": e.name || "",
       "Secondary": e.secondary || "",
       "Light Mode": !!e.lightMode,
+      "Style": STYLE_NAMES[e.style] || "Name",
       [F_LT_CONTENT]: contentId ? [contentId] : [],
     };
     let recId = e.id || null;

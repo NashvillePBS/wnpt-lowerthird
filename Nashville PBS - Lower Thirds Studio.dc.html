@@ -300,9 +300,13 @@ a:hover{color:#0F1E8C;text-decoration:underline}
         </sc-if>
         <div style="padding:20px 22px 16px;display:flex;flex-direction:column;gap:14px">
           <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ showKinds }}"><div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Style</label>
+              <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ kindOptions }}" as="k" hint-placeholder-count="5"><button onClick="{{ k.onPick }}" style="{{ k.style }}">{{ k.label }}</button></sc-for></div>
+            </div></sc-if>
             <sc-if value="{{ showNameField }}"><div style="display:flex;flex-direction:column;gap:8px">
-              <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">Name</label>
-              <input value="{{ selName }}" onInput="{{ onName }}" onFocus="{{ onNameFocus }}" onBlur="{{ onNameBlur }}" spellcheck="true" placeholder="e.g. Birtha Street" style="font-family:'PBS Sans',Arial,sans-serif;font-size:16px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
+              <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">{{ nameLabel }}</label>
+              <input value="{{ selName }}" onInput="{{ onName }}" onFocus="{{ onNameFocus }}" onBlur="{{ onNameBlur }}" spellcheck="true" placeholder="{{ namePlaceholder }}" style="font-family:'PBS Sans',Arial,sans-serif;font-size:16px;font-weight:600;color:#0A145A;padding:11px 13px;border:1.5px solid #c7cde0;border-radius:8px;outline:none;width:100%;box-sizing:border-box">
             </div></sc-if>
             <div style="display:flex;flex-direction:column;gap:8px">
               <label style="font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#5a6180">{{ secondaryLabel }}</label>
@@ -412,6 +416,12 @@ a:hover{color:#0F1E8C;text-decoration:underline}
                 <sc-if value="{{ hasSec }}"><div style="{{ boxSecWrapStyle }}"><sc-for list="{{ boxSecLines }}" as="ln" hint-placeholder-count="2"><div style="{{ ln.style }}">{{ ln.text }}</div></sc-for></div></sc-if>
                 <sc-if value="{{ secPlaceholder }}"><div style="{{ boxSecWrapStyle }}"><div style="{{ boxSecPlaceholderStyle }}">Secondary</div></div></sc-if>
               </div>
+            </sc-if>
+
+            <!-- Banner / Website / Phone / Location (Nashville PBS Brand, Aging Matters, Next Door Neighbors):
+                 drawn by buildKindBar() into this host so the preview is the exported PNG's own markup -->
+            <sc-if value="{{ kindActive }}">
+              <div ref="{{ kindRef }}" style="display:inline-block;width:max-content"></div>
             </sc-if>
 
             <!-- Station ID · dark -->
@@ -860,11 +870,11 @@ class Component extends DCLogic {
   static DEFAULT_WORKER = "https://autumn-rain-853e.wnpt-digital.workers.dev";
 
   SHOWS = {
-    "wnpt-brand": { label: "Nashville PBS Brand", series: "WNPT Brand", style: "station", hasLight: true, hasContent: false, canPickSeries: true, base: 40, minF: 20, maxW: 760, scale: 4 },
+    "wnpt-brand": { label: "Nashville PBS Brand", series: "WNPT Brand", style: "station", kinds: true, hasLight: true, hasContent: false, canPickSeries: true, base: 40, minF: 20, maxW: 760, scale: 4 },
     "slice": { label: "A Slice of the Community", series: "A Slice of the Community", style: "slice", hasLight: false, hasContent: true, base: 56, minF: 30, maxW: 736, scale: 1 },
-    "aging": { label: "Aging Matters", series: "Aging Matters", style: "box", hasLight: false, hasContent: true, base: 60, minF: 30, maxW: 760, scale: 2 },
+    "aging": { label: "Aging Matters", series: "Aging Matters", style: "box", kinds: true, hasLight: false, hasContent: true, base: 60, minF: 30, maxW: 760, scale: 2 },
     "cleanslate": { label: "Clean Slate with Becky Magura", series: "Clean Slate with Becky Magura", style: "box", hasLight: false, hasContent: true, base: 60, minF: 30, maxW: 760, scale: 2 },
-    "nextdoor": { label: "Next Door Neighbors", series: "Next Door Neighbors", style: "box", hasLight: false, hasContent: true, base: 60, minF: 30, maxW: 760, scale: 2 },
+    "nextdoor": { label: "Next Door Neighbors", series: "Next Door Neighbors", style: "box", kinds: true, hasLight: false, hasContent: true, base: 60, minF: 30, maxW: 760, scale: 2 },
     "station-id": { label: "Station ID", series: null, style: "station", logoStation: true, hasLight: false, hasContent: false, noSave: true, base: 56, minF: 28, maxW: 900, scale: 2 },
   };
 
@@ -959,7 +969,7 @@ class Component extends DCLogic {
     window.removeEventListener("beforeunload", this._beforeUnload);
     if (this._ro) this._ro.disconnect();
   }
-  componentDidUpdate() { this.applyShowMetrics(); this.fit(); if (this._ro && this._roAttach) this._roAttach(); }
+  componentDidUpdate() { this.applyShowMetrics(); this.renderKindPreview(); this.fit(); if (this._ro && this._roAttach) this._roAttach(); }
 
   // ---------- connection ----------
   configure = () => {
@@ -1057,7 +1067,24 @@ class Component extends DCLogic {
   });
   update = (field, v) => this.setState(s => {
     const entries = s.entries.slice();
-    if (entries[s.selected]) entries[s.selected] = { ...entries[s.selected], [field]: v, dirty: true };
+    if (entries[s.selected]) {
+      const next = { ...entries[s.selected], [field]: v, dirty: true };
+      if (field === "credit" && this.kindOf(next) === "banner") next.name = this.bannerName(v);
+      entries[s.selected] = next;
+    }
+    return { entries };
+  });
+  setKind = (k) => this.setState(s => {
+    const entries = s.entries.slice();
+    const cur = entries[s.selected];
+    if (!cur) return {};
+    const next = { ...cur, style: k, dirty: true };
+    if (k === "banner") {
+      // carry anything typed into the banner text box, which is the only field a banner shows
+      if (!String(next.credit || "").trim() && next.name) next.credit = next.name;
+      next.name = this.bannerName(next.credit);
+    }
+    entries[s.selected] = next;
     return { entries };
   });
 
@@ -1420,7 +1447,95 @@ class Component extends DCLogic {
     }
     return wrap;
   }
-  buildBar(entry) { const c = this.cfg(); if (c.logoStation) return this.buildStationIdBar(entry); const st = c.style; if (st === "slice") return this.buildSliceBar(entry); if (st === "box") return this.buildBoxBar(entry); return this.buildStationBar(entry); }
+  // ---------- extra styles: Banner / Website / Phone / Location (2026-11-23, test run on 3 shows) ----------
+  KINDS = [["name", "Name"], ["banner", "Banner"], ["website", "Website"], ["phone", "Phone"], ["location", "Location"]];
+  kindOf(e) { const k = e && e.style; return (this.cfg().kinds && k && k !== "name" && this.KINDS.some(x => x[0] === k)) ? k : "name"; }
+  bannerName(txt) { return (String(txt || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean)[0]) || ""; }
+  // Line icons (24-unit grid), stroked in the show's accent; sized in em so they shrink with the fitted text.
+  kindIcon(kind, color) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none"); svg.setAttribute("stroke", color);
+    svg.setAttribute("stroke-width", "2.2"); svg.setAttribute("stroke-linecap", "round"); svg.setAttribute("stroke-linejoin", "round");
+    svg.style.cssText = "width:.86em;height:.86em;flex:none;display:block";
+    const parts = {
+      website: [["circle", { cx: 12, cy: 12, r: 10 }], ["path", { d: "M2 12h20" }], ["path", { d: "M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" }]],
+      phone: [["path", { d: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" }]],
+      location: [["path", { d: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" }], ["circle", { cx: 12, cy: 10, r: 3 }]],
+    }[kind] || [];
+    parts.forEach(([tag, attrs]) => { const el = document.createElementNS(NS, tag); Object.keys(attrs).forEach(a => el.setAttribute(a, attrs[a])); svg.appendChild(el); });
+    return svg;
+  }
+  kindTheme(entry) {
+    if (this.cfg().style === "station") {
+      const light = !!entry.lightMode;
+      return {
+        outerPad: "60px", font: "'PBS Sans',Arial,sans-serif",
+        panel: "display:flex;flex-direction:column;justify-content:center;gap:8px;background:" + (light ? "#fff" : "#0A145A") + ";padding:22px 46px 22px 34px;border-left:6px solid " + (light ? "#2638C4" : "#FFCF00") + ";box-shadow:" + (light ? "0 12px 34px rgba(0,0,0,.22)" : "0 12px 34px rgba(0,0,0,.32)"),
+        bannerW: 846,
+        line: "font-weight:500;font-size:19px;line-height:1.1;letter-spacing:.01em;color:" + (light ? "rgba(10,20,90,.72)" : "rgba(255,255,255,.82)"),
+        value: "font-weight:800;line-height:1;letter-spacing:-.01em;color:" + (light ? "#0A145A" : "#fff"),
+        upper: false, icon: light ? "#2638C4" : "#FFCF00",
+        banner: "font-weight:700;font-size:30px;line-height:1.2;color:" + (light ? "#0A145A" : "#fff"),
+      };
+    }
+    const t = this.boxTheme();
+    return {
+      outerPad: "0", font: t.font,
+      panel: "display:flex;flex-direction:column;box-sizing:border-box;gap:10px;padding:40px 90px 44px;background:" + t.boxBg + ";border:" + t.boxBorder,
+      bannerW: 940,
+      line: "font-weight:" + t.secWeight + ";font-size:34px;line-height:1.15;color:" + t.secColor(0),
+      value: "font-weight:" + t.nameWeight + ";line-height:1;color:" + t.nameColor,
+      upper: t.nameUpper, icon: t.nameColor,
+      banner: "font-weight:" + t.nameWeight + ";font-size:46px;line-height:1.15;color:" + t.nameColor + (t.nameUpper ? ";text-transform:uppercase" : ""),
+    };
+  }
+  // ph = preview: empty fields show faded sample words so the layout is visible before typing.
+  buildKindBar(entry, ph) {
+    const kind = this.kindOf(entry);
+    const t = this.kindTheme(entry);
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:inline-block;width:max-content;padding:" + t.outerPad + ";background:transparent;font-family:" + t.font;
+    const panel = document.createElement("div");
+    panel.style.cssText = t.panel + ";font-family:" + t.font;
+    const faded = (el) => { el.style.opacity = ".45"; return el; };
+    if (kind === "banner") {
+      panel.style.width = t.bannerW + "px";
+      panel.style.boxSizing = "border-box";
+      const lines = this.secLinesOf(entry);
+      (lines.length ? lines : (ph ? ["Banner text"] : [])).forEach(txt => {
+        const d = document.createElement("div"); d.style.cssText = t.banner + ";overflow-wrap:break-word"; d.textContent = txt;
+        if (!lines.length) faded(d);
+        panel.appendChild(d);
+      });
+    } else {
+      const lines = this.secLinesOf(entry);
+      (lines.length ? lines : (ph && !entry.name ? ["Text line"] : [])).forEach(txt => {
+        const d = document.createElement("div"); d.style.cssText = t.line + ";white-space:nowrap"; d.textContent = txt;
+        if (!lines.length) faded(d);
+        panel.appendChild(d);
+      });
+      const row = document.createElement("div");
+      row.setAttribute("data-fit", "1");
+      row.style.cssText = t.value + ";white-space:nowrap;display:flex;align-items:center;gap:.3em" + (t.upper && kind !== "website" ? ";text-transform:uppercase" : "");
+      row.appendChild(this.kindIcon(kind, t.icon));
+      const txt = document.createElement("span");
+      txt.textContent = entry.name || (ph ? ({ website: "Website", phone: "Phone number", location: "Location" })[kind] : "");
+      if (!entry.name) faded(txt);
+      row.appendChild(txt);
+      panel.appendChild(row);
+    }
+    wrap.appendChild(panel);
+    return wrap;
+  }
+  renderKindPreview() {
+    const host = this._refs.kindRef;
+    if (!host) return;
+    const sel = this.state.entries[this.state.selected];
+    host.innerHTML = "";
+    if (sel && this.kindOf(sel) !== "name") host.appendChild(this.buildKindBar(sel, true));
+  }
+  buildBar(entry) { const c = this.cfg(); if (this.kindOf(entry) !== "name") return this.buildKindBar(entry, false); if (c.logoStation) return this.buildStationIdBar(entry); const st = c.style; if (st === "slice") return this.buildSliceBar(entry); if (st === "box") return this.buildBoxBar(entry); return this.buildStationBar(entry); }
 
   toBlob = (dataUrl) => fetch(dataUrl).then(r => r.blob());
   // Rejections out of html-to-image are often a bare load Event, whose String() is
@@ -1513,7 +1628,7 @@ class Component extends DCLogic {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
       const entries = [];
       for (const e of valid) {
-        const payload = { id: e.id || undefined, name: e.name, secondary: e.credit, lightMode: !!e.lightMode };
+        const payload = { id: e.id || undefined, name: e.name, secondary: e.credit, lightMode: !!e.lightMode, style: this.kindOf(e) };
         if (e.dirty || !e.id) payload.pngBase64 = await this.renderEntry(e);
         entries.push(payload);
       }
@@ -1576,7 +1691,7 @@ class Component extends DCLogic {
       const res = await fetch(this.api("/collection?id=" + encodeURIComponent(id)));
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      const entries = data.entries.map(e => ({ id: e.id, name: e.name, credit: e.secondary, lightMode: !!e.lightMode, dirty: false }));
+      const entries = data.entries.map(e => ({ id: e.id, name: e.name, credit: e.secondary, lightMode: !!e.lightMode, style: e.style || "name", dirty: false }));
       entries.push({ name: "", credit: "", lightMode: false, dirty: true });
       this.setState({ entries, selected: entries.length - 1, collectionId: data.id, collName: data.name, contentId: data.contentId || null, contentTitle: data.contentTitle || "", collOpen: false });
       this.flash("Opened “" + data.name + "”. Click a lower third to edit it.", "ok");
@@ -1647,7 +1762,7 @@ class Component extends DCLogic {
     if (!picked.length) { this.setState({ importOpen: false }); return; }
     this.setState(s => {
       const have = new Set(s.entries.map(e => e.id).filter(Boolean));
-      const add = picked.filter(p => !have.has(p.id)).map(p => ({ id: p.id, name: p.name, credit: p.secondary, lightMode: !!p.lightMode, dirty: false }));
+      const add = picked.filter(p => !have.has(p.id)).map(p => ({ id: p.id, name: p.name, credit: p.secondary, lightMode: !!p.lightMode, style: p.style || "name", dirty: false }));
       let base = s.entries.slice();
       if (base.length && !base[base.length - 1].name && !base[base.length - 1].id) base = base.slice(0, -1);
       const entries = base.concat(add);
@@ -1852,6 +1967,8 @@ class Component extends DCLogic {
     const secArr = this.secLinesOf(sel);
     const hasSec = secArr.length > 0;
     const hasName = !!(sel && sel.name);
+    const kind = this.kindOf(sel);
+    const kindActive = kind !== "name";
     const bt = isBox ? this.boxTheme() : null;
     let boxStyle = "", boxNameStyle = "", boxNamePlaceholderStyle = "", boxSecWrapStyle = "", boxSecPlaceholderStyle = "";
     let boxSecLines = [];
@@ -2047,19 +2164,29 @@ class Component extends DCLogic {
       hasContentLT: !!(s.contentLowerThirds && s.contentLowerThirds.trim()),
       importFromContent: this.importFromContent,
       isSliceShow: isSlice,
-      isBoxShow: isBox,
+      isBoxShow: isBox && !kindActive,
+      kindActive,
+      kindRef: (el) => { this._refs.kindRef = el; },
+      showKinds: !!cfg.kinds,
+      kindOptions: this.KINDS.map(([k, label]) => ({
+        label,
+        onPick: () => this.setKind(k),
+        style: "cursor:pointer;padding:7px 13px;border-radius:999px;font-family:'PBS Sans',Arial,sans-serif;font-weight:700;font-size:13px;border:1.5px solid " + (kind === k ? "#2638C4;background:#eef1fb;color:#2638C4" : "#c7cde0;background:#fff;color:#5a6180"),
+      })),
       boxStyle, boxNameStyle, boxNamePlaceholderStyle, boxSecWrapStyle, boxSecPlaceholderStyle, boxSecLines,
       boxNameText: sel ? sel.name : "",
       secLinesArr: secArr,
       hasSec, secPlaceholder: !hasSec && !hasName,
-      stationDark: isStation && !isLogoStation && !(sel && sel.lightMode),
-      stationLight: isStation && !isLogoStation && !!(sel && sel.lightMode),
+      stationDark: isStation && !isLogoStation && !kindActive && !(sel && sel.lightMode),
+      stationLight: isStation && !isLogoStation && !kindActive && !!(sel && sel.lightMode),
       stationIdLockup: isLogoStation,
-      showNameField: true,
-      secondaryLabel: "Secondary information",
-      secondaryPlaceholder: isLogoStation ? "e.g. Photos by John Guider" : "e.g. Social Worker\nVanderbilt Eye Institute",
+      showNameField: kind !== "banner",
+      nameLabel: ({ website: "Website", phone: "Phone number", location: "Location" })[kind] || "Name",
+      namePlaceholder: ({ website: "e.g. wnpt.org", phone: "Phone number", location: "e.g. Centennial Park, Nashville" })[kind] || "e.g. Birtha Street",
+      secondaryLabel: kind === "banner" ? "Banner text" : kindActive ? "Text line" : "Secondary information",
+      secondaryPlaceholder: kind === "banner" ? "Type anything — e.g. Applications open through December 15" : kindActive ? ({ website: "e.g. Learn more at", phone: "e.g. Call to give", location: "e.g. Filmed at" })[kind] : isLogoStation ? "e.g. Photos by John Guider" : "e.g. Social Worker\nVanderbilt Eye Institute",
       previewNote: isSlice ? "Preview · exports at 910×320, transparent" : isBox ? "Preview · exports at content size, transparent" : "Preview · checkerboard = transparent",
-      secondaryHint: isLogoStation ? "Optional credit line under the name." : isSlice ? "Renders in ALL CAPS. Press Enter to add a second or third line." : (s.show === "aging") ? "Press Enter for extra lines — the second line renders black, the rest white." : "Press Enter to add a second or third line.",
+      secondaryHint: kind === "banner" ? "Free text. It wraps on its own; press Enter to start a new line." : kindActive ? "Appears above the " + ({ website: "website", phone: "phone number", location: "location" })[kind] + ", with the icon beside it. Leave blank for the icon line alone." : isLogoStation ? "Optional credit line under the name." : isSlice ? "Renders in ALL CAPS. Press Enter to add a second or third line." : (s.show === "aging") ? "Press Enter for extra lines — the second line renders black, the rest white." : "Press Enter to add a second or third line.",
       // connection
       connLabel: connected ? "Airtable connected" : "Connect Airtable",
       connDot: connected ? "#48D3CD" : "#FE704E",
