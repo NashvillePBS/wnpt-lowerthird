@@ -4,6 +4,19 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Pledge-night premiums checklist
+
+**Status:** deployed (version 1ceff6e0) and pushed. A Checklist button beside Load… opens a
+print-ready page (Standard document style: Letter, Arial, PBS Blue headings, Navy table header,
+"Nashville PBS" + page footer) listing every gift on the loaded sheet's Local Offers tab, plus gifts
+added with "+ Gift", grouped by program: tick box, #, gift, level, and the graphic's filename and
+title when one is in the queue ("No graphic yet" otherwise). Shane chose printable page + gift and
+graphic file. The sheet is not final (tote bag and Americanafest Opry tickets pending), so reprint
+after the final sheet loads.
+**Evidence:** local run with v5 (15 gifts, 2 built) printed to PDF with headless Chrome: 2 pages,
+footer and page numbers present, long filenames wrap; live page on graphics.wnpt.app has the button
+and `printChecklist`.
+
 ## 2026-11-23: Every multi-item gift is titled "Gift Set"
 
 **Status:** deployed (version cf9c6989) and pushed. Shane's call: combos say "Gift Set". Any gift

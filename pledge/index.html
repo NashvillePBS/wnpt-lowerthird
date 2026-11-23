@@ -52,6 +52,7 @@
             <div style="font-size:11px;color:#6b7394;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{sheetLabel}}</div>
           </div>
           <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="secondary" size="sm" onClick="{{onSheetClick}}" hint-size="70px,32px">Load…</x-import>
+          <x-import component-from-global-scope="NashvillePBSDesignSystem_8fe663.Button" variant="ghost" size="sm" onClick="{{checklistClick}}" hint-size="80px,32px">Checklist</x-import>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <div onClick="{{tabGifts}}" style="{{tabGiftsStyle}}">Gifts</div>
@@ -997,6 +998,74 @@ class Component extends DCLogic {
     this.flash('Exported ' + queue.length + ' PNGs to ' + zipName);
   }
 
+  // Pledge-night premiums checklist: every gift from the loaded sheet (plus gifts added with
+  // "+ Gift"), grouped by program, with its donation level, the graphic's filename and title when
+  // one is in the queue, and a box to tick. Opens a print-ready page in the station's Standard
+  // document style (Letter, Arial, PBS Blue headings, Navy table header, Nashville PBS footer).
+  printChecklist() {
+    const { gifts, queue } = this.state;
+    if (!gifts.length) { this.flash('Load a gift sheet first'); return; }
+    const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const gfx = item => item ? { file: item.file || this.autoFile(item), title: (item.title || '').replace(/\n/g, ' ') } : null;
+    const blocks = []; let last = null;
+    gifts.forEach((g, i) => {
+      const prog = g.program || 'Other';
+      if (prog !== last || !blocks.length) { blocks.push({ prog, rows: [] }); last = prog; }
+      const item = queue.find(q => q.giftIdx === i && (q.mode || 'standard') !== 'show');
+      blocks[blocks.length - 1].rows.push({ num: this.giftSeq({ giftIdx: i }), name: g.name, level: g.level, g: gfx(item) });
+    });
+    queue.filter(q => (q.mode || 'standard') !== 'show' && q.giftIdx === -1).forEach(q => {
+      const prog = q.program || 'Other';
+      let b = blocks.find(x => x.prog === prog);
+      if (!b) { b = { prog, rows: [] }; blocks.push(b); }
+      b.rows.push({ num: this.giftSeq(q), name: (q.title || 'Added gift').replace(/\n/g, ' '), level: [q.amount, q.annual].filter(v => v && v !== '$').join('/'), g: gfx(q) });
+    });
+    const total = blocks.reduce((n, b) => n + b.rows.length, 0);
+    const built = blocks.reduce((n, b) => n + b.rows.filter(r => r.g).length, 0);
+    const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const sheet = this.state.sheetLabel || '';
+    const body = blocks.map(b => `
+      <h2>${esc(b.prog)}</h2>
+      <table>
+        <thead><tr><th class="ck">Done</th><th class="n">#</th><th>Gift</th><th class="lv">Level</th><th class="gx">Graphic</th></tr></thead>
+        <tbody>${b.rows.map(r => `
+          <tr><td class="ck"><span class="box"></span></td><td class="n">${esc(r.num)}</td><td>${esc(r.name)}</td><td class="lv">${esc(r.level)}</td>
+          <td>${r.g ? `<span class="file">${esc(r.g.file)}</span><br><span class="ttl">${esc(r.g.title)}</span>` : '<span class="none">No graphic yet</span>'}</td></tr>`).join('')}
+        </tbody>
+      </table>`).join('');
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Pledge Premiums Checklist · Nashville PBS</title>
+<style>
+@page { size: letter; margin: 0.75in 0.75in 0.85in;
+  @bottom-left { content: "Nashville PBS"; font: 9pt Arial, sans-serif; color: #5C6E85; }
+  @bottom-right { content: counter(page); font: 9pt Arial, sans-serif; color: #5C6E85; } }
+html { background: #fff; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 12pt; line-height: 1.5; color: #000; margin: 0; }
+@media screen { body { max-width: 7in; margin: 0.5in auto; padding: 0 16px; } }
+h1 { font-size: 26pt; font-weight: 700; color: #2638C4; margin: 0; line-height: 1.15; }
+.date { font-size: 11pt; color: #0A145A; margin: 4pt 0 0; }
+.meta { font-size: 11pt; margin: 10pt 0 4pt; }
+h2 { font-size: 17pt; font-weight: 700; color: #2638C4; margin: 18pt 0 4pt; line-height: 1.2; break-after: avoid; }
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 12pt; font-size: 10.5pt; line-height: 1.4; table-layout: fixed; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { background: #0A145A; color: #fff; text-align: left; font-weight: 700; padding: 5pt 7pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+td { padding: 6pt 7pt; border-bottom: 0.75pt solid #5C6E85; vertical-align: top; }
+.ck { width: 0.5in; text-align: center; } .n { width: 0.3in; } .lv { width: 0.85in; white-space: nowrap; } .gx { width: 2.1in; }
+.box { display: inline-block; width: 12pt; height: 12pt; border: 1.25pt solid #0A145A; border-radius: 2pt; }
+.file { font-weight: 700; overflow-wrap: anywhere; } .ttl { color: #0A145A; } .none { color: #5C6E85; font-style: italic; }
+</style></head><body>
+<h1>Pledge Premiums Checklist</h1>
+<p class="date">${esc(date)}</p>
+<p class="meta">${esc(sheet)}<br>${total} gifts · ${built} with a graphic built</p>
+${body}
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 300));<\/script>
+</body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { this.flash('Allow pop-ups for this site to open the checklist'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+
   renderVals() {
     const { gifts, queue, curId, scale, bg, sel, status, sheetLabel, tab, hiddenShows, issues } = this.state;
     const cur = this.cur();
@@ -1219,6 +1288,7 @@ class Component extends DCLogic {
         if (sug) this.updateCur({ title: sug }); else this.flash('No item keywords found in the name');
       },
       onSheetClick: () => this.sheetInputRef.current && this.sheetInputRef.current.click(),
+      checklistClick: () => this.printChecklist(),
       onSheetFile: e => this.onSheetFile(e),
       onImgsClick: () => this.imgInputRef.current && this.imgInputRef.current.click(),
       onImgFiles: e => { this.addFiles(e.target.files); e.target.value = ''; },
