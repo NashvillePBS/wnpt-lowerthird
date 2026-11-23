@@ -56,9 +56,25 @@ async function sheetRows(files, path, strings) {
   const out = [];
   for (const [, rxml] of xml.matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)) {
     const row = [];
-    for (const m of rxml.matchAll(/<c r="([A-Z]+\d+)"([^>]*)>[\s\S]*?(?:<v>([\s\S]*?)<\/v>)?[\s\S]*?<\/c>/g)) {
-      if (m[3] === undefined) continue;
-      row[colIdx(m[1])] = /t="s"/.test(m[2]) ? strings[+m[3]] : dec(m[3]);
+    // Cells come in three shapes: Excel's shared-string index (t="s", <v>n</v>), a plain value
+    // (<v>…</v>), or text stored in the cell itself (t="inlineStr", <is><t>…</t></is>), which is
+    // what sheets saved by scripts and some other programs use. Empty cells may be self-closing.
+    for (const m of rxml.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+      const attrs = m[1], body = m[2] || '';
+      const ref = (attrs.match(/\br="([A-Z]+)\d+"/) || [])[1];
+      if (!ref) continue;
+      const t = (attrs.match(/\bt="([^"]*)"/) || [])[1];
+      let val;
+      if (t === 'inlineStr') {
+        const is = body.match(/<is>([\s\S]*?)<\/is>/);
+        if (!is) continue;
+        val = dec(is[1].replace(/<rPh[\s\S]*?<\/rPh>/g, '').replace(/<[^>]+>/g, ''));
+      } else {
+        const v = body.match(/<v>([\s\S]*?)<\/v>/);
+        if (!v) continue;
+        val = t === 's' ? strings[+v[1]] : dec(v[1]);
+      }
+      row[colIdx(ref)] = val;
     }
     out.push(row);
   }
@@ -76,10 +92,17 @@ async function parseXlsx(ab) {
     const wbXml = await inflateEntry(files['xl/workbook.xml']);
     const relsXml = await inflateEntry(files['xl/_rels/workbook.xml.rels']);
     const rels = {};
-    for (const m of relsXml.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)) rels[m[1]] = m[2];
-    for (const m of wbXml.matchAll(/<sheet[^>]*name="([^"]+)"[^>]*r:id="([^"]+)"/g)) {
-      const target = rels[m[2]];
-      if (target) sheetMap.push({ name: dec(m[1]), path: 'xl/' + target.replace(/^\/?xl\//, '') });
+    // Attribute order varies between programs (Excel writes Id first, others Target first).
+    const attr = (tag, a) => (tag.match(new RegExp('\\s' + a + '="([^"]*)"')) || [])[1];
+    for (const [tag] of relsXml.matchAll(/<Relationship\b[^>]*>/g)) {
+      const id = attr(tag, 'Id'), target = attr(tag, 'Target');
+      if (id && target) rels[id] = target;
+    }
+    for (const [tag] of wbXml.matchAll(/<sheet\b[^>]*>/g)) {
+      const name = attr(tag, 'name'), rid = attr(tag, 'r:id');
+      if (!name || !rid) continue;
+      const target = rels[rid];
+      if (target) sheetMap.push({ name: dec(name), path: 'xl/' + target.replace(/^\/?xl\//, '') });
     }
   }
   if (!sheetMap.length) {

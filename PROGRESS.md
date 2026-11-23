@@ -4,6 +4,21 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Pledge sheet reader handles non-Excel .xlsx files
+
+**Status:** deployed (`npm run deploy`, version 343646f1) and pushed. This deploy also carried the
+2026-11-09 breadcrumb header below to graphics.wnpt.app.
+Shane's End of Year 2026 sheet (v3) loaded 0 gifts. Not the move to wnpt.app: v3 was saved by a
+program that stores cell text inline (`t="inlineStr"`, no sharedStrings.xml) and writes the
+workbook rels with `Target` before `Id`; `pledge/sheet-parser.js` only knew Excel's layout. The
+cell reader also mishandled self-closing empty cells (`<c …/>`), which dropped three real
+Americanafest items from the November sheet as "missing donation level". Fixed all three.
+**Evidence:** node run of the parser: v3 → Local Offers, 16 gifts, 0 issues (openpyxl agrees: 16
+rows, none missing name or level); the earlier sheet → 12 gifts (was 9 + 3 false issues; openpyxl
+shows those 3 have levels). Live in Chrome on graphics.wnpt.app/pledge/: "Loaded 16 gifts".
+`pledge/data/gifts.json` (fetched on load) has never existed in the repo; the list starts empty
+until a sheet is loaded, as before.
+
 ## 2026-11-09: the Hub breadcrumb header
 
 **Status:** committed locally, not pushed or deployed (deploy is `npm run deploy`, Shane's call).
