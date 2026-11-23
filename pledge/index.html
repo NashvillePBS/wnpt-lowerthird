@@ -361,9 +361,9 @@ const ITEM_MAP = [
   ['2-DVD', '2-DVD Set'], ['2DVD', '2-DVD Set'], ['3-DVD', '3-DVD Set'], ['DVD/CD', 'DVD/CD'],
   ['DVD', 'DVD'], ['2-CD', '2-CD Set'], ['CD', 'CD'], ['BLU-RAY', 'Blu-ray'], ['VINYL', 'Vinyl'],
   ['HBK', 'Book'], ['PBK', 'Paperback'], ['BOOK', 'Book'],
-  ['MUG', 'Mug'], ['TOTE', 'Tote Bag'], ['BANDANA', 'Bandana'], ['BUTTONS', 'Buttons'],
+  ['MUG', 'Mug'], ['TOTE', 'Tote Bag'], ['BAG', 'Tote Bag'], ['BANDANA', 'Bandana'], ['BUTTONS', 'Buttons'],
   ['RADIO', 'Radio'], ['TICKETS', 'Tickets'], ['SOCKS', 'Socks'], ['ORNAMENT', 'Ornament'],
-  ['PUZZLE', 'Puzzle'], ['UMBRELLA', 'Umbrella'], ['SCARF', 'Scarf'], ['T-SHIRT', 'T-Shirt'], ['TSHIRT', 'T-Shirt'], ['HAT', 'Hat'],
+  ['PUZZLE', 'Puzzle'], ['UMBRELLA', 'Umbrella'], ['SCARF', 'Scarf'], ['T-SHIRT', 'T-Shirt'], ['TSHIRT', 'T-Shirt'], ['TEE', 'Tee'], ['HAT', 'Hat'],
 ];
 function joinItems(items) {
   if (!items.length) return '';
@@ -382,17 +382,24 @@ function suggestTitle(name) {
     if (items.length >= 3) return 'Gift Set';
     return joinItems(items);
   }
+  // Whole words only (so HAT doesn't match "That" or TEE "Steel"), plurals allowed, longest keys
+  // first so "2-CD" wins over "CD"; the title lists items in the order the name gives them.
   let key = ' ' + name.toUpperCase() + ' ';
   const found = [];
   const byLen = [...ITEM_MAP].sort((a, b) => b[0].length - a[0].length);
   for (const [k, v] of byLen) {
-    if (key.includes(k)) {
-      if (!found.includes(v)) found.push(v);
-      key = key.split(k).join(' '.repeat(k.length));
+    const re = new RegExp('(^|[^A-Z0-9])' + k.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&') + 'S?(?![A-Z0-9])', 'g');
+    let m, at = -1;
+    while ((m = re.exec(key))) {
+      const start = m.index + m[1].length;
+      if (at < 0) at = start;
+      key = key.slice(0, start) + ' '.repeat(m[0].length - m[1].length) + key.slice(start + m[0].length - m[1].length);
     }
+    if (at >= 0) { const f = found.find(x => x.v === v); if (!f) found.push({ v, at }); else f.at = Math.min(f.at, at); }
   }
-  if (found.length >= 3) return 'Gift Set';
-  return found.length >= 1 ? joinItems(found) : '';
+  const items = found.sort((a, b) => a.at - b.at).map(x => x.v);
+  if (items.length >= 3) return 'Gift Set';
+  return items.length >= 1 ? joinItems(items) : '';
 }
 let uid = 1;
 let CRC_TABLE;

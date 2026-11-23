@@ -4,6 +4,15 @@ The history of the studio's earlier sessions is in `SESSIONS.md` ("Completed"). 
 the End Cards build and carries forward from here. Human-only tasks are in `shane.md`; standing
 decisions in `docs/DECISIONS.md`; the spec for the November work in `BUILD-graphics.md`.
 
+## 2026-11-23: Pledge title suggestions know Tee and Bag
+
+**Status:** deployed (version 0f304fcc) and pushed. `suggestTitle` in `pledge/index.html` had no
+entry for "Tee", so "Nerd Tee and Chainstitch Hat Combo" suggested only "Hat" (unchanged since
+August; not the move). Added TEE → Tee and BAG → Tote Bag, made matching whole-word with plurals
+(HAT no longer fires inside "That"), and the title lists items in the order the name gives them.
+**Evidence:** old vs new suggestion for every gift in the v4 and November sheets: only the tee,
+combo (now "Tee and Hat") and bag changed; live page code on graphics.wnpt.app returns the same.
+
 ## 2026-11-23: Pledge sheet reader handles non-Excel .xlsx files
 
 **Status:** deployed (`npm run deploy`, version 343646f1) and pushed. This deploy also carried the
